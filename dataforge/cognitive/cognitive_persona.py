@@ -108,7 +108,7 @@ class CognitivePersonaBuilder:
             city=city,
             monthly_income=income,
             fixed_expenses=fixed_expenses,
-            habitus_moral=habitus.moral_foundations.to_dict()
+            habitus_moral=asdict(habitus.moral_foundations)
         )
 
         # 5. Micro-Traits & Digital Subculture
