@@ -146,6 +146,7 @@ class EconometricUtilityEngine:
         triggers_loyalty_violation = any(w in pitch_lower for w in ["terör", "af", "bölünme", "ihanet", "taviz"])
         triggers_sanctity_violation = any(w in pitch_lower for w in ["şehit", "gazi", "din", "kutsal", "namus"])
         triggers_fairness_violation = any(w in pitch_lower for w in ["torpil", "haksızlık", "cezasızlık", "af"])
+        touches_leadership = any(w in pitch_lower for w in ["başkan", "cumhurbaşkanı", "seçim", "oy", "erdoğan", "iktidar", "hükümet", "lider"])
 
         accepted_count = 0
         total_moral_penalty = 0.0
@@ -155,26 +156,34 @@ class EconometricUtilityEngine:
             p = self.rng.choice(personas)
             habitus = p.get("habitus", {})
             mf = habitus.get("moral_foundations", {}) if isinstance(habitus, dict) else {}
+            belief = p.get("latent_belief", {}) if isinstance(p.get("latent_belief"), dict) else {}
 
             loyalty = float(mf.get("loyalty_ingroup_score", 75.0))
             sanctity = float(mf.get("sanctity_purity_score", 70.0))
             fairness = float(mf.get("fairness_reciprocity_score", 80.0))
+            trad_loyalty = float(belief.get("traditional_loyalty", 60.0))
+            sec_redline = float(belief.get("national_security_redline", 70.0))
             social_class = habitus.get("social_class_stratum", "Genel Toplum") if isinstance(habitus, dict) else "Genel Toplum"
 
-            # Moral Resistance calculation
-            moral_resistance = 0.0
-            if triggers_loyalty_violation:
-                moral_resistance += (loyalty * 0.60)
-            if triggers_sanctity_violation:
-                moral_resistance += (sanctity * 0.70)
-            if triggers_fairness_violation:
-                moral_resistance += (fairness * 0.50)
+            if touches_leadership:
+                # Authentic Turkish political spectrum:
+                # Loyal traditional base (+trad_loyalty) vs Redline disappointment penalty (-sec_redline) vs Economic friction
+                net_political_score = (trad_loyalty * 0.70) - (sec_redline * 0.50) + self.rng.gauss(0, 15.0)
+                accepted = net_political_score > 0.0
+                total_moral_penalty += max(0.0, sec_redline * 0.50)
+            else:
+                # Moral Resistance calculation for pure policy/taboo questions
+                moral_resistance = 0.0
+                if triggers_loyalty_violation:
+                    moral_resistance += (loyalty * 0.60)
+                if triggers_sanctity_violation:
+                    moral_resistance += (sanctity * 0.70)
+                if triggers_fairness_violation:
+                    moral_resistance += (fairness * 0.50)
 
-            total_moral_penalty += moral_resistance
-
-            # Baseline consensus threshold
-            consensus_utility = 50.0 - moral_resistance + self.rng.gauss(0, 5.0)
-            accepted = consensus_utility > 0.0
+                total_moral_penalty += moral_resistance
+                consensus_utility = 50.0 - moral_resistance + self.rng.gauss(0, 5.0)
+                accepted = consensus_utility > 0.0
 
             if accepted:
                 accepted_count += 1
