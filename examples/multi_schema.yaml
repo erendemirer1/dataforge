@@ -1,0 +1,12 @@
+# DataForge Multi-Schema Example
+# Referential Integrity: orders.user_id ve transactions.user_id
+# gerçek users tablosundan alınır.
+#
+# Kullanım:
+#   dataforge generate --schema examples/multi_schema.yaml --format json
+
+relations:
+  - users: 1000
+  - products: 500
+  - orders: 5000
+  - transactions: 10000

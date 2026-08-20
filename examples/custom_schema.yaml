@@ -1,0 +1,18 @@
+# DataForge Custom Schema Example
+# Bu format 'dataforge schema create' komutu ile de oluşturulabilir.
+
+name: custom_users
+description: "Özel kullanıcı şeması örneği"
+fields:
+  - name: id
+    type: int
+  - name: username
+    type: str
+  - name: email
+    type: email
+  - name: score
+    type: float
+  - name: active
+    type: bool
+  - name: created_at
+    type: datetime
