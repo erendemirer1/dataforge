@@ -909,6 +909,75 @@ def prompt_cmd(
 
 
 # ---------------------------------------------------------------------------
+# dataforge focus-group
+# ---------------------------------------------------------------------------
+
+@app.command('focus-group')
+def focus_group_cmd(
+    target: str = typer.Argument(..., help='Hedef kitle / persona tanımı (örn: "Kadıköy 3. nesil kahve esnafı")'),
+    pitch: str = typer.Option(..., '--pitch', '-p', help='Test edilecek ürün teklifi, reklam afişi veya soru'),
+    count: int = typer.Option(4, '--count', '-c', help='Odak grubundaki sentetik müşteri sayısı'),
+    output: Optional[Path] = typer.Option(None, '--output', '-o', help='JSON analiz raporu çıktı dosyası'),
+) -> None:
+    """🔬 Nöro-Bilişsel & Sosyolojik Sentetik Müşteri Odak Grubu Simülasyonu."""
+    from .cognitive.focus_simulator import FocusGroupSimulator
+    from rich.table import Table
+    import json
+
+    simulator = FocusGroupSimulator()
+
+    console.print(
+        Panel(
+            f"🎯 [bold cyan]Hedef Kitle:[/bold cyan] {target}\n"
+            f"💡 [bold yellow]Sunulan Teklif/Soru:[/bold yellow] {pitch}\n"
+            f"👥 [bold green]Katılımcı Sayısı:[/bold green] {count} Kişi (Nöro-Sosyolojik Dijital İkiz)",
+            title="🔬 DataForge Neuro-Cognitive Focus Group Studio",
+            border_style="bright_magenta"
+        )
+    )
+
+    with console.status("[bold green]🧠 Bilişsel habitus, nakit akışı ve bilinçaltı iç sesler simüle ediliyor...[/bold green]"):
+        result = simulator.run_simulation(target_audience=target, pitch_or_question=pitch, count=count)
+
+    # 1. Odak Grubu Tartışması ve İç Sesler
+    console.print("\n[bold cyan]🗣️ Odak Grubu Masası (İç Ses vs. Dışa Söylenen Söz):[/bold cyan]")
+    
+    for item in result.get("odak_grubu_tartismasi", []):
+        karar = item.get("karar", "Düşünmek İstiyor")
+        karar_color = "green" if "Satın" in karar else ("red" if "Red" in karar else "yellow")
+
+        panel_content = (
+            f"👤 [bold]{item.get('ad_soyad')}[/bold] ({item.get('meslek')}) — [{karar_color} bold]Karar: {karar}[/{karar_color} bold]\n\n"
+            f"🧠 [italic magenta]Bilinçaltı / İç Ses (Gizli Dert & Korku):[/italic magenta]\n"
+            f"   \"{item.get('ic_ses_bilincalti')}\"\n\n"
+            f"🗣️ [bold white]Masada Söylediği Söz:[/bold white]\n"
+            f"   \"{item.get('disa_soylenen_soz')}\""
+        )
+        console.print(Panel(panel_content, border_style=karar_color))
+
+    # 2. Yönetici Pazar Analiz Raporu
+    report = result.get("yonetici_pazar_analiz_raporu", {})
+    kabul_orani = report.get("genel_kabul_orani_yuzde", 0)
+    kabul_color = "green" if kabul_orani >= 60 else ("yellow" if kabul_orani >= 35 else "red")
+
+    table = Table(title="📊 Yönetici Pazar Araştırması Raporu", border_style="bright_blue")
+    table.add_column("Metrik / Alan", style="bold cyan")
+    table.add_column("Pazar İçgörüsü", style="white")
+
+    table.add_row("Genel Satın Alma / Kabul Oranı", f"[{kabul_color} bold]%{kabul_orani}[/{kabul_color} bold]")
+    table.add_row("En Büyük 3 İtiraz Bariyeri", "\n".join([f"• {b}" for b in report.get("en_buyuk_3_itiraz_bariyeri", [])]))
+    table.add_row("Fiyat Duyarlılık Analizi", report.get("fiyat_duyarlilik_analizi", "Belirtilmedi"))
+    table.add_row("Stratejik Ürün Tavsiyesi", f"[bold yellow]{report.get('stratejik_urun_tavsiyesi', 'Belirtilmedi')}[/bold yellow]")
+
+    console.print(table)
+
+    if output:
+        with open(output, 'w', encoding='utf-8') as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        _success(f"Tam odak grubu simülasyon raporu kaydedildi → {output}")
+
+
+# ---------------------------------------------------------------------------
 # dataforge version
 # ---------------------------------------------------------------------------
 
