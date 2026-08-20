@@ -2,56 +2,101 @@
 DataForge Deep Multi-Agent Focus Group & Psychological Simulation Studio.
 Simulates realistic group dynamics, Dual-Process System 1/2 reactions,
 Inner Subconscious Thoughts vs. Spoken Dialogue, and Executive Market Intelligence.
+Integrates McFadden Econometric Utility Engine for N=1,000 Monte Carlo statistical census.
 """
 from __future__ import annotations
 
 import os
+import re
 import json
 import random
 import urllib.request
 from typing import Any, Optional
 from .cognitive_persona import CognitivePersonaBuilder, DeepCognitivePersona
+from .utility_engine import EconometricUtilityEngine, QuantitativeMarketResult
+from ..social.social_radar import SocialRadarEngine
 from ..ml.prompt_synthesizer import DynamicPromptEngine
 
 
 class FocusGroupSimulator:
     """
     Executes deep psychological focus groups with grounded, neuro-sociologically complete personas.
+    Combines qualitative focus groups with N=1,000 quantitative Monte Carlo econometrics.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
         self.rng = rng or random.Random()
         self.persona_builder = CognitivePersonaBuilder(self.rng)
         self.prompt_engine = DynamicPromptEngine(self.rng)
+        self.utility_engine = EconometricUtilityEngine(self.rng)
+        self.social_radar = SocialRadarEngine(self.rng)
 
     def _get_api_key(self) -> str:
         """Resolve Gemini API key."""
         return self.prompt_engine._get_gemini_key() or ""
 
+    def _extract_price_from_pitch(self, pitch: str) -> float:
+        """Extract monetary price from text in TL."""
+        match = re.search(r'(\d+(?:[\.,]\d+)?)\s*(?:tl|lira|₺|tl\'ye|liralık)', pitch.lower())
+        if match:
+            val_str = match.group(1).replace(',', '.')
+            try:
+                return float(val_str)
+            except ValueError:
+                pass
+        return 250.0 # sensible default benchmark if not specified
+
     def run_simulation(
         self,
         target_audience: str,
         pitch_or_question: str,
-        count: int = 5
+        count: int = 4,
+        monte_carlo_n: int = 1000
     ) -> dict[str, Any]:
         """
-        Synthesizes deep personas and simulates an authentic, multi-agent focus group discussion.
+        Synthesizes deep personas, simulates focus group discussion,
+        and computes an N=1,000 quantitative Monte Carlo census.
         """
         # 1. Synthesize demographic personas
         raw_personas = self.prompt_engine.synthesize(target_audience, count=count)
 
-        # 2. Enrich into Deep Cognitive & Habitus Personas
+        # 2. Enrich into Deep Cognitive, Social Radar & Habitus Personas
         cognitive_personas: list[DeepCognitivePersona] = []
         for i, raw_p in enumerate(raw_personas):
+            raw_p = self.social_radar.enrich_persona_with_social_pulse(raw_p)
             cog_p = self.persona_builder.build_from_raw(raw_p, record_id=i + 1)
             cognitive_personas.append(cog_p)
 
-        # 3. Simulate Multi-Agent Focus Group with LLM
+        # 3. Run Quantitative Econometric Monte Carlo Census (N=1,000)
+        extracted_price = self._extract_price_from_pitch(pitch_or_question)
+        dict_personas = [p.to_dict() for p in cognitive_personas]
+        monte_carlo_res: QuantitativeMarketResult = self.utility_engine.run_monte_carlo_census(
+            personas=dict_personas,
+            pitch_price_tl=extracted_price,
+            simulations_count=monte_carlo_n
+        )
+
+        # 4. Simulate Multi-Agent Focus Group with LLM
         api_key = self._get_api_key()
         if not api_key:
-            return self._fallback_simulation(cognitive_personas, pitch_or_question)
+            sim_result = self._fallback_simulation(cognitive_personas, pitch_or_question)
+        else:
+            sim_result = self._simulate_with_gemini(cognitive_personas, target_audience, pitch_or_question, api_key)
 
-        return self._simulate_with_gemini(cognitive_personas, target_audience, pitch_or_question, api_key)
+        # 5. Merge Quantitative Econometrics with Qualitative Findings
+        sim_result["kantitatif_monte_carlo_raporu"] = {
+            "orneklem_buyuklugu": monte_carlo_res.sample_size,
+            "test_edilen_fiyat_tl": extracted_price,
+            "matematiksel_kabul_orani_yuzde": monte_carlo_res.acceptance_rate_pct,
+            "guven_araligi_yuzde_95": f"%{monte_carlo_res.confidence_interval_95[0]} - %{monte_carlo_res.confidence_interval_95[1]}",
+            "fiyat_esneklik_skoru": monte_carlo_res.elasticity_score,
+            "fiyat_esneklik_egrisi": monte_carlo_res.price_sensitivity_curve,
+            "sinifsal_kabul_dagilimi": monte_carlo_res.demographic_breakdown,
+            "ortalama_serbest_butce_tl": monte_carlo_res.mean_discretionary_budget_tl,
+            "mutlak_butce_yetersizlik_orani_yuzde": monte_carlo_res.budget_violation_rate_pct
+        }
+        sim_result["katilimci_profilleri"] = dict_personas
+        return sim_result
 
     def _simulate_with_gemini(
         self,
@@ -63,7 +108,6 @@ class FocusGroupSimulator:
         """Simulates authentic inner monologue and spoken dialogue with Gemini 3.5 Flash Lite."""
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={api_key}"
 
-        # Format personas context for LLM
         personas_json = json.dumps([p.to_dict() for p in personas], ensure_ascii=False, indent=2)
 
         sys_prompt = (
@@ -76,9 +120,10 @@ class FocusGroupSimulator:
             "1. İÇ SES vs DIŞ SÖZ (ÇİFT SÜREÇ TEORİSİ): İnsanlar asla düşündüklerini direkt söylemez! "
             "Her karakter için hem bilinçaltındaki gerçek niyetini/korkusunu ('ic_ses_bilincalti'), "
             "hem de masadaki insanlara kendi jargonuyla söylediği sözü ('disa_soylenen_soz') yaz.\n"
-            "2. KATI BÜTÇE VE SINIF KISITI: Aylık harcanabilir parası 2.000 TL olan bir adam 1.000 TL'lik teklife asla 'alırım' diyemez! Bütçesine göre acımasızca direnç göstermelidir.\n"
-            "3. GERÇEK TÜRKÇE VE JARGON: Sanayi ustası sanayi diliyle, esnaf esnaf gibi, beyaz yaka plaza diliyle, köylü kendi şivesiyle konuşmalıdır.\n"
-            "4. BİLİŞSEL DİRENÇ: İnsanların en az %60-70'i ilk teklifte şüphelenir, reddeder veya pazarlık ister.\n\n"
+            "2. KATI BÜTÇE VE SINIF KISITI: Karakterlerin harcanabilir serbest bütçesini ve borçluluğunu hesaba kat. "
+            "Karakterler fiyat ve risk durumuna göre acımasızca direnç göstermelidir.\n"
+            "3. GERÇEK TÜRKÇE VE JARGON: Sanayi ustası sanayi diliyle, esnaf esnaf gibi, beyaz yaka plaza diliyle, genç Z kuşağı argosuyla konuşmalıdır.\n"
+            "4. BİLİŞSEL DİRENÇ: İnsanların en az %60'ı ilk teklifte şüphelenir, pazarlık ister veya erteler.\n\n"
             "ÇIKTI FORMATI: Sadece ve sadece aşağıdaki JSON formatında yanıt ver:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
@@ -94,7 +139,7 @@ class FocusGroupSimulator:
             '  "yonetici_pazar_analiz_raporu": {\n'
             '    "genel_kabul_orani_yuzde": 35,\n'
             '    "en_buyuk_3_itiraz_bariyeri": ["İtiraz 1", "İtiraz 2", "İtiraz 3"],\n'
-            '    "fiyat_duyarlilik_analizi": "Hedef kitlenin fiyat algısı ve önerilen ideal fiyat...",\n'
+            '    "fiyat_duyarlilik_analizi": "Hedef kitlenin fiyat algısı...",\n'
             '    "stratejik_urun_tavsiyesi": "Ürünün kabul görmesi için yapılması gereken kritik değişiklik..."\n'
             "  }\n"
             "}"
@@ -118,8 +163,6 @@ class FocusGroupSimulator:
             clean_text = text.replace("```json", "").replace("```", "").strip()
             sim_result = json.loads(clean_text)
 
-        # Attach deep cognitive profiles to the output
-        sim_result["katilimci_profilleri"] = [p.to_dict() for p in personas]
         return sim_result
 
     def _fallback_simulation(self, personas: list[DeepCognitivePersona], pitch: str) -> dict[str, Any]:
@@ -141,6 +184,5 @@ class FocusGroupSimulator:
                 "en_buyuk_3_itiraz_bariyeri": ["Yüksek Fiyat", "Güven Eksikliği", "Alışkanlık Direnci"],
                 "fiyat_duyarlilik_analizi": "Bütçe kısıtları nedeniyle indirim talep ediliyor.",
                 "stratejik_urun_tavsiyesi": "Fiyatı harcanabilir bütçeye göre optimize edin."
-            },
-            "katilimci_profilleri": [p.to_dict() for p in personas]
+            }
         }
