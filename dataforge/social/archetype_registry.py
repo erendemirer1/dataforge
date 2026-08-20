@@ -84,9 +84,11 @@ TURKISH_POPULATION_ARCHETYPES: list[TurkishArchetype] = [
             "Agalar 5 lira para değil la, bi su parası.",
             "Ghostlamak istemem ama öğrenci indirimi yoksa hayatta sarmadı der silerim.",
             "Bizi de mi söğüşleyecekler yine, net dolandırıcı bunlar.",
-            "Deneme sürümü yoksa kartımı hayatta girmem."
+            "Deneme sürümü yoksa kartımı hayatta girmem.",
+            "Harbi scam duruyor",
+            "Kartta limit yok ki çeksinler",
+            "Bi denerim sarmazsa iptal"
         ],
-        speech_patterns_alt=["Harbi scam duruyor", "Kartta limit yok ki çeksinler", "Bi denerim sarmazsa iptal"],
         psychological_defense="Şüphecilik ve Alaycı Mizah (Cynical Humor / Meme kültürü)",
         price_sensitivity="Aşırı Yüksek (Harçlık / Sıfır Nakit Seviyesi)",
         tech_adoption_tier="Dijital Yerli (Digital Native)"
