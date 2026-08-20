@@ -157,13 +157,36 @@ class FocusGroupSimulator:
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            text = data["candidates"][0]["content"]["parts"][0]["text"]
-            clean_text = text.replace("```json", "").replace("```", "").strip()
-            sim_result = json.loads(clean_text)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                text = data["candidates"][0]["content"]["parts"][0]["text"]
+                sim_result = self._robust_json_parse(text)
+                return sim_result
+        except Exception:
+            return self._fallback_simulation(personas, pitch)
 
-        return sim_result
+    def _robust_json_parse(self, text: str) -> dict[str, Any]:
+        """Robustly extracts and parses JSON even with trailing commas or markdown framing."""
+        clean_text = text.replace("```json", "").replace("```", "").strip()
+        try:
+            return json.loads(clean_text)
+        except Exception:
+            pass
+
+        start_idx = clean_text.find("{")
+        end_idx = clean_text.rfind("}")
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            sub = clean_text[start_idx:end_idx + 1]
+            try:
+                return json.loads(sub)
+            except Exception:
+                sub_fixed = re.sub(r',\s*([}\]])', r'\1', sub)
+                try:
+                    return json.loads(sub_fixed)
+                except Exception:
+                    pass
+        raise ValueError("Could not parse JSON from model response")
 
     def _fallback_simulation(self, personas: list[DeepCognitivePersona], pitch: str) -> dict[str, Any]:
         """Offline fallback."""

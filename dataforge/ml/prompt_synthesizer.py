@@ -114,8 +114,7 @@ class DynamicPromptEngine:
         with urllib.request.urlopen(req, timeout=20) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             text = data["candidates"][0]["content"]["parts"][0]["text"]
-            clean_text = text.replace("```json", "").replace("```", "").strip()
-            raw_personas = json.loads(clean_text)
+            raw_personas = self._robust_json_parse(text)
 
         # Ground with Valid TCKN & Real UAVT Neighborhood/Postal Code
         enriched_results = []
@@ -146,6 +145,32 @@ class DynamicPromptEngine:
             enriched_results.append(row)
 
         return enriched_results
+
+    def _robust_json_parse(self, text: str) -> list[dict[str, Any]]:
+        """Robustly extracts and parses JSON even with markdown framing or trailing commas."""
+        import re
+        clean_text = text.replace("```json", "").replace("```", "").strip()
+        try:
+            res = json.loads(clean_text)
+            return res if isinstance(res, list) else [res]
+        except Exception:
+            pass
+
+        start_idx = clean_text.find("[")
+        end_idx = clean_text.rfind("]")
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            sub = clean_text[start_idx:end_idx + 1]
+            try:
+                res = json.loads(sub)
+                return res if isinstance(res, list) else [res]
+            except Exception:
+                sub_fixed = re.sub(r',\s*([}\]])', r'\1', sub)
+                try:
+                    res = json.loads(sub_fixed)
+                    return res if isinstance(res, list) else [res]
+                except Exception:
+                    pass
+        raise ValueError("Could not parse JSON array from model response")
 
     def _synthesize_offline(self, prompt: str, count: int) -> list[dict[str, Any]]:
         """Offline grounded synthesis using ProfileBuilder."""
