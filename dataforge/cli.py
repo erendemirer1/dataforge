@@ -971,36 +971,50 @@ def focus_group_cmd(
 
     console.print(table)
 
-    # 3. N=1,000 Kantitatif Monte Carlo & Ekonometri Tablosu
+    # 3. N=1,000 Kantitatif Monte Carlo & İstatistik Tablosu
     q_report = result.get("kantitatif_monte_carlo_raporu", {})
     if q_report:
-        q_table = Table(title="📐 N=1,000 Monte Carlo İstatistiksel & Ekonometrik Doğrulama", border_style="bright_magenta")
-        q_table.add_column("Ekonometrik Parametre", style="bold cyan")
-        q_table.add_column("İstatistiksel Değer", style="white")
+        domain = q_report.get("domain_turu", "commercial")
+        
+        if domain == "commercial" and q_report.get("test_edilen_fiyat_tl"):
+            q_table = Table(title="📐 N=1,000 Monte Carlo Finansal & Ekonometrik Doğrulama", border_style="bright_magenta")
+            q_table.add_column("Ekonometrik Parametre", style="bold cyan")
+            q_table.add_column("İstatistiksel Değer", style="white")
 
-        q_table.add_row("Simülasyon Örneklem Büyüklüğü", f"{q_report.get('orneklem_buyuklugu', 1000):,} Sanal Tüketici")
-        q_table.add_row("Test Edilen Nominal Fiyat", f"{q_report.get('test_edilen_fiyat_tl', 0.0):,.2f} TL")
-        q_table.add_row("Matematiksel Kabul Oranı", f"[bold green]%{q_report.get('matematiksel_kabul_orani_yuzde', 0.0)}[/bold green]")
-        q_table.add_row("%95 Güven Aralığı (Confidence Interval)", f"[bold yellow]{q_report.get('guven_araligi_yuzde_95')}[/bold yellow]")
-        q_table.add_row("Fiyat Talep Esnekliği (Price Elasticity Ed)", f"{q_report.get('fiyat_esneklik_skoru')} (1.0 üstü: Yüksek Esnek)")
-        q_table.add_row("Ortalama Aylık Serbest Bütçe", f"{q_report.get('ortalama_serbest_butce_tl', 0.0):,.2f} TL")
-        q_table.add_row("Mutlak Bütçe Yetersizliği Oranı", f"%{q_report.get('mutlak_butce_yetersizlik_orani_yuzde', 0.0)} (Cepte Para Yok)")
+            q_table.add_row("Simülasyon Örneklem Büyüklüğü", f"{q_report.get('orneklem_buyuklugu', 1000):,} Sanal Tüketici")
+            q_table.add_row("Test Edilen Nominal Fiyat", f"{q_report.get('test_edilen_fiyat_tl', 0.0):,.2f} TL")
+            q_table.add_row("Matematiksel Satın Alma Olasılığı", f"[bold green]%{q_report.get('matematiksel_kabul_orani_yuzde', 0.0)}[/bold green]")
+            q_table.add_row("%95 Güven Aralığı (Confidence Interval)", f"[bold yellow]{q_report.get('guven_araligi_yuzde_95')}[/bold yellow]")
+            q_table.add_row("Fiyat Talep Esnekliği (Price Elasticity Ed)", f"{q_report.get('fiyat_esneklik_skoru')} (1.0 üstü: Yüksek Esnek)")
+            q_table.add_row("Ortalama Aylık Serbest Bütçe", f"{q_report.get('ortalama_serbest_butce_tl', 0.0):,.2f} TL")
+            q_table.add_row("Mutlak Bütçe Yetersizliği Oranı", f"%{q_report.get('mutlak_butce_yetersizlik_orani_yuzde', 0.0)} (Cepte Para Yok)")
 
-        console.print("\n")
-        console.print(q_table)
+            console.print("\n")
+            console.print(q_table)
 
-        # Print Price Elasticity Curve table
-        curve = q_report.get("fiyat_esneklik_egrisi", [])
-        if curve:
-            c_table = Table(title="📈 Fiyat Esneklik & Talep Eğrisi (Monte Carlo Simülasyonu)", border_style="bright_green")
-            c_table.add_column("Fiyat Seviyesi (TL)", style="bold cyan")
-            c_table.add_column("Çarpan", style="dim")
-            c_table.add_column("Tahmini Pazar Kabulü", style="bold yellow")
+            curve = q_report.get("fiyat_esneklik_egrisi", [])
+            if curve:
+                c_table = Table(title="📈 Fiyat Esneklik & Talep Eğrisi (Monte Carlo Simülasyonu)", border_style="bright_green")
+                c_table.add_column("Fiyat Seviyesi (TL)", style="bold cyan")
+                c_table.add_column("Çarpan", style="dim")
+                c_table.add_column("Tahmini Pazar Kabulü", style="bold yellow")
 
-            for row in curve:
-                c_table.add_row(f"{row.get('test_fiyat_tl', 0.0):,.2f} TL", str(row.get('carpan')), f"%{row.get('tahmini_kabul_orani_pct')}")
+                for row in curve:
+                    c_table.add_row(f"{row.get('test_fiyat_tl', 0.0):,.2f} TL", str(row.get('carpan')), f"%{row.get('tahmini_kabul_orani_pct')}")
 
-            console.print(c_table)
+                console.print(c_table)
+        else:
+            q_table = Table(title="🏛️ N=1,000 Monte Carlo Toplumsal Ahlak & Değerler Matrisi Doğrulaması", border_style="bright_magenta")
+            q_table.add_column("Sosyolojik & Ahlaki Parametre", style="bold cyan")
+            q_table.add_column("Toplumsal Değer", style="white")
+
+            q_table.add_row("Simülasyon Örneklem Büyüklüğü", f"{q_report.get('orneklem_buyuklugu', 1000):,} Sanal Yurttaş")
+            q_table.add_row("Toplumsal / Siyasi Kabul Oranı", f"[bold red]%{q_report.get('matematiksel_kabul_orani_yuzde', 0.0)}[/bold red]" if q_report.get('matematiksel_kabul_orani_yuzde', 0) < 30 else f"[bold green]%{q_report.get('matematiksel_kabul_orani_yuzde', 0.0)}[/bold green]")
+            q_table.add_row("%95 Güven Aralığı (Confidence Interval)", f"[bold yellow]{q_report.get('guven_araligi_yuzde_95')}[/bold yellow]")
+            q_table.add_row("Kutsallık / Sadakat Direnç İndeksi", f"[bold red]{q_report.get('ahlaki_direnc_indeksi', 0.0)} / 100[/bold red] (Yüksek Değer Çatışması)")
+
+            console.print("\n")
+            console.print(q_table)
 
     if output:
         with open(output, 'w', encoding='utf-8') as f:

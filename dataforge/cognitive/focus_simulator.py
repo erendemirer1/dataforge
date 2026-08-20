@@ -35,16 +35,19 @@ class FocusGroupSimulator:
         """Resolve Gemini API key."""
         return self.prompt_engine._get_gemini_key() or ""
 
-    def _extract_price_from_pitch(self, pitch: str) -> float:
-        """Extract monetary price from text in TL."""
-        match = re.search(r'(\d+(?:[\.,]\d+)?)\s*(?:tl|lira|₺|tl\'ye|liralık)', pitch.lower())
+    def _extract_price_from_pitch(self, pitch: str) -> Optional[float]:
+        """Extract monetary price from text in TL. Returns None if topic is non-commercial."""
+        match = re.search(r'(\d+(?:[\.,]\d+)?)\s*(?:tl|lira|₺|tl\'ye|liralık|bin tl)', pitch.lower())
         if match:
             val_str = match.group(1).replace(',', '.')
             try:
-                return float(val_str)
+                val = float(val_str)
+                if 'bin' in pitch.lower():
+                    val *= 1000
+                return val
             except ValueError:
                 pass
-        return 250.0 # sensible default benchmark if not specified
+        return None
 
     def run_simulation(
         self,
@@ -67,11 +70,12 @@ class FocusGroupSimulator:
             cog_p = self.persona_builder.build_from_raw(raw_p, record_id=i + 1)
             cognitive_personas.append(cog_p)
 
-        # 3. Run Quantitative Econometric Monte Carlo Census (N=1,000)
+        # 3. Run Quantitative Econometric / Moral Monte Carlo Census (N=1,000)
         extracted_price = self._extract_price_from_pitch(pitch_or_question)
         dict_personas = [p.to_dict() for p in cognitive_personas]
         monte_carlo_res: QuantitativeMarketResult = self.utility_engine.run_monte_carlo_census(
             personas=dict_personas,
+            pitch_text=pitch_or_question,
             pitch_price_tl=extracted_price,
             simulations_count=monte_carlo_n
         )
@@ -85,6 +89,7 @@ class FocusGroupSimulator:
 
         # 5. Merge Quantitative Econometrics with Qualitative Findings
         sim_result["kantitatif_monte_carlo_raporu"] = {
+            "domain_turu": monte_carlo_res.domain_type,
             "orneklem_buyuklugu": monte_carlo_res.sample_size,
             "test_edilen_fiyat_tl": extracted_price,
             "matematiksel_kabul_orani_yuzde": monte_carlo_res.acceptance_rate_pct,
@@ -93,7 +98,8 @@ class FocusGroupSimulator:
             "fiyat_esneklik_egrisi": monte_carlo_res.price_sensitivity_curve,
             "sinifsal_kabul_dagilimi": monte_carlo_res.demographic_breakdown,
             "ortalama_serbest_butce_tl": monte_carlo_res.mean_discretionary_budget_tl,
-            "mutlak_butce_yetersizlik_orani_yuzde": monte_carlo_res.budget_violation_rate_pct
+            "mutlak_butce_yetersizlik_orani_yuzde": monte_carlo_res.budget_violation_rate_pct,
+            "ahlaki_direnc_indeksi": monte_carlo_res.moral_violation_index
         }
         sim_result["katilimci_profilleri"] = dict_personas
         return sim_result
@@ -111,41 +117,45 @@ class FocusGroupSimulator:
         personas_json = json.dumps([p.to_dict() for p in personas], ensure_ascii=False, indent=2)
 
         sys_prompt = (
-            "Sen dünyanın en yetkin Nöro-Pazarlama, Bilişsel Psikoloji ve Türkiye Saha Araştırmaları Uzmanısın. "
-            "Sana Türkiye'nin gerçek sosyo-ekonomik, sınıfsal ve nörobiyolojik verileriyle oluşturulmuş "
-            f"{len(personas)} adet derin insan profili veriliyor.\n\n"
+            "Sen Türkiye toplumunu, insanının kalbini, öfkesini, acısını, çaresizliğini, mizahını ve gururunu "
+            "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın. "
+            f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insan profili veriliyor.\n\n"
             "GÖREVİN:\n"
-            "Bu insanları moderatörün sunduğu teklif/soru karşısında bir Odak Grubu (Focus Group) masasında konuşturacaksın.\n\n"
-            "KESİN PSİKOLOJİK VE DAVRANIŞSAL KURALLAR:\n"
-            "1. İÇ SES vs DIŞ SÖZ (ÇİFT SÜREÇ TEORİSİ): İnsanlar asla düşündüklerini direkt söylemez! "
-            "Her karakter için hem bilinçaltındaki gerçek niyetini/korkusunu ('ic_ses_bilincalti'), "
-            "hem de masadaki insanlara kendi jargonuyla söylediği sözü ('disa_soylenen_soz') yaz.\n"
-            "2. KATI BÜTÇE VE SINIF KISITI: Karakterlerin harcanabilir serbest bütçesini ve borçluluğunu hesaba kat. "
-            "Karakterler fiyat ve risk durumuna göre acımasızca direnç göstermelidir.\n"
-            "3. GERÇEK TÜRKÇE VE JARGON: Sanayi ustası sanayi diliyle, esnaf esnaf gibi, beyaz yaka plaza diliyle, genç Z kuşağı argosuyla konuşmalıdır.\n"
-            "4. BİLİŞSEL DİRENÇ: İnsanların en az %60'ı ilk teklifte şüphelenir, pazarlık ister veya erteler.\n\n"
-            "ÇIKTI FORMATI: Sadece ve sadece aşağıdaki JSON formatında yanıt ver:\n"
+            "Bu insanların moderatörün ortaya attığı teklif, soru veya siyasi/toplumsal gelişme karşısındaki "
+            "gerçek tepkilerini bir masada simüle edeceksin.\n\n"
+            "KESİN KURALLAR (SAF İNSANİ GERÇEKLİK):\n"
+            "1. YASAKLI KELİMELER: İç seste veya konuşmada ASLA 'amigdala', 'kortizol', 'loss aversion', 'habitus' gibi "
+            "tıbbi/psikolojik terimler GEÇMEYECEK! İnsanlar organ isimleriyle düşünmez. İnsanlar 'kan beynime sıçradı', "
+            "'yüreğim parçalandı', 'midem bulandı', 'elim ayağım titriyor', 'babamın kemikleri sızlar', 'içim yandı' der.\n"
+            "2. BAĞLAMA UYGUNLUK: Şehit yakınına, gaziye, esnafa veya öğrenciye saçma sapan plaza dili (ROI, alignment, sprint) "
+            "KULLANDIRMA! Plaza dilini sadece plazada çalışan beyaz yakalı şirket içi toplantıda kullanır. "
+            "Bir gazi veya şehit çocuğu şerefiyle, acısıyla ve haysiyetiyle konuşur.\n"
+            "3. İÇ SES vs DIŞ SÖZ: İç ses karakterin yastığa başını koyduğundaki saf dertleri, korkuları ve vicdanıdır. "
+            "Dış söz ise masadakilere kendi kimliği ve üslubuyla söylediği repliktir.\n"
+            "4. TOPLUMSAL / SİYASİ KONULAR: Eğer konu ahlak, şehitlik, adalet veya vatan gibi hassas bir konuysa, "
+            "karakterlerin değer dünyası en gerçekçi ve tavizsiz haliyle masaya yansımalıdır.\n\n"
+            "ÇIKTI FORMATI: Sadece ve sadece geçerli JSON döndür:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
             "    {\n"
             '      "kisi_id": 1,\n'
             '      "ad_soyad": "İsim Soyisim",\n'
             '      "meslek": "Meslek",\n'
-            '      "karar": "Satın Alır" | "Kesinlikle Reddeder" | "Pazarlık / İndirim İster" | "Düşünmek İçin Erteletir",\n'
-            '      "ic_ses_bilincalti": "Gerçek korkusu, parası, egosu ve içinden geçenler...",\n'
-            '      "disa_soylenen_soz": "Masada herkesin duyacağı şekilde söylediği replik..."\n'
+            '      "karar": "Satın Alır" | "Kesinlikle Reddeder" | "Pazarlık / İndirim İster" | "Düşünmek İçin Erteletir" | "Kabul Eder / Destekler",\n'
+            '      "ic_ses_bilincalti": "Karakterin iç dünyasındaki gerçek hissi ve sızısı...",\n'
+            '      "disa_soylenen_soz": "Masada herkesin duyacağı doğal sözü..."\n'
             "    }\n"
             "  ],\n"
             '  "yonetici_pazar_analiz_raporu": {\n'
-            '    "genel_kabul_orani_yuzde": 35,\n'
+            '    "genel_kabul_orani_yuzde": 0,\n'
             '    "en_buyuk_3_itiraz_bariyeri": ["İtiraz 1", "İtiraz 2", "İtiraz 3"],\n'
-            '    "fiyat_duyarlilik_analizi": "Hedef kitlenin fiyat algısı...",\n'
-            '    "stratejik_urun_tavsiyesi": "Ürünün kabul görmesi için yapılması gereken kritik değişiklik..."\n'
+            '    "fiyat_duyarlilik_analizi": "Konunun maddi/manevi algısı...",\n'
+            '    "stratejik_urun_tavsiyesi": "Toplumsal veya stratejik içgörü..."\n'
             "  }\n"
             "}"
         )
 
-        user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nSENTETİK MÜŞTERİLERİN DERİN ZİHİNSEL VERİLERİ:\n{personas_json}"
+        user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILARIN BİLGİLERİ:\n{personas_json}"
 
         payload = {
             "contents": [
@@ -196,16 +206,16 @@ class FocusGroupSimulator:
                 "kisi_id": p.id,
                 "ad_soyad": p.ad_soyad,
                 "meslek": p.meslek,
-                "karar": "Pazarlık / İndirim İster",
-                "ic_ses_bilincalti": f"Aylık serbest bütçem sadece {p.aylik_serbest_harcanabilir_tl} TL. Risk alamam.",
-                "disa_soylenen_soz": "Biraz pahalı geldi, biraz indirim yaparsanız düşünebilirim."
+                "karar": "Kesinlikle Reddeder",
+                "ic_ses_bilincalti": "Bu teklif benim değerlerime ve durumuma tamamen aykırı.",
+                "disa_soylenen_soz": "Biz bunu kesinlikle kabul edemeyiz."
             })
         return {
             "odak_grubu_tartismasi": discussions,
             "yonetici_pazar_analiz_raporu": {
-                "genel_kabul_orani_yuzde": 40,
-                "en_buyuk_3_itiraz_bariyeri": ["Yüksek Fiyat", "Güven Eksikliği", "Alışkanlık Direnci"],
-                "fiyat_duyarlilik_analizi": "Bütçe kısıtları nedeniyle indirim talep ediliyor.",
-                "stratejik_urun_tavsiyesi": "Fiyatı harcanabilir bütçeye göre optimize edin."
+                "genel_kabul_orani_yuzde": 0,
+                "en_buyuk_3_itiraz_bariyeri": ["Ahlaki ve Vicdani Direnç", "Güven Eksikliği", "Değerler Çatışması"],
+                "fiyat_duyarlilik_analizi": "Maddi değil, tamamen ahlaki ve ilkesel bir direnç söz konusudur.",
+                "stratejik_urun_tavsiyesi": "Teklif hedef kitlenin kırmızı çizgilerini ihlal etmektedir."
             }
         }
