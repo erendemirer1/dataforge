@@ -942,34 +942,61 @@ def focus_group_cmd(
     # 1. Odak Grubu Tartışması ve İç Sesler
     console.print("\n[bold cyan]🗣️ Odak Grubu Masası (İç Ses vs. Dışa Söylenen Söz):[/bold cyan]")
     
-    for item in result.get("odak_grubu_tartismasi", []):
-        karar = item.get("karar", "Düşünmek İstiyor")
-        karar_color = "green" if "Satın" in karar else ("red" if "Red" in karar else "yellow")
+    raw_discussions = result.get("odak_grubu_tartismasi", [])
+    if isinstance(raw_discussions, dict):
+        raw_discussions = raw_discussions.get("diyaloglar", [raw_discussions])
 
-        panel_content = (
-            f"👤 [bold]{item.get('ad_soyad')}[/bold] ({item.get('meslek')}) — [{karar_color} bold]Karar: {karar}[/{karar_color} bold]\n\n"
-            f"🧠 [italic magenta]Bilinçaltı / İç Ses (Gizli Dert & Korku):[/italic magenta]\n"
-            f"   \"{item.get('ic_ses_bilincalti')}\"\n\n"
-            f"🗣️ [bold white]Masada Söylediği Söz:[/bold white]\n"
-            f"   \"{item.get('disa_soylenen_soz')}\""
-        )
+    for item in raw_discussions:
+        name = item.get("ad_soyad") or item.get("konusmaci") or "Katılımcı"
+        meslek = f" ({item.get('meslek')})" if item.get("meslek") else ""
+        karar = item.get("karar", "Görüş Bildirdi")
+        karar_color = "green" if "Satın" in karar or "Destek" in karar else ("red" if "Red" in karar else "yellow")
+
+        ic_ses = item.get("ic_ses_bilincalti")
+        soz = item.get("disa_soylenen_soz") or item.get("soylem") or str(item)
+
+        if ic_ses:
+            panel_content = (
+                f"👤 [bold]{name}[/bold]{meslek} — [{karar_color} bold]Duruş: {karar}[/{karar_color} bold]\n\n"
+                f"🧠 [italic magenta]İç Dünyası & Vicdani Sızısı:[/italic magenta]\n"
+                f"   \"{ic_ses}\"\n\n"
+                f"🗣️ [bold white]Masadaki Sözü:[/bold white]\n"
+                f"   \"{soz}\""
+            )
+        else:
+            panel_content = (
+                f"👤 [bold]{name}[/bold]{meslek}\n\n"
+                f"🗣️ [bold white]Masadaki Sözü:[/bold white]\n"
+                f"   \"{soz}\""
+            )
         console.print(Panel(panel_content, border_style=karar_color))
 
     # 2. Yönetici Pazar Analiz Raporu
     report = result.get("yonetici_pazar_analiz_raporu", {})
-    kabul_orani = report.get("genel_kabul_orani_yuzde", 0)
-    kabul_color = "green" if kabul_orani >= 60 else ("yellow" if kabul_orani >= 35 else "red")
+    if isinstance(report, dict):
+        kabul_orani = report.get("genel_kabul_orani_yuzde", 0)
+        kabul_color = "green" if kabul_orani >= 60 else ("yellow" if kabul_orani >= 35 else "red")
 
-    table = Table(title="📊 Yönetici Pazar Araştırması Raporu", border_style="bright_blue")
-    table.add_column("Metrik / Alan", style="bold cyan")
-    table.add_column("Pazar İçgörüsü", style="white")
+        table = Table(title="📊 Yönetici Pazar & Toplumsal Araştırma Raporu", border_style="bright_blue")
+        table.add_column("Metrik / Alan", style="bold cyan")
+        table.add_column("Toplumsal / Pazar İçgörüsü", style="white")
 
-    table.add_row("Genel Satın Alma / Kabul Oranı", f"[{kabul_color} bold]%{kabul_orani}[/{kabul_color} bold]")
-    table.add_row("En Büyük 3 İtiraz Bariyeri", "\n".join([f"• {b}" for b in report.get("en_buyuk_3_itiraz_bariyeri", [])]))
-    table.add_row("Fiyat Duyarlılık Analizi", report.get("fiyat_duyarlilik_analizi", "Belirtilmedi"))
-    table.add_row("Stratejik Ürün Tavsiyesi", f"[bold yellow]{report.get('stratejik_urun_tavsiyesi', 'Belirtilmedi')}[/bold yellow]")
+        table.add_row("Genel Kabul / Destek Oranı", f"[{kabul_color} bold]%{kabul_orani}[/{kabul_color} bold]")
+        
+        itirazlar = report.get("en_buyuk_3_itiraz_bariyeri") or report.get("temel_sosyolojik_golemler") or []
+        if isinstance(itirazlar, list):
+            itiraz_str = "\n".join([f"• {b if isinstance(b, str) else b.get('tema', '') + ': ' + b.get('bulgu', '')}" for b in itirazlar])
+        else:
+            itiraz_str = str(itirazlar)
+        table.add_row("Temel İtirazlar & Sosyolojik Hassasiyetler", itiraz_str)
 
-    console.print(table)
+        fiyat_analiz = report.get("fiyat_duyarlilik_analizi") or report.get("yonetici_ozeti", "Belirtilmedi")
+        table.add_row("Duyarlılık & Değer Analizi", fiyat_analiz)
+
+        stratejik = report.get("stratejik_urun_tavsiyesi") or (report.get("stratejik_oneriler", [""])[0] if isinstance(report.get("stratejik_oneriler"), list) else str(report.get("stratejik_oneriler", "")))
+        table.add_row("Stratejik Tavsiye", f"[bold yellow]{stratejik}[/bold yellow]")
+
+        console.print(table)
 
     # 3. N=1,000 Kantitatif Monte Carlo & İstatistik Tablosu
     q_report = result.get("kantitatif_monte_carlo_raporu", {})
