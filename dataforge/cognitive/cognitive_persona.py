@@ -9,6 +9,7 @@ from typing import Any, Optional
 from dataclasses import dataclass, asdict
 from .habitus_matrix import HabitusEngine, SociologicalHabitus
 from .neuro_state import NeuroCognitiveEngine, NeuroCognitiveState
+from .micro_traits import MicroTraitSynthesizer, CognitiveMicroTraits
 
 
 @dataclass
@@ -35,7 +36,10 @@ class DeepCognitivePersona:
     # 4. Nörobilişsel Zihin
     neuro: NeuroCognitiveState
 
-    # 5. Psikolojik Derinlik & Günlük Hayat
+    # 5. Psikolojik Mikro-Nüanslar & Dijital Kimlik
+    micro_traits: CognitiveMicroTraits
+
+    # 6. Psikolojik Derinlik & Günlük Hayat
     en_buyuk_gunluk_derdi: str
     gizli_korkusu: str
     sosyal_statu_kaygisi: str
@@ -54,6 +58,7 @@ class CognitivePersonaBuilder:
         self.rng = rng or random.Random()
         self.habitus_engine = HabitusEngine(self.rng)
         self.neuro_engine = NeuroCognitiveEngine(self.rng)
+        self.micro_trait_engine = MicroTraitSynthesizer(self.rng)
 
     def build_from_raw(self, raw_person: dict[str, Any], record_id: int = 1) -> DeepCognitivePersona:
         """Transforms a demographic person dict into a deep cognitive agent."""
@@ -90,7 +95,15 @@ class CognitivePersonaBuilder:
             cultural_capital=habitus.cultural_capital_score
         )
 
-        # 4. Psychological Frustrations & Speech Patterns
+        # 4. Micro-Traits & Digital Subculture
+        micro_traits = self.micro_trait_engine.generate_micro_traits(
+            occupation=occupation,
+            social_class=habitus.social_class_stratum,
+            age=age,
+            city=city
+        )
+
+        # 5. Psychological Frustrations & Speech Patterns
         if "Esnaf" in habitus.social_class_stratum:
             daily_pain = self.rng.choice([
                 "Artan dükkan kirası ve toptancı vadelerinin kısalması",
@@ -135,6 +148,7 @@ class CognitivePersonaBuilder:
             borcluluk_orani=debt_ratio,
             habitus=habitus,
             neuro=neuro,
+            micro_traits=micro_traits,
             en_buyuk_gunluk_derdi=daily_pain,
             gizli_korkusu=hidden_fear,
             sosyal_statu_kaygisi=status_anxiety,
