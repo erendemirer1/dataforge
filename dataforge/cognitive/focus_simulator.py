@@ -14,6 +14,7 @@ import urllib.request
 from typing import Any, Optional
 from .cognitive_persona import CognitivePersonaBuilder, DeepCognitivePersona
 from .utility_engine import EconometricUtilityEngine, QuantitativeMarketResult
+from .consistency_auditor import CognitiveConsistencyAuditor
 from ..social.social_radar import SocialRadarEngine
 from ..ml.prompt_synthesizer import DynamicPromptEngine
 
@@ -21,7 +22,7 @@ from ..ml.prompt_synthesizer import DynamicPromptEngine
 class FocusGroupSimulator:
     """
     Executes deep psychological focus groups with grounded, neuro-sociologically complete personas.
-    Combines qualitative focus groups with N=1,000 quantitative Monte Carlo econometrics.
+    Combines qualitative focus groups with N=1,000 quantitative Monte Carlo econometrics and Causal Consistency Audits.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
@@ -30,6 +31,7 @@ class FocusGroupSimulator:
         self.prompt_engine = DynamicPromptEngine(self.rng)
         self.utility_engine = EconometricUtilityEngine(self.rng)
         self.social_radar = SocialRadarEngine(self.rng)
+        self.consistency_auditor = CognitiveConsistencyAuditor()
 
     def _get_api_key(self) -> str:
         """Resolve Gemini API key."""
@@ -58,12 +60,13 @@ class FocusGroupSimulator:
     ) -> dict[str, Any]:
         """
         Synthesizes deep personas, simulates focus group discussion,
+        audits consistency against latent belief vectors,
         and computes an N=1,000 quantitative Monte Carlo census.
         """
         # 1. Synthesize demographic personas
         raw_personas = self.prompt_engine.synthesize(target_audience, count=count)
 
-        # 2. Enrich into Deep Cognitive, Social Radar & Habitus Personas
+        # 2. Enrich into Deep Cognitive, Social Radar, Latent Belief & Habitus Personas
         cognitive_personas: list[DeepCognitivePersona] = []
         for i, raw_p in enumerate(raw_personas):
             raw_p = self.social_radar.enrich_persona_with_social_pulse(raw_p)
@@ -87,7 +90,14 @@ class FocusGroupSimulator:
         else:
             sim_result = self._simulate_with_gemini(cognitive_personas, target_audience, pitch_or_question, api_key)
 
-        # 5. Merge Quantitative Econometrics with Qualitative Findings
+        # 5. Run Cognitive Consistency Audit (Prevents Hallucinations & Redline Inconsistencies)
+        sim_result = self.consistency_auditor.audit_and_recalibrate(
+            simulation_result=sim_result,
+            personas_dict=dict_personas,
+            pitch_or_topic=pitch_or_question
+        )
+
+        # 6. Merge Quantitative Econometrics with Qualitative Findings
         sim_result["kantitatif_monte_carlo_raporu"] = {
             "domain_turu": monte_carlo_res.domain_type,
             "orneklem_buyuklugu": monte_carlo_res.sample_size,
