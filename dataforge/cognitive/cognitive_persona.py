@@ -11,6 +11,7 @@ from .habitus_matrix import HabitusEngine, SociologicalHabitus
 from .neuro_state import NeuroCognitiveEngine, NeuroCognitiveState
 from .micro_traits import MicroTraitSynthesizer, CognitiveMicroTraits
 from .belief_system import CausalBeliefEngine, LatentBeliefVector
+from .historical_memory import HistoricalMemoryEngine, BiographicalMemory
 
 
 @dataclass
@@ -40,10 +41,13 @@ class DeepCognitivePersona:
     # 5. Bilişsel İnanç ve Değer Vektörü (Causal Latent Belief State)
     latent_belief: LatentBeliefVector
 
-    # 6. Psikolojik Mikro-Nüanslar & Dijital Kimlik
+    # 6. Tarihsel Yaşam ve Kriz Hafızası (Episodic Biographical Memory)
+    historical_memory: BiographicalMemory
+
+    # 7. Psikolojik Mikro-Nüanslar & Dijital Kimlik
     micro_traits: CognitiveMicroTraits
 
-    # 7. Psikolojik Derinlik & Günlük Hayat
+    # 8. Psikolojik Derinlik & Günlük Hayat
     en_buyuk_gunluk_derdi: str
     gizli_korkusu: str
     sosyal_statu_kaygisi: str
@@ -64,6 +68,7 @@ class CognitivePersonaBuilder:
         self.neuro_engine = NeuroCognitiveEngine(self.rng)
         self.micro_trait_engine = MicroTraitSynthesizer(self.rng)
         self.belief_engine = CausalBeliefEngine(self.rng)
+        self.memory_engine = HistoricalMemoryEngine(self.rng)
 
     def build_from_raw(self, raw_person: dict[str, Any], record_id: int = 1) -> DeepCognitivePersona:
         """Transforms a demographic person dict into a deep cognitive agent."""
@@ -111,7 +116,15 @@ class CognitivePersonaBuilder:
             habitus_moral=asdict(habitus.moral_foundations)
         )
 
-        # 5. Micro-Traits & Digital Subculture
+        # 5. Episodic Biographical & Historical Memory
+        historical_memory = self.memory_engine.generate_biographical_memory(
+            age=age,
+            occupation=occupation,
+            social_class=habitus.social_class_stratum,
+            city=city
+        )
+
+        # 6. Micro-Traits & Digital Subculture
         micro_traits = self.micro_trait_engine.generate_micro_traits(
             occupation=occupation,
             social_class=habitus.social_class_stratum,
@@ -119,7 +132,7 @@ class CognitivePersonaBuilder:
             city=city
         )
 
-        # 6. Psychological Frustrations & Speech Patterns
+        # 7. Psychological Frustrations & Speech Patterns
         if "Esnaf" in habitus.social_class_stratum:
             daily_pain = self.rng.choice([
                 "Artan dükkan kirası ve toptancı vadelerinin kısalması",
@@ -165,6 +178,7 @@ class CognitivePersonaBuilder:
             habitus=habitus,
             neuro=neuro,
             latent_belief=latent_belief,
+            historical_memory=historical_memory,
             micro_traits=micro_traits,
             en_buyuk_gunluk_derdi=daily_pain,
             gizli_korkusu=hidden_fear,

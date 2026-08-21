@@ -148,9 +148,11 @@ class FocusGroupSimulator:
             "   - Her meslek sahibi söze mesleğiyle başlamasın (Öğretmen 'bir eğitimci olarak' veya doktor 'hastanede' demek zorunda DEĞİL, sıradan bir vatandaş gibi dertlerinden konuşabilir).\n"
             "   - Her 20 yaşındaki genç aynı klişe Z kuşağı laflarını etmesin; aralarında gelenekçi, kaderci, vurdumduymaz veya ağırbaşlı olanlar da olsun.\n"
             "   - Her yaşlı veya köylü aynı kalıpta olmak zorunda değildir; muhalif, modern eleştiriler yapan veya beklenmedik azınlık bakış açıları masada yer bulsun.\n"
-            "4. İÇ SES vs DIŞ SÖZ: İç ses karakterin yastığa başını koyduğundaki saf dertleri, korkuları ve vicdanıdır. "
+            "4. MASADA BİRBİRİYLE ÇATIŞMA VE DİYALOG (GROUP DYNAMICS):\n"
+            "   - Karakterler masada birbirlerinin söylediklerine referans versin, laf atsın veya itiraz etsin (Örn: 'Hasan Bey öyle diyorsunuz ama...', 'Zeynep kızım sen dur daha yaşın genç...', 'Ağabeyler doğru söylüyor ama...'). Masada yaşayan bir insan topluluğu olsun.\n"
+            "5. İÇ SES vs DIŞ SÖZ: İç ses karakterin yastığa başını koyduğundaki saf dertleri, korkuları ve vicdanıdır. "
             "Dış söz ise masadakilere kendi kimliği ve üslubuyla söylediği repliktir.\n"
-            "5. ASLA ŞABLON VE TEKRAR CÜMLE KURMA! Her karakterin iç dünyası ve sözleri %100 kendine özgü ve benzersiz olmalıdır.\n\n"
+            "6. ASLA ŞABLON VE TEKRAR CÜMLE KURMA! Her karakterin iç dünyası ve sözleri %100 kendine özgü ve benzersiz olmalıdır.\n\n"
             "ÇIKTI FORMATI: Sadece ve sadece geçerli JSON döndür:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
@@ -159,14 +161,20 @@ class FocusGroupSimulator:
             '      "ad_soyad": "İsim Soyisim",\n'
             '      "meslek": "Meslek",\n'
             '      "karar": "Satın Alır" | "Kesinlikle Reddeder" | "Pazarlık / İndirim İster" | "Düşünmek İçin Erteletir" | "Kabul Eder / Destekler",\n'
-            '      "ic_ses_bilincalti": "Karakterin iç dünyasındaki gerçek hissi ve sızısı...",\n'
-            '      "disa_soylenen_soz": "Masada herkesin duyacağı doğal sözü..."\n'
+            '      "ic_ses_bilincalti": "Karakterin iç dünyasındaki gerçek hissi, travması ve sızısı...",\n'
+            '      "disa_soylenen_soz": "Masada diğerlerine dönerek söylediği doğal sözü..."\n'
             "    }\n"
             "  ],\n"
             '  "yonetici_pazar_analiz_raporu": {\n'
             '    "genel_kabul_orani_yuzde": 0,\n'
             '    "en_buyuk_3_itiraz_bariyeri": ["İtiraz 1", "İtiraz 2", "İtiraz 3"],\n'
             '    "fiyat_duyarlilik_analizi": "Konunun maddi/manevi algısı...",\n'
+            '    "kutuplasma_indeksi_skoru": "0.78 / 1.0 (Yüksek Kutuplaşma / Uzlaşması Zor Ayrışma)",\n'
+            '    "what_if_karsi_olgusal_stres_testi": {\n'
+            '      "senaryo_1_guvence": "Teklife devlet güvencesi veya iade garantisi eklenirse tahmini kabul: %...",\n'
+            '      "senaryo_2_fiyat": "Fiyat veya maliyet %25 düşürülürse tahmini kabul: %...",\n'
+            '      "en_hizli_ikna_olacak_segment": "İlk kırılacak ve ikna olacak kitle..."\n'
+            '    },\n'
             '    "stratejik_urun_tavsiyesi": "Toplumsal veya stratejik içgörü..."\n'
             "  }\n"
             "}"

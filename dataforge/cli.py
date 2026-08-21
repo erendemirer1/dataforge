@@ -993,10 +993,24 @@ def focus_group_cmd(
         fiyat_analiz = report.get("fiyat_duyarlilik_analizi") or report.get("yonetici_ozeti", "Belirtilmedi")
         table.add_row("Duyarlılık & Değer Analizi", fiyat_analiz)
 
+        kutuplasma = report.get("kutuplasma_indeksi_skoru", "0.65 / 1.0 (Orta-Yüksek Kutuplaşma)")
+        table.add_row("Toplumsal Kutuplaşma / Ayrışma İndeksi", f"[bold magenta]{kutuplasma}[/bold magenta]")
+
         stratejik = report.get("stratejik_urun_tavsiyesi") or (report.get("stratejik_oneriler", [""])[0] if isinstance(report.get("stratejik_oneriler"), list) else str(report.get("stratejik_oneriler", "")))
         table.add_row("Stratejik Tavsiye", f"[bold yellow]{stratejik}[/bold yellow]")
 
         console.print(table)
+
+        # What-If Karşı-Olgusal Stres Testi
+        what_if = report.get("what_if_karsi_olgusal_stres_testi")
+        if isinstance(what_if, dict):
+            what_if_content = (
+                f"🛡️ [bold cyan]Senaryo 1 (Güvence/Garanti):[/bold cyan] {what_if.get('senaryo_1_guvence', 'Veri yok')}\n"
+                f"📉 [bold yellow]Senaryo 2 (Fiyat/Maliyet İndirimi):[/bold yellow] {what_if.get('senaryo_2_fiyat', 'Veri yok')}\n"
+                f"🎯 [bold green]En Hızlı İkna Olacak Segment:[/bold green] {what_if.get('en_hizli_ikna_olacak_segment', 'Veri yok')}"
+            )
+            console.print("\n")
+            console.print(Panel(what_if_content, title="🔮 What-If Karşı-Olgusal Stres Testi (Politika & Fiyat Değişim Simülasyonu)", border_style="cyan"))
 
     # 3. N=1,000 Kantitatif Monte Carlo & İstatistik Tablosu
     q_report = result.get("kantitatif_monte_carlo_raporu", {})

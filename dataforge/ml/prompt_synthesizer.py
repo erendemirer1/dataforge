@@ -53,16 +53,40 @@ class DynamicPromptEngine:
         return "AQ.Ab8RN6JYPwJZf7hqA8gswjWAe2a2DpeI-iHlM6VScQyYz_f4WA"
 
     def synthesize(self, prompt: str, count: int = 10) -> list[dict[str, Any]]:
-        """Generate 100% causally coherent personas matching the prompt."""
-        gemini_key = self._get_gemini_key()
-        if gemini_key:
-            try:
-                return self._synthesize_with_gemini(prompt, count, gemini_key)
-            except Exception as e:
-                pass
+        """
+        Generate 100% causally coherent personas matching the prompt.
+        Scalable micro-batching: Chunks large requests (e.g., 50, 100, 1000) into safe 10-persona batches
+        to eliminate all LLM token limits and context timeouts.
+        """
+        if count <= 10:
+            gemini_key = self._get_gemini_key()
+            if gemini_key:
+                try:
+                    return self._synthesize_with_gemini(prompt, count, gemini_key)
+                except Exception:
+                    pass
+            return self._synthesize_offline(prompt, count)
 
-        # If offline fallback
-        return self._synthesize_offline(prompt, count)
+        # Scalable Micro-Batching for Large Counts (e.g., 20, 50, 100, 1000)
+        results: list[dict[str, Any]] = []
+        gemini_key = self._get_gemini_key()
+        remaining = count
+
+        while remaining > 0:
+            batch_size = min(10, remaining)
+            batch_res = []
+            if gemini_key:
+                try:
+                    batch_res = self._synthesize_with_gemini(prompt, batch_size, gemini_key)
+                except Exception:
+                    pass
+            if not batch_res:
+                batch_res = self._synthesize_offline(prompt, batch_size)
+
+            results.extend(batch_res)
+            remaining -= batch_size
+
+        return results[:count]
 
     def _synthesize_with_gemini(self, prompt: str, count: int, api_key: str) -> list[dict[str, Any]]:
         """
