@@ -1064,6 +1064,56 @@ def focus_group_cmd(
 
 
 # ---------------------------------------------------------------------------
+# dataforge radar (Canlı Sosyal Hafıza & Besleme)
+# ---------------------------------------------------------------------------
+
+radar_app = typer.Typer(help="📡 Live Cultural & Economic Radar Memory Subsystem")
+app.add_typer(radar_app, name="radar")
+
+
+@radar_app.command("sync")
+def radar_sync_cmd() -> None:
+    """📡 Türkiye'nin 6 canlı veri kaynağından hafızayı anlık olarak güncelle ve kaydet."""
+    from .social.cultural_memory import CulturalMemoryStore
+    
+    with console.status("[bold cyan]📡 Canlı veri akışları taranıyor (Trends, Haberler, Ekonomi, Mevzuat, Forumlar)...[/bold cyan]"):
+        store = CulturalMemoryStore()
+        res = store.sync_live_pulse()
+
+    console.print(Panel(
+        f"✅ [bold green]Canlı Kültürel Hafıza Başarıyla Senkronize Edildi![/bold green]\n\n"
+        f"📥 [bold]Eklenen Yeni Veri Adedi:[/bold] {res.get('eklenen_veri_adedi')} adet\n"
+        f"💾 [bold]Toplam Hafıza Havuzu:[/bold] {res.get('toplam_hafiza_kaydi'):,} kayıt\n"
+        f"🕒 [bold]Zaman Damgası:[/bold] {res.get('zaman_damgasi')}\n"
+        f"📁 [bold]Veritabanı:[/bold] [dim]{store.db_path}[/dim]",
+        title="📡 DataForge Live Radar Sync",
+        border_style="green"
+    ))
+
+
+@radar_app.command("status")
+def radar_status_cmd() -> None:
+    """📊 Canlı hafıza veritabanı durumunu ve kategori istatistiklerini görüntüle."""
+    from .social.cultural_memory import CulturalMemoryStore
+
+    store = CulturalMemoryStore()
+    stats = store.get_memory_stats()
+
+    table = Table(title="📊 DataForge Sürekli Kültürel Hafıza Durumu", border_style="cyan")
+    table.add_column("Veri Kaynağı / Kategori", style="bold cyan")
+    table.add_column("Kayıt Sayısı", style="white")
+
+    for cat, count in stats.get("kategori_dagilimi", {}).items():
+        table.add_row(cat, f"{count:,} kayıt")
+
+    table.add_row("[bold]Toplam Hafıza Kaydı[/bold]", f"[bold green]{stats.get('toplam_kayit', 0):,} kayıt[/bold green]")
+    table.add_row("Son Güncelleme", str(stats.get("son_guncelleme")))
+    table.add_row("Veritabanı Yolu", str(stats.get("veritabani_konumu")))
+
+    console.print(table)
+
+
+# ---------------------------------------------------------------------------
 # dataforge version
 # ---------------------------------------------------------------------------
 
