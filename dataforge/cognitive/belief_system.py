@@ -10,6 +10,13 @@ from typing import Any, Optional
 from dataclasses import dataclass, asdict
 
 
+from ..ml.reference_stats import (
+    YOUTH_EMPIRICAL_SPLIT,
+    ELDERLY_EMPIRICAL_SPLIT,
+    WHITE_COLLAR_RURAL_ASSET_RATE
+)
+
+
 @dataclass
 class LatentBeliefVector:
     # 1. Kırmızı Çizgiler & Güvenlik Hassasiyeti (0 = Umursamaz, 100 = Şehitlik/Vatan Dokunulmaz)
@@ -37,7 +44,7 @@ class LatentBeliefVector:
 class CausalBeliefEngine:
     """
     Synthesizes and enforces strict causal belief invariants across all surveys and focus groups.
-    Zero contradiction: A person's political, economic, and moral choices must strictly adhere to their belief vector.
+    Grounded in official KONDA, TÜİK, and BDDK empirical distribution tails.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
@@ -53,7 +60,7 @@ class CausalBeliefEngine:
         fixed_expenses: float,
         habitus_moral: dict[str, float]
     ) -> LatentBeliefVector:
-        """Derives a mathematically sound, consistent belief vector from lived realities."""
+        """Derives an empirically grounded, statistically representative belief vector."""
         occ_lower = occupation.lower()
         soc_lower = social_class.lower()
 
@@ -88,21 +95,42 @@ class CausalBeliefEngine:
         else:
             inst_trust = round(self.rng.uniform(25.0, 60.0), 1)
 
-        # 4. Traditional Loyalty
-        if "esnaf" in occ_lower or any(c in city.lower() for c in ["konya", "kayseri", "erzurum", "yozgat", "trabzon", "rize", "sivas"]):
-            trad_loyalty = round(self.rng.uniform(70.0, 95.0), 1)
-        elif any(c in city.lower() for c in ["kadıköy", "beşiktaş", "izmir", "çankaya"]):
-            trad_loyalty = round(self.rng.uniform(15.0, 45.0), 1)
+        # 4. Traditional Loyalty & Non-Conformity (Empirical KONDA/TÜİK weighted sampling)
+        if age <= 25:
+            # KONDA Youth Split: %23.4 Conservative, %27.6 Nationalist, %36.8 Secular, %12.2 Apolitical
+            r = self.rng.random()
+            if r < YOUTH_EMPIRICAL_SPLIT['geleneksel_muhafazakar']: # Empirical conservative youth tail (%23.4)
+                trad_loyalty = round(self.rng.uniform(75.0, 95.0), 1)
+                sq_fear = round(self.rng.uniform(60.0, 85.0), 1)
+            elif r < (YOUTH_EMPIRICAL_SPLIT['geleneksel_muhafazakar'] + YOUTH_EMPIRICAL_SPLIT['milliyetci_devletci']): # %27.6
+                trad_loyalty = round(self.rng.uniform(55.0, 75.0), 1)
+                sq_fear = round(self.rng.uniform(40.0, 65.0), 1)
+            else: # %49.0 Secular / Critical / Independent
+                trad_loyalty = round(self.rng.uniform(15.0, 45.0), 1)
+                sq_fear = round(self.rng.uniform(10.0, 35.0), 1)
+        elif age >= 60:
+            # TÜİK/Electoral Split: %54.2 Pro-status quo, %33.8 Critical/Secular/Pensioner revolt, %12.0 Torn
+            r = self.rng.random()
+            if r < ELDERLY_EMPIRICAL_SPLIT['muhalif_emekli_isyani']: # Empirical progressive/critical retiree (%33.8)
+                trad_loyalty = round(self.rng.uniform(20.0, 45.0), 1)
+                sq_fear = round(self.rng.uniform(25.0, 50.0), 1)
+            elif r < (ELDERLY_EMPIRICAL_SPLIT['muhalif_emekli_isyani'] + ELDERLY_EMPIRICAL_SPLIT['kararsiz_kirgin']): # %12.0
+                trad_loyalty = round(self.rng.uniform(45.0, 65.0), 1)
+                sq_fear = round(self.rng.uniform(55.0, 75.0), 1)
+            else: # %54.2 Core traditional base
+                trad_loyalty = round(self.rng.uniform(75.0, 95.0), 1)
+                sq_fear = round(self.rng.uniform(70.0, 92.0), 1)
         else:
-            trad_loyalty = round(self.rng.uniform(40.0, 75.0), 1)
-
-        # 5. Status Quo Fear (Ehvenişer / Macera İstememe)
-        if age > 50 or "emekli" in occ_lower or "kamu" in soc_lower:
-            sq_fear = round(self.rng.uniform(70.0, 92.0), 1)
-        elif age < 30:
-            sq_fear = round(self.rng.uniform(15.0, 40.0), 1)
-        else:
-            sq_fear = round(self.rng.uniform(45.0, 70.0), 1)
+            # Working age population (26-59)
+            if any(c in city.lower() for c in ["konya", "kayseri", "erzurum", "yozgat", "trabzon", "rize", "sivas", "şanlıurfa"]):
+                trad_loyalty = round(self.rng.uniform(65.0, 92.0), 1)
+                sq_fear = round(self.rng.uniform(50.0, 80.0), 1)
+            elif any(c in city.lower() for c in ["kadıköy", "beşiktaş", "izmir", "çankaya", "muratpaşa"]):
+                trad_loyalty = round(self.rng.uniform(15.0, 45.0), 1)
+                sq_fear = round(self.rng.uniform(20.0, 45.0), 1)
+            else:
+                trad_loyalty = round(self.rng.uniform(35.0, 75.0), 1)
+                sq_fear = round(self.rng.uniform(40.0, 70.0), 1)
 
         # 6. Active Disillusionment Triggers (Son Dönem Gündem Kırılmaları)
         triggers = []
