@@ -25,6 +25,20 @@ class QuantitativeMarketResult:
     budget_violation_rate_pct: Optional[float]
     moral_violation_index: Optional[float] # For moral/social policy
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "domain_turu": self.domain_type,
+            "orneklem_buyuklugu": self.sample_size,
+            "matematiksel_kabul_orani_yuzde": self.acceptance_rate_pct,
+            "guven_araligi_yuzde_95": f"%{self.confidence_interval_95[0]} - %{self.confidence_interval_95[1]}",
+            "fiyat_esneklik_skoru": self.elasticity_score,
+            "fiyat_talep_egrisi": self.price_sensitivity_curve,
+            "demografik_dagilim": self.demographic_breakdown,
+            "ortalama_serbest_butce_tl": self.mean_discretionary_budget_tl,
+            "mutlak_butce_yetersizlik_orani_yuzde": self.budget_violation_rate_pct,
+            "ahlaki_direnc_indeksi": self.moral_violation_index
+        }
+
 
 class EconometricUtilityEngine:
     """
