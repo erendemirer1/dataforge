@@ -1114,6 +1114,32 @@ def radar_status_cmd() -> None:
 
 
 # ---------------------------------------------------------------------------
+# dataforge serve (Enterprise REST API Server)
+# ---------------------------------------------------------------------------
+
+@app.command('serve')
+def serve_cmd(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Sunucu host adresi (örn: 0.0.0.0 veya 127.0.0.1)"),
+    port: int = typer.Option(8000, "--port", "-p", help="Sunucu port numarası"),
+    reload: bool = typer.Option(False, "--reload", "-r", help="Kod değişikliklerinde otomatik yeniden başlat"),
+) -> None:
+    """🚀 Launch DataForge Enterprise REST API Server (FastAPI + Swagger Docs)."""
+    import uvicorn
+    
+    console.print(Panel(
+        f"🚀 [bold green]DataForge Enterprise REST API Sunucusu Başlatılıyor...[/bold green]\n\n"
+        f"🌐 [bold]API URL:[/bold] [link=http://{host}:{port}]http://{host}:{port}[/link]\n"
+        f"📚 [bold]Swagger UI / Interactive Docs:[/bold] [link=http://{host}:{port}/docs]http://{host}:{port}/docs[/link]\n"
+        f"📖 [bold]Redoc:[/bold] [link=http://{host}:{port}/redoc]http://{host}:{port}/redoc[/link]\n"
+        f"⚡ [bold]Endpoints:[/bold] `/api/v1/focus-group/simulate`, `/api/v1/generate`, `/api/v1/radar/pulse`",
+        title="🔬 DataForge Production Gateway",
+        border_style="bright_blue"
+    ))
+    
+    uvicorn.run("dataforge.api.app:app", host=host, port=port, reload=reload)
+
+
+# ---------------------------------------------------------------------------
 # dataforge version
 # ---------------------------------------------------------------------------
 
