@@ -202,22 +202,70 @@ class DynamicPromptEngine:
         raise ValueError("Could not parse JSON array from model response")
 
     def _synthesize_offline(self, prompt: str, count: int) -> list[dict[str, Any]]:
-        """Offline grounded synthesis using ProfileBuilder."""
+        """
+        Deep semantic offline synthesis matching the prompt's exact sociological domain.
+        Ensures gamers become gamers/students, veterans become military/police, farmers become agricultural, etc.
+        """
+        p_lower = prompt.lower()
         results = []
+
+        # Domain Archetype Definitions for Offline Consistency
+        if any(w in p_lower for w in ["oyun", "gamer", "espor", "twitch", "steam"]):
+            job_pool = ["Üniversite Öğrencisi (Bilgisayar Müh.)", "Genç Yazılımcı / Oyun Geliştirici", "Lise Öğrencisi / İçerik Üreticisi", "Grafik Tasarımcı & Dijital Sanatçı", "Sistem Destek Uzmanı", "Serbest Çalışan (Freelance) Çevirmen"]
+            age_range = (18, 28)
+            income_range = (15000, 48000)
+            edu_pool = ["Üniversite", "Lise", "Önlisans"]
+        elif any(w in p_lower for w in ["gazi", "şehit", "asker", "polis", "güvenlik"]):
+            job_pool = ["Malul Gazi (Emekli Uzman Çavuş)", "Şehit Yakını / Kamu Personeli", "Emekli Astsubay Kıdemli Başçavuş", "Özel Güvenlik Görevlisi", "Gazi Yakını / Esnaf"]
+            age_range = (32, 62)
+            income_range = (28000, 55000)
+            edu_pool = ["Lise", "Önlisans", "Üniversite"]
+        elif any(w in p_lower for w in ["yazılım", "yazılımcı", "developer", "mühendis", "teknoloji"]):
+            job_pool = ["Kıdemli Backend Geliştirici", "Junior Frontend Geliştirici", "DevOps & Bulut Mühendisi", "Yapay Zeka Araştırmacısı", "Mobil Uygulama Geliştirici"]
+            age_range = (22, 38)
+            income_range = (35000, 120000)
+            edu_pool = ["Üniversite", "Yüksek Lisans"]
+        elif any(w in p_lower for w in ["esnaf", "tüccar", "çarşı", "sanayi", "dükkan"]):
+            job_pool = ["Oto Mekanik & Tamir Ustası", "Çarşı Bakkalı & Market İşletmecisi", "Erkek Kuaförü & Berber", "Kasap & Şarküteri Sahibi", "Tesisat ve Doğalgaz Ustası"]
+            age_range = (30, 58)
+            income_range = (30000, 85000)
+            edu_pool = ["Lise", "Ortaokul", "Meslek Lisesi"]
+        elif any(w in p_lower for w in ["çiftçi", "köylü", "tarım", "fındık", "hayvancı"]):
+            job_pool = ["Fındık & Çay Üreticisi", "Büyükbaş Hayvan Yetiştiricisi", "Buğday ve Arpa Çiftçisi", "Sera Üreticisi & Sebze Yetiştiricisi"]
+            age_range = (35, 65)
+            income_range = (22000, 70000)
+            edu_pool = ["İlkokul", "Ortaokul", "Lise"]
+        elif any(w in p_lower for w in ["kiracı", "ev sahibi", "barınma", "konut"]):
+            job_pool = ["Özel Sektör Satış Danışmanı (Kiracı)", "Emekli Öğretmen (Ev Sahibi)", "Banka Müşteri Temsilcisi (Kiracı)", "Esnaf (Ev Sahibi)", "Hemşire (Kiracı)"]
+            age_range = (25, 60)
+            income_range = (24000, 65000)
+            edu_pool = ["Lise", "Üniversite"]
+        else:
+            job_pool = None
+            age_range = (20, 65)
+            income_range = None
+            edu_pool = None
+
         for i in range(count):
             p = self.profile_builder.build_profile(record_id=i + 1)
+            
+            occupation = self.rng.choice(job_pool) if job_pool else p["occupation"]
+            age = self.rng.randint(*age_range) if age_range else p["age"]
+            income = float(self.rng.randint(*income_range)) if income_range else p["monthly_income"]
+            edu = self.rng.choice(edu_pool) if edu_pool else p.get("education_level", "Lise")
+
             results.append({
                 "id": i + 1,
                 "tckn": p["tckn"],
                 "ad_soyad": f"{p['first_name']} {p['last_name']}",
                 "cinsiyet": p["gender"],
-                "yas": p["age"],
+                "yas": age,
                 "sehir_ilce": f"{p['city']} / {p['district']} ({p['neighborhood']} Mah.)",
-                "meslek_rol": p["occupation"],
-                "aylik_net_gelir_tl": p["monthly_income"],
-                "egitim_durumu": p.get("education_level", "Lise"),
-                "housing_status": p.get("housing_status", "Ev Sahibi"),
-                "sgk_durumu": p.get("sgk_category", "4A"),
+                "meslek_rol": occupation,
+                "aylik_net_gelir_tl": income,
+                "egitim_durumu": edu,
+                "housing_status": p.get("housing_status", "Kiracı"),
+                "sgk_durumu": "4A" if "Öğrenci" not in occupation else "GSS",
             })
         return results
 
