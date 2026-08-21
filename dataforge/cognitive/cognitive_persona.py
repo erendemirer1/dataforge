@@ -133,7 +133,26 @@ class CognitivePersonaBuilder:
         )
 
         # 7. Psychological Frustrations & Speech Patterns
-        if "Esnaf" in habitus.social_class_stratum:
+        occ_lower = occupation.lower()
+        if any(w in occ_lower for w in ["gazi", "şehit", "asker", "astsubay", "uzman çavuş", "polis", "güvenlik"]):
+            daily_pain = self.rng.choice([
+                "Fiziksel protez/sağlık sorunları ve gazilik haklarının bürokraside yıpranması",
+                "Şehit evladının hatırası ve geride kalan ailesinin onurunu koruma mücadelesi",
+                "Vatan uğruna can verdikten sonra siyasette şehitlik kavramının ucuzlatılması hissi"
+            ])
+            hidden_fear = "Şehit kanının siyasi pazarlık konusu yapılması ve gazilerin haklarının gasp edilmesi"
+            status_anxiety = "Şehitlik ve gazilik onurunun çiğnenmesi"
+            jargon = "Vakar dolu, onurlu, vatansever ve net asker/kamu dili"
+        elif any(w in occ_lower for w in ["öğrenci", "oyun", "yazılım", "tasarım", "genç", "stajyer", "çevirmen"]):
+            daily_pain = self.rng.choice([
+                "Geleceksizlik hissi, mezun olunca iş bulamama ve sosyal alanların daralması",
+                "Sürekli getirilen platform yasakları, sansür ve teknolojiye erişim pahalılığı",
+                "KYK bursunun hiçbir şeye yetmemesi ve aile evine hapsolma duygusu"
+            ])
+            hidden_fear = "Gençliğini hiçbir hayalini gerçekleştiremeden bu ülkede heba etmek"
+            status_anxiety = "Akranlarının gerisinde kalmak ve çaresizce yerinde saymak"
+            jargon = "Samimi, eleştirel, doğrudan ve dijital çağın dili"
+        elif "Esnaf" in habitus.social_class_stratum:
             daily_pain = self.rng.choice([
                 "Artan dükkan kirası ve toptancı vadelerinin kısalması",
                 "Müşterinin sürekli kredi kartı istemesi ve POS komisyonları",
