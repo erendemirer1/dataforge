@@ -210,7 +210,27 @@ class DynamicPromptEngine:
         results = []
 
         # Domain Archetype Definitions for Offline Consistency
-        if any(w in p_lower for w in ["oyun", "gamer", "espor", "twitch", "steam"]):
+        city_override = None
+        dist_override = None
+
+        if any(w in p_lower for w in ["kadıköy", "moda", "beşiktaş", "cihangir", "şişli", "çankaya", "alsancak", "kordon", "kentli"]):
+            job_pool = [
+                "Mimar & Şehir Plancısı",
+                "Emekli Banka Müdürü (Kadıköy Sakini)",
+                "Grafik Tasarımcı & İllüstratör",
+                "Akademisyen (Sosyoloji)",
+                "Reklam & Dijital Medya Yöneticisi",
+                "Tiyatro Sanatçısı & Seslendirmen",
+                "Yazılım Mimarı & Danışman",
+                "Kültür-Sanat Editörü / Çevirmen"
+            ]
+            age_range = (25, 62)
+            income_range = (45000, 110000)
+            edu_pool = ["Üniversite", "Yüksek Lisans", "Doktora"]
+            city_override = "İstanbul" if "çankaya" not in p_lower and "alsancak" not in p_lower and "kordon" not in p_lower else ("Ankara" if "çankaya" in p_lower else "İzmir")
+            dist_override = "Kadıköy" if any(w in p_lower for w in ["kadıköy", "moda"]) else ("Beşiktaş" if "beşiktaş" in p_lower else ("Şişli" if "şişli" in p_lower else ("Çankaya" if "çankaya" in p_lower else "Konak")))
+
+        elif any(w in p_lower for w in ["oyun", "gamer", "espor", "twitch", "steam"]):
             job_pool = ["Üniversite Öğrencisi (Bilgisayar Müh.)", "Genç Yazılımcı / Oyun Geliştirici", "Lise Öğrencisi / İçerik Üreticisi", "Grafik Tasarımcı & Dijital Sanatçı", "Sistem Destek Uzmanı", "Serbest Çalışan (Freelance) Çevirmen"]
             age_range = (18, 28)
             income_range = (15000, 48000)
@@ -253,6 +273,8 @@ class DynamicPromptEngine:
             age = self.rng.randint(*age_range) if age_range else p["age"]
             income = float(self.rng.randint(*income_range)) if income_range else p["monthly_income"]
             edu = self.rng.choice(edu_pool) if edu_pool else p.get("education_level", "Lise")
+            city = city_override if city_override else p["city"]
+            district = dist_override if dist_override else p["district"]
 
             results.append({
                 "id": i + 1,
@@ -260,7 +282,7 @@ class DynamicPromptEngine:
                 "ad_soyad": f"{p['first_name']} {p['last_name']}",
                 "cinsiyet": p["gender"],
                 "yas": age,
-                "sehir_ilce": f"{p['city']} / {p['district']} ({p['neighborhood']} Mah.)",
+                "sehir_ilce": f"{city} / {district} ({p['neighborhood']} Mah.)",
                 "meslek_rol": occupation,
                 "aylik_net_gelir_tl": income,
                 "egitim_durumu": edu,
