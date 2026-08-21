@@ -12,6 +12,7 @@ from .neuro_state import NeuroCognitiveEngine, NeuroCognitiveState
 from .micro_traits import MicroTraitSynthesizer, CognitiveMicroTraits
 from .belief_system import CausalBeliefEngine, LatentBeliefVector
 from .historical_memory import HistoricalMemoryEngine, BiographicalMemory
+from .deep_causal_framework import DeepCausalFramework, BourdieuCapitalVector, NeuroPsychologicalState, HaidtMoralProfile
 
 
 @dataclass
@@ -47,11 +48,16 @@ class DeepCognitivePersona:
     # 7. Psikolojik Mikro-Nüanslar & Dijital Kimlik
     micro_traits: CognitiveMicroTraits
 
-    # 8. Psikolojik Derinlik & Günlük Hayat
-    en_buyuk_gunluk_derdi: str
-    gizli_korkusu: str
-    sosyal_statu_kaygisi: str
-    konusma_ve_jargon_tarzi: str
+    # 8. Derin Nedensel Çıkarım Vektörleri
+    bourdieu_capitals: Optional[BourdieuCapitalVector] = None
+    neuro_psych: Optional[NeuroPsychologicalState] = None
+    haidt_morals: Optional[HaidtMoralProfile] = None
+
+    # 9. Psikolojik Derinlik & Günlük Hayat
+    en_buyuk_gunluk_derdi: str = ""
+    gizli_korkusu: str = ""
+    sosyal_statu_kaygisi: str = ""
+    konusma_ve_jargon_tarzi: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         """Convert persona into hierarchical dictionary."""
@@ -69,6 +75,7 @@ class CognitivePersonaBuilder:
         self.micro_trait_engine = MicroTraitSynthesizer(self.rng)
         self.belief_engine = CausalBeliefEngine(self.rng)
         self.memory_engine = HistoricalMemoryEngine(self.rng)
+        self.deep_causal = DeepCausalFramework(self.rng)
 
     def build_from_raw(self, raw_person: dict[str, Any], record_id: int = 1) -> DeepCognitivePersona:
         """Transforms a demographic person dict into a deep cognitive agent."""
@@ -78,6 +85,7 @@ class CognitivePersonaBuilder:
         district = raw_person.get("ilce", "Merkez")
         occupation = raw_person.get("meslek_rol", raw_person.get("meslek", "Vatandaş"))
         education = raw_person.get("egitim_durumu", "Lise")
+        housing_status = raw_person.get("housing_status", "Kiracı")
 
         # 1. Financial Cashflow Calculation
         fixed_ratio = self.rng.uniform(0.55, 0.78)
@@ -105,7 +113,28 @@ class CognitivePersonaBuilder:
             cultural_capital=habitus.cultural_capital_score
         )
 
-        # 4. Latent Causal Belief Vector
+        # 4. Deep Causal Mathematical Ensembles
+        bourdieu_capitals = self.deep_causal.derive_bourdieu_capitals(
+            income_tl=income,
+            education_level=education,
+            occupation=occupation,
+            city=city,
+            housing_status=housing_status
+        )
+        neuro_psych = self.deep_causal.derive_neuro_psychology(
+            age=age,
+            income_tl=income,
+            economic_capital=bourdieu_capitals.economic_capital_score,
+            discretionary_budget_tl=discretionary
+        )
+        haidt_morals = self.deep_causal.derive_haidt_moral_matrix(
+            age=age,
+            education_level=education,
+            occupation=occupation,
+            cultural_capital=bourdieu_capitals.cultural_capital_score
+        )
+
+        # 5. Latent Causal Belief Vector
         latent_belief = self.belief_engine.build_latent_belief_vector(
             occupation=occupation,
             social_class=habitus.social_class_stratum,
@@ -116,7 +145,7 @@ class CognitivePersonaBuilder:
             habitus_moral=asdict(habitus.moral_foundations)
         )
 
-        # 5. Episodic Biographical & Historical Memory
+        # 6. Episodic Biographical & Historical Memory
         historical_memory = self.memory_engine.generate_biographical_memory(
             age=age,
             occupation=occupation,
@@ -124,7 +153,7 @@ class CognitivePersonaBuilder:
             city=city
         )
 
-        # 6. Micro-Traits & Digital Subculture
+        # 7. Micro-Traits & Digital Subculture
         micro_traits = self.micro_trait_engine.generate_micro_traits(
             occupation=occupation,
             social_class=habitus.social_class_stratum,
@@ -199,6 +228,9 @@ class CognitivePersonaBuilder:
             latent_belief=latent_belief,
             historical_memory=historical_memory,
             micro_traits=micro_traits,
+            bourdieu_capitals=bourdieu_capitals,
+            neuro_psych=neuro_psych,
+            haidt_morals=haidt_morals,
             en_buyuk_gunluk_derdi=daily_pain,
             gizli_korkusu=hidden_fear,
             sosyal_statu_kaygisi=status_anxiety,
