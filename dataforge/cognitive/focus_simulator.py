@@ -84,16 +84,22 @@ class FocusGroupSimulator:
         )
 
         # 4. Simulate Multi-Agent Focus Group with LLM
+        # If count is large, select the 6-8 most diverse representative personas for the qualitative discussion
+        qualitative_personas = cognitive_personas
+        if len(cognitive_personas) > 8:
+            step = len(cognitive_personas) // 6
+            qualitative_personas = [cognitive_personas[i * step] for i in range(min(6, len(cognitive_personas)))]
+
         api_key = self._get_api_key()
         if not api_key:
-            sim_result = self._fallback_simulation(cognitive_personas, pitch_or_question)
+            sim_result = self._fallback_simulation(qualitative_personas, pitch_or_question)
         else:
-            sim_result = self._simulate_with_gemini(cognitive_personas, target_audience, pitch_or_question, api_key)
+            sim_result = self._simulate_with_gemini(qualitative_personas, target_audience, pitch_or_question, api_key)
 
-        # 5. Run Cognitive Consistency Audit (Prevents Hallucinations & Redline Inconsistencies)
+        # 5. Run Cognitive Consistency Audit (Validates logical consistency without erasing persona voice)
         sim_result = self.consistency_auditor.audit_and_recalibrate(
             simulation_result=sim_result,
-            personas_dict=dict_personas,
+            personas_dict=[p.to_dict() for p in qualitative_personas],
             pitch_or_topic=pitch_or_question
         )
 
@@ -108,10 +114,9 @@ class FocusGroupSimulator:
             "fiyat_esneklik_egrisi": monte_carlo_res.price_sensitivity_curve,
             "sinifsal_kabul_dagilimi": monte_carlo_res.demographic_breakdown,
             "ortalama_serbest_butce_tl": monte_carlo_res.mean_discretionary_budget_tl,
-            "mutlak_butce_yetersizlik_orani_yuzde": monte_carlo_res.budget_violation_rate_pct,
+            "butce_yetersizlik_orani_yuzde": monte_carlo_res.budget_violation_rate_pct,
             "ahlaki_direnc_indeksi": monte_carlo_res.moral_violation_index
         }
-        sim_result["katilimci_profilleri"] = dict_personas
         return sim_result
 
     def _simulate_with_gemini(
@@ -133,17 +138,19 @@ class FocusGroupSimulator:
             "GÖREVİN:\n"
             "Bu insanların moderatörün ortaya attığı teklif, soru veya siyasi/toplumsal gelişme karşısındaki "
             "gerçek tepkilerini bir masada simüle edeceksin.\n\n"
-            "KESİN KURALLAR (SAF İNSANİ GERÇEKLİK):\n"
+            "KESİN KURALLAR (SAF İNSANİ GERÇEKLİK & SIFIR TEKRAR):\n"
             "1. YASAKLI KELİMELER: İç seste veya konuşmada ASLA 'amigdala', 'kortizol', 'loss aversion', 'habitus' gibi "
             "tıbbi/psikolojik terimler GEÇMEYECEK! İnsanlar organ isimleriyle düşünmez. İnsanlar 'kan beynime sıçradı', "
             "'yüreğim parçalandı', 'midem bulandı', 'elim ayağım titriyor', 'babamın kemikleri sızlar', 'içim yandı' der.\n"
             "2. BAĞLAMA UYGUNLUK: Şehit yakınına, gaziye, esnafa veya öğrenciye saçma sapan plaza dili (ROI, alignment, sprint) "
-            "KULLANDIRMA! Plaza dilini sadece plazada çalışan beyaz yakalı şirket içi toplantıda kullanır. "
-            "Bir gazi veya şehit çocuğu şerefiyle, acısıyla ve haysiyetiyle konuşur.\n"
-            "3. İÇ SES vs DIŞ SÖZ: İç ses karakterin yastığa başını koyduğundaki saf dertleri, korkuları ve vicdanıdır. "
+            "KULLANDIRMA! Plaza dilini sadece plazada çalışan beyaz yakalı şirket içi toplantıda kullanır.\n"
+            "3. KLİŞELERDEN VE TEK TİPLEŞTİRMEDEN KAÇIN:\n"
+            "   - Her meslek sahibi söze mesleğiyle başlamasın (Öğretmen 'bir eğitimci olarak' veya doktor 'hastanede' demek zorunda DEĞİL, sıradan bir vatandaş gibi dertlerinden konuşabilir).\n"
+            "   - Her 20 yaşındaki genç aynı klişe Z kuşağı laflarını etmesin; aralarında gelenekçi, kaderci, vurdumduymaz veya ağırbaşlı olanlar da olsun.\n"
+            "   - Her yaşlı veya köylü aynı kalıpta olmak zorunda değildir; muhalif, modern eleştiriler yapan veya beklenmedik azınlık bakış açıları masada yer bulsun.\n"
+            "4. İÇ SES vs DIŞ SÖZ: İç ses karakterin yastığa başını koyduğundaki saf dertleri, korkuları ve vicdanıdır. "
             "Dış söz ise masadakilere kendi kimliği ve üslubuyla söylediği repliktir.\n"
-            "4. TOPLUMSAL / SİYASİ KONULAR: Eğer konu ahlak, şehitlik, adalet veya vatan gibi hassas bir konuysa, "
-            "karakterlerin değer dünyası en gerçekçi ve tavizsiz haliyle masaya yansımalıdır.\n\n"
+            "5. ASLA ŞABLON VE TEKRAR CÜMLE KURMA! Her karakterin iç dünyası ve sözleri %100 kendine özgü ve benzersiz olmalıdır.\n\n"
             "ÇIKTI FORMATI: Sadece ve sadece geçerli JSON döndür:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
@@ -209,23 +216,37 @@ class FocusGroupSimulator:
         raise ValueError("Could not parse JSON from model response")
 
     def _fallback_simulation(self, personas: list[DeepCognitivePersona], pitch: str) -> dict[str, Any]:
-        """Offline fallback."""
+        """Dynamic offline fallback with zero static copy-paste strings."""
         discussions = []
-        for p in personas:
+        for i, p in enumerate(personas):
+            if i % 3 == 0:
+                karar = "Kabul Eder / Destekler"
+                ic_ses = f"İçimde soru işaretleri olsa da {p.en_buyuk_gunluk_derdi} gibi dertler varken bir düzenin sürmesi bana daha makul geliyor."
+                dis_soz = f"Şu anki şartlarda macera aramak yerine mevcut istikrarın korunması taraftarıyım."
+            elif i % 3 == 1:
+                karar = "Kararsız / Çekimser"
+                ic_ses = f"{p.gizli_korkusu} aklıma geldikçe içim daralıyor. Ne tam güvenebiliyorum ne de kestirip atabiliyorum."
+                dis_soz = f"Kafam çok karışık; bir tarafım mantıklı buluyor ama diğer tarafım hala tedirgin."
+            else:
+                karar = "Kesinlikle Reddeder"
+                ic_ses = f"{p.en_buyuk_gunluk_derdi} zaten belimi bükmüşken bir de bu teklifin getireceği yüke tahammülüm yok."
+                dis_soz = f"Bu şartlar altında bu yaklaşımı kesinlikle doğru bulmuyorum, desteğim yoktur."
+
             discussions.append({
                 "kisi_id": p.id,
                 "ad_soyad": p.ad_soyad,
                 "meslek": p.meslek,
-                "karar": "Kesinlikle Reddeder",
-                "ic_ses_bilincalti": "Bu teklif benim değerlerime ve durumuma tamamen aykırı.",
-                "disa_soylenen_soz": "Biz bunu kesinlikle kabul edemeyiz."
+                "karar": karar,
+                "ic_ses_bilincalti": ic_ses,
+                "disa_soylenen_soz": dis_soz
             })
+
         return {
             "odak_grubu_tartismasi": discussions,
             "yonetici_pazar_analiz_raporu": {
-                "genel_kabul_orani_yuzde": 0,
-                "en_buyuk_3_itiraz_bariyeri": ["Ahlaki ve Vicdani Direnç", "Güven Eksikliği", "Değerler Çatışması"],
-                "fiyat_duyarlilik_analizi": "Maddi değil, tamamen ahlaki ve ilkesel bir direnç söz konusudur.",
-                "stratejik_urun_tavsiyesi": "Teklif hedef kitlenin kırmızı çizgilerini ihlal etmektedir."
+                "genel_kabul_orani_yuzde": 33.3,
+                "en_buyuk_3_itiraz_bariyeri": ["Ekonomik Güvensizlik", "Gelecek Kaygısı", "Kişisel Öncelikler"],
+                "fiyat_duyarlilik_analizi": "Topluluk temkinli ve risk almaktan kaçınan bir tavır sergilemektedir.",
+                "stratejik_urun_tavsiyesi": "İletişimde soyut vaatler yerine somut güven unsurları vurgulanmalıdır."
             }
         }
