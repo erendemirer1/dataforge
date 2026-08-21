@@ -33,7 +33,10 @@ class SocialRadarEngine:
             "canli_gundem_maddeleri": self._cached_snapshot.get("canli_toplumsal_gundem", []),
             "canli_ekonomi_mansetleri": self._cached_snapshot.get("canli_ekonomi_mansetleri", []),
             "canli_arama_trendleri": self._cached_snapshot.get("canli_google_trendleri", []),
-            "toplumsal_duygu_ozeti": "Enflasyon temkinliliği, reel alım gücü koruma çabası ve güncel gündem duyarlılığı"
+            "canli_kamu_ve_forum_gundemi": self._cached_snapshot.get("canli_kamu_ve_forum_gundemi", []),
+            "canli_mevzuat_ve_yasa_degisiklikleri": self._cached_snapshot.get("canli_mevzuat_ve_yasa_degisiklikleri", []),
+            "canli_piyasa_gostergeleri": self._cached_snapshot.get("canli_piyasa_gostergeleri", {}),
+            "toplumsal_duygu_ozeti": "Enflasyon temkinliliği, mevzuat/hak arayışı, reel alım gücü koruma çabası ve güncel gündem duyarlılığı"
         }
 
     def enrich_persona_with_social_pulse(self, persona: dict[str, Any]) -> dict[str, Any]:
@@ -44,7 +47,11 @@ class SocialRadarEngine:
         if not self._cached_snapshot:
             self._cached_snapshot = self.scraper.get_live_cultural_snapshot()
 
-        live_topics = self._cached_snapshot.get("canli_toplumsal_gundem", [])
+        live_topics = (
+            self._cached_snapshot.get("canli_toplumsal_gundem", []) +
+            self._cached_snapshot.get("canli_kamu_ve_forum_gundemi", []) +
+            self._cached_snapshot.get("canli_mevzuat_ve_yasa_degisiklikleri", [])
+        )
         chosen_live_topic = self.rng.choice(live_topics) if live_topics else "Genel Geçim ve Enflasyon Kaygısı"
 
         persona["toplumsal_arketip"] = archetype.archetype_title
