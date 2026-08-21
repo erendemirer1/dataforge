@@ -213,7 +213,25 @@ class DynamicPromptEngine:
         city_override = None
         dist_override = None
 
-        if any(w in p_lower for w in ["kadıköy", "moda", "beşiktaş", "cihangir", "şişli", "çankaya", "alsancak", "kordon", "kentli"]):
+        is_youth = any(w in p_lower for w in ["genç", "gençler", "gençlik", "öğrenci", "üniversite", "lise", "stajyer", "gamer", "oyun"])
+        is_kadikoy_urban = any(w in p_lower for w in ["kadıköy", "moda", "beşiktaş", "cihangir", "şişli", "çankaya", "alsancak", "kordon", "kentli"])
+
+        if is_youth and is_kadikoy_urban:
+            job_pool = [
+                "Üniversite Öğrencisi (Marmara İletişim / Kadıköy)",
+                "Junior Yazılım Geliştirici (Kadıköy)",
+                "Öğrenci & Yarı Zamanlı Barista (Moda)",
+                "Grafik Tasarım & İllüstrasyon Öğrencisi",
+                "Freelance Çevirmen & Üniversite Öğrencisi",
+                "Müzik Teknolojileri Öğrencisi (Kadıköy)"
+            ]
+            age_range = (19, 26)
+            income_range = (12000, 32000)
+            edu_pool = ["Üniversite", "Lise"]
+            city_override = "İstanbul" if "çankaya" not in p_lower and "alsancak" not in p_lower and "kordon" not in p_lower else ("Ankara" if "çankaya" in p_lower else "İzmir")
+            dist_override = "Kadıköy" if any(w in p_lower for w in ["kadıköy", "moda"]) else ("Beşiktaş" if "beşiktaş" in p_lower else ("Şişli" if "şişli" in p_lower else "Konak"))
+
+        elif is_kadikoy_urban:
             job_pool = [
                 "Mimar & Şehir Plancısı",
                 "Emekli Banka Müdürü (Kadıköy Sakini)",
@@ -230,10 +248,17 @@ class DynamicPromptEngine:
             city_override = "İstanbul" if "çankaya" not in p_lower and "alsancak" not in p_lower and "kordon" not in p_lower else ("Ankara" if "çankaya" in p_lower else "İzmir")
             dist_override = "Kadıköy" if any(w in p_lower for w in ["kadıköy", "moda"]) else ("Beşiktaş" if "beşiktaş" in p_lower else ("Şişli" if "şişli" in p_lower else ("Çankaya" if "çankaya" in p_lower else "Konak")))
 
-        elif any(w in p_lower for w in ["oyun", "gamer", "espor", "twitch", "steam"]):
-            job_pool = ["Üniversite Öğrencisi (Bilgisayar Müh.)", "Genç Yazılımcı / Oyun Geliştirici", "Lise Öğrencisi / İçerik Üreticisi", "Grafik Tasarımcı & Dijital Sanatçı", "Sistem Destek Uzmanı", "Serbest Çalışan (Freelance) Çevirmen"]
-            age_range = (18, 28)
-            income_range = (15000, 48000)
+        elif is_youth:
+            job_pool = [
+                "Üniversite Öğrencisi (Bilgisayar Müh.)",
+                "Genç Yazılımcı / Oyun Geliştirici",
+                "Lise Öğrencisi / İçerik Üreticisi",
+                "Grafik Tasarımcı & Dijital Sanatçı",
+                "Sistem Destek Uzmanı",
+                "Serbest Çalışan (Freelance) Çevirmen"
+            ]
+            age_range = (18, 26)
+            income_range = (15000, 35000)
             edu_pool = ["Üniversite", "Lise", "Önlisans"]
         elif any(w in p_lower for w in ["gazi", "şehit", "asker", "polis", "güvenlik"]):
             job_pool = ["Malul Gazi (Emekli Uzman Çavuş)", "Şehit Yakını / Kamu Personeli", "Emekli Astsubay Kıdemli Başçavuş", "Özel Güvenlik Görevlisi", "Gazi Yakını / Esnaf"]
