@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from .routes.focus_group import router as focus_group_router
 from .routes.generator import router as generator_router
 from .routes.radar import router as radar_router
+from .routes.census import router as census_router
 from .. import __version__
 
 app = FastAPI(
@@ -36,6 +37,7 @@ if STATIC_DIR.exists():
 
 # API v1 Router Registration
 app.include_router(focus_group_router, prefix="/api/v1")
+app.include_router(census_router, prefix="/api/v1")
 app.include_router(generator_router, prefix="/api/v1")
 app.include_router(radar_router, prefix="/api/v1")
 

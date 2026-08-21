@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATAFORGE // Autonomous Computational Sociology & Causal Behavioral Twin Engine</title>
+    <title>DATAFORGE // Sentetik Bilişsel Nüfus & Odak Grubu Laboratuvarı</title>
     
-    <!-- Avant-Garde Editorial & Brutalist Fonts -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Editorial Serif + Space Grotesk + Space Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
         tailwind.config = {
@@ -17,36 +19,35 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        serif: ['"Instrument Serif"', 'serif'],
                         sans: ['"Space Grotesk"', 'sans-serif'],
-                        mono: ['"Space Mono"', 'monospace']
+                        serif: ['"Instrument Serif"', 'serif'],
+                        mono: ['"Space Mono"', 'monospace'],
                     },
                     colors: {
                         ink: {
-                            950: '#050505',
-                            900: '#0a0a0a',
-                            850: '#111111',
-                            800: '#1a1a1a',
-                            border: '#262626',
-                            muted: '#737373',
-                            bone: '#f4f3ef',
-                            accent: '#ff3e00'
+                            950: '#070707',
+                            900: '#0d0d0d',
+                            850: '#141414',
+                            800: '#1c1c1c',
+                            muted: '#707070',
+                            bone: '#e8e6e1',
+                            accent: '#ff3e00',
+                            signal: '#00ff66'
                         }
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
         body {
-            background-color: #050505;
-            color: #f4f3ef;
+            background-color: #070707;
+            color: #e8e6e1;
             font-family: 'Space Grotesk', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Brutalist Grid Lines */
         .brutalist-border {
             border: 1px solid #222222;
         }
@@ -63,33 +64,25 @@
             border-top: 1px solid #222222;
         }
 
-        /* Subtle Noise Grain Texture */
         .noise-bg {
             background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
             background-size: 24px 24px;
         }
 
-        /* Custom Editorial Scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: #050505;
+            background: #070707;
         }
         ::-webkit-scrollbar-thumb {
-            background: #333333;
+            background: #262626;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #ff3e00;
         }
 
-        .serif-italic {
-            font-family: 'Instrument Serif', serif;
-            font-style: italic;
-        }
-
-        /* Blinking Console Cursor */
         .cursor-blink {
             display: inline-block;
             width: 6px;
@@ -115,108 +108,189 @@
                 <span class="font-serif italic text-ink-muted text-base">/ lab</span>
             </a>
             <div class="hidden md:flex items-center space-x-3 text-[11px] font-mono text-ink-muted pl-6 brutalist-border-l">
-                <span class="text-white">SYS_MODE:</span>
-                <span class="text-emerald-400">EMPIRICAL_AGENTIC_SIMULATION</span>
+                <span class="text-white">SYS_ENGINE:</span>
+                <span class="text-emerald-400">TÜİK_SEGE_NUTS2_V4.2</span>
                 <span class="text-neutral-700">//</span>
-                <span>TÜİK_NUTS2_V4.2</span>
+                <span>BERNOULLI_MONTE_CARLO</span>
             </div>
         </div>
 
-        <div class="flex items-center space-x-6">
-            <!-- Live Web Telemetry -->
-            <div class="hidden lg:flex items-center space-x-4 text-[11px] font-mono text-ink-muted">
-                <div class="flex items-center space-x-2">
-                    <span class="w-1.5 h-1.5 bg-emerald-400"></span>
-                    <span class="text-neutral-300">LIVE_PULSE:</span>
-                    <span id="top-pulse" class="text-neutral-400">TCMB_EVDS // 6_FEEDS_CONNECTED</span>
-                </div>
-            </div>
+        <!-- Mode Switcher Tabs -->
+        <div class="flex items-center bg-ink-900 brutalist-border p-1 space-x-1 font-mono text-xs">
+            <button id="tab-focus" onclick="switchMode('focus')" class="px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition">
+                [01] YAŞAYAN YUVARLAK MASA
+            </button>
+            <button id="tab-census" onclick="switchMode('census')" class="px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition">
+                [02] BELEDİYE & ŞEHİR ANKETİ (1,000+ KİŞİ)
+            </button>
+        </div>
 
-            <div class="flex items-center space-x-2">
-                <button onclick="syncRadar()" class="text-[11px] font-mono tracking-wider uppercase px-3 py-1.5 bg-ink-900 hover:bg-ink-800 text-neutral-300 brutalist-border transition">
-                    [SYNC_RADAR]
-                </button>
-                <a href="/docs" target="_blank" class="text-[11px] font-mono tracking-wider uppercase px-3 py-1.5 bg-white text-black font-bold hover:bg-neutral-200 transition">
-                    API_SPECS →
-                </a>
+        <div class="flex items-center space-x-4">
+            <div class="hidden lg:flex items-center space-x-2 text-[11px] font-mono text-ink-muted">
+                <span class="w-1.5 h-1.5 bg-emerald-400"></span>
+                <span class="text-neutral-400" id="top-pulse">RADAR: AKTİF</span>
             </div>
+            <a href="/docs" target="_blank" class="text-[11px] font-mono tracking-wider uppercase px-3 py-1.5 bg-white text-black font-bold hover:bg-neutral-200 transition">
+                API_DOCS →
+            </a>
         </div>
     </header>
 
     <!-- 2. MAIN DOSSIER & SIMULATION WORKSPACE -->
-    <div class="flex-1 flex flex-col xl:flex-row">
+    <div class="flex-1 flex flex-col xl:flex-row min-h-0">
         
         <!-- LEFT DOSSIER PARAMETERS (CONTROL DECK) -->
-        <aside class="w-full xl:w-[440px] brutalist-border-r bg-ink-950 flex flex-col shrink-0">
+        <aside class="w-full xl:w-[460px] brutalist-border-r bg-ink-950 flex flex-col shrink-0">
             
             <!-- Section Header -->
             <div class="p-6 brutalist-border-b">
                 <div class="flex items-baseline justify-between mb-1">
-                    <span class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 01 // INPUT PARAMETERS]</span>
-                    <span class="font-mono text-[10px] text-ink-accent">CAUSAL_DAG_V2</span>
+                    <span id="panel-step-tag" class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[MOD 01 // DERİN NİTELİKSEL MASA]</span>
+                    <span class="font-mono text-[10px] text-ink-accent">TURKISH_TWIN_V2</span>
                 </div>
-                <h2 class="text-2xl font-serif text-white">Deney Parametreleri</h2>
-                <p class="text-xs text-ink-muted font-mono mt-1">Hedef kitle demografisi ve test edilecek hipotez</p>
+                <h2 id="panel-title" class="text-2xl font-serif text-white">Yuvarlak Masa Simülatörü</h2>
+                <p id="panel-desc" class="text-xs text-ink-muted font-mono mt-1">Canlı tartışan, birbirine laf atan gerçekçi insan grupları</p>
             </div>
 
             <div class="p-6 space-y-6 flex-1 overflow-y-auto">
                 
-                <!-- Quick Curated Archetypes -->
-                <div>
-                    <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2.5">
-                        // ÖRNEK TOPLUMSAL KESİT (PRESETS)
-                    </label>
-                    <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
-                        <button onclick="setSample('gazi ve şehit aileleri', 'son dönemde çerçeve yasanın kabülü ve pkk affı tartışmaları')" class="text-left p-3 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                            [01] GAZİ & ŞEHİT
-                        </button>
-                        <button onclick="setSample('işsiz genç yazılımcılar ve üniversite mezunları', '3 ay ücretsiz staj karşılığı iş garantili gelir paylaşımı sözleşmesi')" class="text-left p-3 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                            [02] PREKARYA GENÇ
-                        </button>
-                        <button onclick="setSample('çarşı ve sanayi esnafları', 'pos cihazlarında takas komisyonunun devlet eliyle yüzde 1 e sabitlenmesi')" class="text-left p-3 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                            [03] SANAYİ ESNAFI
-                        </button>
-                        <button onclick="setSample('farklı gelir gruplarından kiracılar ve ev sahipleri', 'konut kiralarında yüzde 25 tavan zam sınırının geri getirilmesi')" class="text-left p-3 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                            [04] KİRACI & MÜLK
-                        </button>
+                <!-- MODE 1: FOCUS GROUP CONTROLS -->
+                <div id="controls-focus" class="space-y-6">
+                    <!-- Presets -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // TOPLUMSAL KESİT ŞABLONLARI
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
+                            <button onclick="setFocusSample('gazi ve şehit aileleri', 'tayyip erdoğan tekrar başkan olsun mu')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [01] GAZİ & ŞEHİT
+                            </button>
+                            <button onclick="setFocusSample('oyuncu topluluğu ve genç yazılımcılar', 'türkiyede oyunların ve discordun yasaklanması')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [02] GENÇ & GAMER
+                            </button>
+                            <button onclick="setFocusSample('çarşı ve sanayi esnafları', 'pos komisyonlarının devlet eliyle yüzde 1 e sabitlenmesi')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [03] SANAYİ ESNAFI
+                            </button>
+                            <button onclick="setFocusSample('kiracılar ve ev sahipleri', 'konut kiralarında yüzde 25 tavan zam sınırının geri getirilmesi')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [04] KİRACI & MÜLK
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Target Audience -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // HEDEF KİTLE KÜMESİ (AUDIENCE)
+                        </label>
+                        <input id="target-input" type="text" value="gazi ve şehit aileleri" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition">
+                    </div>
+
+                    <!-- Question / Pitch -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // MASAYA ATILACAK SORU / POLİTİKA
+                        </label>
+                        <textarea id="pitch-input" rows="3" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">tayyip erdoğan tekrar başkan olsun mu</textarea>
+                    </div>
+
+                    <!-- Gemini Key Optional -->
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+                            // GEMINI API KEY (OPSİYONEL - CANLI LLM)
+                        </label>
+                        <input id="key-input" type="password" placeholder="AIzaSy... (Boşsa yerel Causal Engine devrededir)" class="w-full bg-ink-900 text-xs font-mono text-white p-2 brutalist-border focus:outline-none focus:border-white transition">
+                    </div>
+
+                    <!-- Participant count -->
+                    <div class="pt-2 brutalist-border-t space-y-3 font-mono text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-ink-muted">MASA KATILIMCI SAYISI:</span>
+                            <span id="count-label" class="text-white font-bold">6 KİŞİ</span>
+                        </div>
+                        <input id="count-slider" type="range" min="3" max="10" value="6" oninput="document.getElementById('count-label').innerText = this.value + ' KİŞİ'" class="w-full accent-white bg-ink-800 cursor-pointer">
                     </div>
                 </div>
 
-                <!-- Target Audience -->
-                <div>
-                    <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                        // HEDEF KİTLE KÜMESİ (AUDIENCE)
-                    </label>
-                    <input id="target-input" type="text" value="gazi ve şehit aileleri" class="w-full bg-ink-900 text-sm font-mono text-white p-3.5 brutalist-border focus:outline-none focus:border-white transition">
-                </div>
-
-                <!-- Pitch / Policy Prompt -->
-                <div>
-                    <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                        // TEKLİF / SORU / POLİTİKA (PITCH_STATEMENT)
-                    </label>
-                    <textarea id="pitch-input" rows="4" class="w-full bg-ink-900 text-sm font-mono text-white p-3.5 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">tayyip erdoğan tekrar başkan olsun mu</textarea>
-                </div>
-
-                <!-- Optional Gemini Key -->
-                <div>
-                    <label class="block font-mono text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
-                        // GEMINI API KEY (OPSİYONEL - CANLI LLM ÇAĞRISI)
-                    </label>
-                    <input id="key-input" type="password" placeholder="AIzaSy... (Boşsa yerel Causal Engine çalışır)" class="w-full bg-ink-900 text-xs font-mono text-white p-2.5 brutalist-border focus:outline-none focus:border-white transition">
-                </div>
-
-                <!-- Scale Parameters -->
-                <div class="pt-4 brutalist-border-t space-y-4 font-mono text-xs">
-                    <div class="flex items-center justify-between">
-                        <span class="text-ink-muted">KALİTATİF MASA ÖLÇEĞİ:</span>
-                        <span id="count-label" class="text-white font-bold">6 KİŞİ</span>
+                <!-- MODE 2: CENSUS & MUNICIPAL SURVEY CONTROLS -->
+                <div id="controls-census" class="space-y-6 hidden">
+                    <!-- Municipal Presets -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // BELEDİYE ÖRNEK ANKETLERİ
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
+                            <button onclick="setCensusSample('İstanbul', 'Kadıköy', 'Kadıköy rıhtımda ve kaldırımlarda elektrikli scooter kullanımı tamamen yasaklanmalı mı?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [01] KADIKÖY SCOOTER
+                            </button>
+                            <button onclick="setCensusSample('İstanbul', 'Tümü', 'İstanbulda kentsel dönüşümde kiracılara aylık 20.000 TL kira desteği verilsin mi?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [02] İBB DÖNÜŞÜM
+                            </button>
+                            <button onclick="setCensusSample('Ankara', 'Çankaya', 'Kızılay ve Tunalı bölgesinin tamamen yayalaştırılması projesini onaylıyor musunuz?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [03] ANKARA YAYALAŞTIRMA
+                            </button>
+                            <button onclick="setCensusSample('İzmir', 'Alsancak', 'Kordonboyunda gece 24:00ten sonra canlı müzik ve gürültü kısıtlaması getirilsin mi?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
+                                [04] İZMİR KORDON
+                            </button>
+                        </div>
                     </div>
-                    <input id="count-slider" type="range" min="3" max="10" value="6" oninput="document.getElementById('count-label').innerText = this.value + ' KİŞİ'" class="w-full accent-white bg-ink-800 cursor-pointer">
-                    
-                    <div class="flex items-center justify-between text-neutral-500 text-[11px]">
-                        <span>KANTİTATİF MONTE CARLO:</span>
-                        <span class="text-neutral-300">N = 1,000 NÜFUS İKİZİ</span>
+
+                    <!-- City Selector -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // HEDEF ŞEHİR (CITY FILTER)
+                        </label>
+                        <select id="census-city" onchange="updateDistrictOptions()" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
+                            <option value="İstanbul" selected>İstanbul (TÜİK TR10)</option>
+                            <option value="Ankara">Ankara (TÜİK TR51)</option>
+                            <option value="İzmir">İzmir (TÜİK TR31)</option>
+                            <option value="Bursa">Bursa (TÜİK TR41)</option>
+                            <option value="Antalya">Antalya (TÜİK TR61)</option>
+                            <option value="Tüm Türkiye">Tüm Türkiye (NUTS-2 Ağırlıklı)</option>
+                        </select>
+                    </div>
+
+                    <!-- District Selector -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // İLÇE / BÖLGE DARALTMA (DISTRICT)
+                        </label>
+                        <select id="census-district" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
+                            <option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus Dağılımı)</option>
+                            <option value="Kadıköy">Kadıköy</option>
+                            <option value="Beşiktaş">Beşiktaş</option>
+                            <option value="Şişli">Şişli</option>
+                            <option value="Üsküdar">Üsküdar</option>
+                            <option value="Fatih">Fatih</option>
+                            <option value="Esenyurt">Esenyurt</option>
+                            <option value="Bağcılar">Bağcılar</option>
+                            <option value="Ümraniye">Ümraniye</option>
+                            <option value="Pendik">Pendik</option>
+                            <option value="Bakırköy">Bakırköy</option>
+                            <option value="Sarıyer">Sarıyer</option>
+                        </select>
+                    </div>
+
+                    <!-- Policy Question -->
+                    <div>
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
+                            // ANKET SORUSU / BELEDİYE PROJESİ
+                        </label>
+                        <textarea id="census-question" rows="3" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">İstanbulda kentsel dönüşümde kiracılara aylık 20.000 TL kira desteği verilsin mi?</textarea>
+                    </div>
+
+                    <!-- Sample Size -->
+                    <div>
+                        <div class="flex items-center justify-between font-mono text-xs mb-2">
+                            <span class="text-ink-muted">SENTETİK ÖRNEKLEM (N):</span>
+                            <span id="sample-label" class="text-white font-bold">1,000 NÜFUS İKİZİ</span>
+                        </div>
+                        <select id="census-sample-size" onchange="document.getElementById('sample-label').innerText = this.value + ' NÜFUS İKİZİ'" class="w-full bg-ink-900 text-xs font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
+                            <option value="500">N = 500 Nüfus İkizi (Hızlı Hata Payı ±%4.3)</option>
+                            <option value="1000" selected>N = 1,000 Nüfus İkizi (Standart Hata Payı ±%2.4)</option>
+                            <option value="2500">N = 2,500 Nüfus İkizi (Hassas Hata Payı ±%1.8)</option>
+                            <option value="5000">N = 5,000 Nüfus İkizi (Büyükşehir Ölçeği ±%1.3)</option>
+                            <option value="10000">N = 10,000 Nüfus İkizi (Ulusal Sayım Ölçeği ±%0.9)</option>
+                        </select>
                     </div>
                 </div>
 
@@ -224,118 +298,74 @@
 
             <!-- Execute Button -->
             <div class="p-6 brutalist-border-t bg-ink-950">
-                <button id="run-trigger" onclick="runSimulation()" class="w-full py-4 bg-ink-bone hover:bg-white text-black font-mono font-bold text-xs tracking-widest uppercase transition flex items-center justify-center space-x-2">
-                    <span>SİMÜLASYONU ÇALIŞTIR [EXECUTE]</span>
+                <button id="run-trigger" onclick="handleExecute()" class="w-full py-4 bg-ink-bone hover:bg-white text-black font-mono font-bold text-xs tracking-widest uppercase transition flex items-center justify-center space-x-2">
+                    <span id="btn-text">SİMÜLASYONU ÇALIŞTIR [EXECUTE]</span>
                     <span class="font-sans">→</span>
                 </button>
             </div>
         </aside>
 
-        <!-- CENTER TRANSCRIPTS & LIVE INTERACTION -->
+        <!-- CENTER TRANSCRIPTS & CENSUS ANALYTICS CANVAS -->
         <main class="flex-1 flex flex-col bg-ink-950 min-w-0">
             
             <!-- Canvas Breadcrumb Header -->
             <div class="h-16 brutalist-border-b px-6 xl:px-10 flex items-center justify-between shrink-0 bg-ink-950">
                 <div class="flex items-center space-x-3">
-                    <span class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 02 // DELIBERATION RECORD]</span>
+                    <span id="canvas-tag" class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 02 // DELIBERATION RECORD]</span>
                     <span class="text-neutral-700">//</span>
                     <span id="exec-status" class="font-mono text-xs text-neutral-400">DURUM: BEKLEMEDE</span>
                 </div>
-                <div class="font-mono text-[11px] text-ink-muted hidden sm:block">
+                <div id="canvas-title-right" class="font-mono text-[11px] text-ink-muted hidden sm:block">
                     CANLI OTURUM TUTANAĞI
                 </div>
             </div>
 
-            <!-- Focus Group Transcripts Feed -->
-            <div id="transcript-deck" class="flex-1 p-6 xl:p-10 space-y-6 overflow-y-auto">
+            <!-- Content Deck -->
+            <div id="main-content-deck" class="flex-1 p-6 xl:p-10 space-y-6 overflow-y-auto">
                 
-                <!-- Empty State Minimalist Art -->
+                <!-- Initial Empty State -->
                 <div id="idle-placeholder" class="py-24 text-center space-y-4 max-w-lg mx-auto">
-                    <div class="font-mono text-[11px] tracking-widest text-ink-muted uppercase">[SIMULATION_IDLE]</div>
-                    <h3 class="text-4xl font-serif text-white">Masa Toplanmayı Bekliyor.</h3>
+                    <div class="font-mono text-[11px] tracking-widest text-ink-muted uppercase">[LAB_READY]</div>
+                    <h3 class="text-4xl font-serif text-white">Deneyi Başlatın.</h3>
                     <p class="text-xs font-mono text-neutral-500 leading-relaxed">
-                        Sol panelden parametreleri belirleyin ve simülasyonu başlatın. TÜİK, NUTS-2 ve KONDA dağılımlarına sahip nedensel profiller masada gerçekçi bir tartışma yürütecektir.
+                        Sol panelden istediğiniz modu (Odak Grubu veya Belediye Anketi) seçin. TÜİK ve SEGE nedensel profilleri, seçtiğiniz hedef kitle ve coğrafi daraltma doğrultusunda anında hesaplanacaktır.
                     </p>
                 </div>
 
             </div>
-
         </main>
 
-        <!-- RIGHT EXECUTIVE SYNTHESIS & COUNTERFACTUAL MATRIX -->
-        <aside class="w-full xl:w-[460px] brutalist-border-l bg-ink-950 flex flex-col shrink-0">
-            
+        <!-- RIGHT STRATEGIC DOSSIER -->
+        <aside class="w-full xl:w-[380px] brutalist-border-l bg-ink-950 flex flex-col shrink-0">
             <div class="p-6 brutalist-border-b">
-                <div class="flex items-baseline justify-between mb-1">
-                    <span class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 03 // EXECUTIVE SYNTHESIS]</span>
-                    <span class="font-mono text-[10px] text-emerald-400">95%_CI</span>
-                </div>
-                <h2 class="text-2xl font-serif text-white">Ekonometri & Karşı-Olgusal</h2>
-                <p class="text-xs text-ink-muted font-mono mt-1">Konsensüs, kutuplaşma ve what-if duyarlılığı</p>
+                <span class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 03 // EXECUTIVE BRIEF]</span>
+                <h3 class="text-xl font-serif text-white mt-1">Yönetici Strateji Raporu</h3>
             </div>
 
-            <div class="p-6 space-y-6 flex-1 overflow-y-auto font-mono">
+            <div id="sidebar-report-deck" class="p-6 space-y-5 flex-1 overflow-y-auto">
                 
-                <!-- Metric Block 01: Overall Conversion -->
+                <!-- Metric Block 01 -->
                 <div class="p-5 brutalist-border bg-ink-900">
-                    <div class="flex items-center justify-between text-xs text-ink-muted mb-2">
-                        <span>TOPLUMSAL KABUL / ONAY:</span>
-                        <span id="res-ci" class="text-[10px] text-neutral-400">CI_95: --</span>
-                    </div>
+                    <span class="text-[10px] font-mono text-neutral-500 uppercase block mb-1">// GENEL KABUL / MUTABAKAT</span>
                     <div class="flex items-baseline space-x-3">
-                        <span id="res-rate" class="text-5xl font-mono font-bold text-white tracking-tighter">--%</span>
-                        <span id="res-label" class="text-xs text-neutral-400 uppercase">BEKLENİYOR</span>
+                        <span id="res-rate" class="text-4xl font-serif text-white tracking-tight">--%</span>
+                        <span id="res-conf" class="text-[11px] font-mono text-neutral-400">%95 Güven Aralığı</span>
                     </div>
                 </div>
 
-                <!-- Metric Block 02: Counterfactual What-If Sandbox -->
-                <div class="p-5 brutalist-border bg-ink-900 space-y-3">
-                    <div class="flex items-center justify-between text-[11px] text-ink-muted uppercase pb-2 brutalist-border-b">
-                        <span>// KARŞI-OLGUSAL STRES TESTİ (WHAT-IF)</span>
-                        <span class="text-ink-accent">MATRIX</span>
-                    </div>
-                    
-                    <div class="space-y-3 text-xs">
-                        <div class="space-y-1">
-                            <span class="text-neutral-500 text-[10px] uppercase block">[SENARYO 1 // DEVLET GÜVENCESİ / GARANTİ]</span>
-                            <p id="wf-1" class="text-neutral-300 font-sans text-xs leading-relaxed">Veri bekleniyor...</p>
-                        </div>
-                        <div class="space-y-1 pt-2 brutalist-border-t">
-                            <span class="text-neutral-500 text-[10px] uppercase block">[SENARYO 2 // %25 MALİYET / FİYAT KIRILMASI]</span>
-                            <p id="wf-2" class="text-neutral-300 font-sans text-xs leading-relaxed">Veri bekleniyor...</p>
-                        </div>
-                        <div class="space-y-1 pt-2 brutalist-border-t">
-                            <span class="text-neutral-500 text-[10px] uppercase block">[İLK ELASTİK KIRILMA // HIZLI İKNA SEGMENTİ]</span>
-                            <p id="wf-3" class="text-emerald-400 font-sans text-xs leading-relaxed">Veri bekleniyor...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Metric Block 03: Polarization & Resistance -->
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="p-4 brutalist-border bg-ink-900">
-                        <span class="text-neutral-500 text-[10px] uppercase block mb-1">KUTUPLAŞMA (Q):</span>
-                        <span id="res-pol" class="text-base font-bold text-white tracking-tight">--</span>
-                    </div>
-                    <div class="p-4 brutalist-border bg-ink-900">
-                        <span class="text-neutral-500 text-[10px] uppercase block mb-1">AHLAKİ DİRENÇ:</span>
-                        <span id="res-moral" class="text-base font-bold text-white tracking-tight">-- / 100</span>
-                    </div>
-                </div>
-
-                <!-- Metric Block 04: Primary Sociological Barriers -->
-                <div class="p-5 brutalist-border bg-ink-900">
-                    <span class="text-[11px] text-ink-muted uppercase block mb-3">// TEMEL SOSYOLOJİK BARİYERLER</span>
-                    <ul id="res-barriers" class="space-y-2.5 text-xs text-neutral-300 font-sans">
+                <!-- Metric Block 02: Barriers -->
+                <div class="p-5 brutalist-border bg-ink-900 space-y-2">
+                    <span class="text-[10px] font-mono text-neutral-500 uppercase block">// EN BÜYÜK DİRENÇ NOKTALARI</span>
+                    <ul id="res-barriers" class="space-y-1.5 font-mono text-xs text-neutral-300">
                         <li class="text-neutral-600 font-mono text-[11px]">Henüz simülasyon yürütülmedi.</li>
                     </ul>
                 </div>
 
-                <!-- Metric Block 05: Strategic Recommendation -->
+                <!-- Metric Block 03: Strategic Action -->
                 <div class="p-5 brutalist-border bg-ink-850">
-                    <span class="text-[11px] text-ink-accent uppercase block mb-2 font-mono">// STRATEJİK DEĞERLENDİRME</span>
+                    <span class="text-[11px] text-ink-accent uppercase block mb-2 font-mono">// STRATEJİK EYLEM PLANI</span>
                     <p id="res-strategic" class="text-xs text-neutral-300 font-serif italic text-base leading-relaxed">
-                        Deney sonuçlandığında sosyolojik sentez buraya yazılacaktır.
+                        Deney sonuçlandığında sosyolojik ve yönetsel sentez buraya yazılacaktır.
                     </p>
                 </div>
 
@@ -346,22 +376,87 @@
 
     <!-- Scripts -->
     <script>
-        function setSample(target, pitch) {
+        let currentMode = 'focus'; // 'focus' or 'census'
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnFocus = document.getElementById('tab-focus');
+            const btnCensus = document.getElementById('tab-census');
+            const ctrlFocus = document.getElementById('controls-focus');
+            const ctrlCensus = document.getElementById('controls-census');
+            const pTitle = document.getElementById('panel-title');
+            const pDesc = document.getElementById('panel-desc');
+            const pStepTag = document.getElementById('panel-step-tag');
+            const canvasTag = document.getElementById('canvas-tag');
+            const canvasRight = document.getElementById('canvas-title-right');
+
+            if (mode === 'focus') {
+                btnFocus.className = "px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition";
+                btnCensus.className = "px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition";
+                ctrlFocus.classList.remove('hidden');
+                ctrlCensus.classList.add('hidden');
+                pTitle.innerText = "Yuvarlak Masa Simülatörü";
+                pDesc.innerText = "Canlı tartışan, birbirine laf atan gerçekçi insan grupları";
+                pStepTag.innerText = "[MOD 01 // DERİN NİTELİKSEL MASA]";
+                canvasTag.innerText = "[SECTION 02 // DELIBERATION RECORD]";
+                canvasRight.innerText = "CANLI OTURUM TUTANAĞI";
+            } else {
+                btnCensus.className = "px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition";
+                btnFocus.className = "px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition";
+                ctrlCensus.classList.remove('hidden');
+                ctrlFocus.classList.add('hidden');
+                pTitle.innerText = "Belediye & Şehir Anketi";
+                pDesc.innerText = "TÜİK ve SEGE ağırlıklı 1.000+ kişilik sentetik kamuoyu araştırması";
+                pStepTag.innerText = "[MOD 02 // KANTİTATİF NÜFUS SAYIMI]";
+                canvasTag.innerText = "[SECTION 02 // CENSUS & POLL REPORT]";
+                canvasRight.innerText = "BELEDİYE KAMUOYU RAPORU";
+            }
+        }
+
+        function setFocusSample(target, pitch) {
             document.getElementById('target-input').value = target;
             document.getElementById('pitch-input').value = pitch;
         }
 
-        async function syncRadar() {
-            try {
-                const resp = await fetch('/api/v1/radar/sync', { method: 'POST' });
-                const d = await resp.json();
-                document.getElementById('top-pulse').innerText = `RADAR_SYNCED // ${d.toplam_hafiza_kaydi}_ENTRIES_STORED`;
-            } catch (e) {
-                console.error(e);
+        function setCensusSample(city, district, question) {
+            document.getElementById('census-city').value = city;
+            updateDistrictOptions();
+            document.getElementById('census-district').value = district;
+            document.getElementById('census-question').value = question;
+        }
+
+        function updateDistrictOptions() {
+            const city = document.getElementById('census-city').value;
+            const distSelect = document.getElementById('census-district');
+            distSelect.innerHTML = '<option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus)</option>';
+
+            const distMap = {
+                "İstanbul": ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Fatih", "Esenyurt", "Bağcılar", "Ümraniye", "Pendik", "Bakırköy", "Sarıyer", "Kartal", "Başakşehir", "Beylikdüzü"],
+                "Ankara": ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut", "Sincan", "Altındağ", "Gölbaşı"],
+                "İzmir": ["Konak", "Karşıyaka", "Bornova", "Buca", "Çiğli", "Bayraklı", "Alsancak", "Karabağlar"],
+                "Bursa": ["Nilüfer", "Osmangazi", "Yıldırım", "Mudanya", "İnegöl"],
+                "Antalya": ["Muratpaşa", "Kepez", "Konyaaltı", "Alanya", "Manavgat"]
+            };
+
+            if (distMap[city]) {
+                distMap[city].forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.innerText = d;
+                    distSelect.appendChild(opt);
+                });
             }
         }
 
-        async function runSimulation() {
+        function handleExecute() {
+            if (currentMode === 'focus') {
+                runFocusSimulation();
+            } else {
+                runCensusPoll();
+            }
+        }
+
+        async function runFocusSimulation() {
             const target = document.getElementById('target-input').value;
             const pitch = document.getElementById('pitch-input').value;
             const count = parseInt(document.getElementById('count-slider').value);
@@ -369,7 +464,7 @@
 
             const btn = document.getElementById('run-trigger');
             const statusLabel = document.getElementById('exec-status');
-            const deck = document.getElementById('transcript-deck');
+            const deck = document.getElementById('main-content-deck');
 
             btn.disabled = true;
             btn.innerHTML = '<span>İŞLENİYOR [COMPUTING...]</span><span class="cursor-blink"></span>';
@@ -390,9 +485,7 @@
                     count: count,
                     monte_carlo_n: 1000
                 };
-                if (apiKey) {
-                    payload.api_key = apiKey;
-                }
+                if (apiKey) payload.api_key = apiKey;
 
                 const resp = await fetch('/api/v1/focus-group/simulate', {
                     method: 'POST',
@@ -401,96 +494,240 @@
                 });
 
                 const data = await resp.json();
-                renderEditorialOutput(data);
-
-            } catch (err) {
-                deck.innerHTML = `<div class="p-6 brutalist-border bg-ink-900 text-rose-400 font-mono text-xs">HATA: ${err.message}</div>`;
+                renderFocusOutput(data);
+            } catch (e) {
+                deck.innerHTML = `<div class="p-6 bg-red-950/30 text-red-400 brutalist-border font-mono text-xs">Simülasyon Hatası: ${e.message}</div>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<span>SİMÜLASYONU ÇALIŞTIR [EXECUTE]</span><span class="font-sans">→</span>';
-                statusLabel.innerText = 'DURUM: OTURUM TAMAMLANDI';
+                statusLabel.innerText = 'DURUM: TAMAMLANDI';
                 statusLabel.className = 'font-mono text-xs text-emerald-400';
             }
         }
 
-        function renderEditorialOutput(data) {
-            const deck = document.getElementById('transcript-deck');
-            const persons = data.odak_grubu_tartismasi || [];
-            const rep = data.yonetici_pazar_analiz_raporu || {};
-            const mc = data.kantitatif_monte_carlo_raporu || {};
-
+        function renderFocusOutput(data) {
+            const deck = document.getElementById('main-content-deck');
             deck.innerHTML = '';
 
-            persons.forEach((p, idx) => {
-                const isPos = p.karar.includes('Kabul') || p.karar.includes('Destek') || p.karar.includes('Satın');
-                const isNeg = p.karar.includes('Red') || p.karar.includes('Kopuş');
-                
-                const stanceClass = isPos ? 'text-emerald-400 border-emerald-400/40' : (isNeg ? 'text-rose-400 border-rose-400/40' : 'text-amber-400 border-amber-400/40');
+            const discussions = data.odak_grubu_tartismasi || [];
+            discussions.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'p-6 brutalist-border bg-ink-900 space-y-4';
 
-                const card = `
-                    <article class="brutalist-border bg-ink-900 p-6 space-y-5">
-                        <div class="flex flex-wrap items-baseline justify-between gap-2 brutalist-border-b pb-3">
-                            <div class="flex items-baseline space-x-3">
-                                <span class="font-mono text-xs text-neutral-500">[REF_${String(idx + 1).padStart(2, '0')}]</span>
-                                <h4 class="font-mono text-sm font-bold text-white tracking-tight">${p.ad_soyad || 'ÖZNE'}</h4>
-                                <span class="font-mono text-xs text-ink-muted">// ${p.meslek || 'Vatandaş'}</span>
-                            </div>
-                            <span class="font-mono text-[11px] px-2.5 py-0.5 border ${stanceClass} uppercase tracking-wider">
-                                ${p.karar}
+                let badgeColor = 'text-neutral-400 border-neutral-700';
+                if (item.karar && item.karar.includes('Kabul')) {
+                    badgeColor = 'text-emerald-400 border-emerald-900 bg-emerald-950/30';
+                } else if (item.karar && item.karar.includes('Red')) {
+                    badgeColor = 'text-rose-500 border-rose-900 bg-rose-950/30';
+                } else {
+                    badgeColor = 'text-amber-400 border-amber-900 bg-amber-950/30';
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-baseline justify-between border-b border-neutral-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-mono text-xs text-neutral-500">[REF_0${idx+1}]</span>
+                            <span class="font-mono text-sm font-bold text-white tracking-wide">${item.ad_soyad}</span>
+                            <span class="font-mono text-xs text-neutral-500">// ${item.meslek}</span>
+                        </div>
+                        <span class="px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider border ${badgeColor}">
+                            ${item.karar}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <div class="space-y-1.5">
+                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-wider block">
+                                // BİLİNÇALTI İÇ SES & VİCDANİ SIZI:
                             </span>
+                            <p class="font-serif italic text-base text-neutral-300 leading-relaxed">
+                                "${item.ic_ses_bilincalti}"
+                            </p>
                         </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-1">
-                            <!-- Subconscious Internal Monologue -->
-                            <div class="space-y-2">
-                                <span class="font-mono text-[10px] text-neutral-500 tracking-widest uppercase block">
-                                    // BİLİNÇALTI İÇ SES & VİCDANİ SIZI:
-                                </span>
-                                <blockquote class="font-serif italic text-base text-neutral-300 leading-relaxed border-l border-neutral-700 pl-4 py-1">
-                                    "${p.ic_ses_bilincalti || ''}"
-                                </blockquote>
-                            </div>
-
-                            <!-- Spoken Table Utterance -->
-                            <div class="space-y-2">
-                                <span class="font-mono text-[10px] text-neutral-500 tracking-widest uppercase block">
-                                    // MASADAKİ SÖZLÜ İFADESİ:
-                                </span>
-                                <p class="font-mono text-xs text-white leading-relaxed bg-ink-950 p-3.5 brutalist-border">
-                                    "${p.disa_soylenen_soz || ''}"
-                                </p>
-                            </div>
+                        <div class="space-y-1.5 md:border-l md:border-neutral-800 md:pl-6">
+                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-wider block">
+                                // MASADAKİ SÖZLÜ İFADESİ:
+                            </span>
+                            <p class="font-mono text-xs text-white leading-relaxed">
+                                "${item.disa_soylenen_soz}"
+                            </p>
                         </div>
-                    </article>
+                    </div>
                 `;
-                deck.innerHTML += card;
+                deck.appendChild(card);
             });
 
-            // Update Right Side Metrics
-            const acceptPct = rep.genel_kabul_orani_yuzde || mc.matematiksel_kabul_orani_yuzde || 0;
-            document.getElementById('res-rate').innerText = '%' + acceptPct;
-            document.getElementById('res-label').innerText = acceptPct >= 50 ? 'KONSENSÜS SAĞLANDI' : 'YÜKSEK DİRENÇ';
-            document.getElementById('res-ci').innerText = mc.guven_araligi_yuzde_95 ? `CI_95: ${mc.guven_araligi_yuzde_95}` : 'CI_95: HESAPLANDI';
+            // Update Right Sidebar
+            const rep = data.yonetici_pazar_analiz_raporu || {};
+            document.getElementById('res-rate').innerText = (rep.genel_kabul_orani_yuzde || '--') + '%';
+            document.getElementById('res-conf').innerText = rep.kutuplasma_indeksi_skoru ? `Kutuplaşma: ${rep.kutuplasma_indeksi_skoru}` : '%95 Güven Aralığı';
 
-            const wf = rep.what_if_karsi_olgusal_stres_testi || {};
-            document.getElementById('wf-1').innerText = wf.senaryo_1_guvence || 'Veri bulunamadı.';
-            document.getElementById('wf-2').innerText = wf.senaryo_2_fiyat || 'Veri bulunamadı.';
-            document.getElementById('wf-3').innerText = wf.en_hizli_ikna_olacak_segment || 'Veri bulunamadı.';
-
-            document.getElementById('res-pol').innerText = rep.kutuplasma_indeksi_skoru || '0.74 (YÜKSEK)';
-            document.getElementById('res-moral').innerText = (mc.ahlaki_direnc_indeksi || 42.0) + ' / 100';
-
-            // Barriers
-            const barrierContainer = document.getElementById('res-barriers');
-            barrierContainer.innerHTML = '';
-            const barriers = rep.en_buyuk_3_itiraz_bariyeri || [];
-            barriers.forEach((b, i) => {
-                const txt = typeof b === 'string' ? b : (b.tema ? `${b.tema}: ${b.bulgu}` : JSON.stringify(b));
-                barrierContainer.innerHTML += `<li class="flex items-baseline space-x-2"><span class="font-mono text-neutral-500 text-[10px]">[0${i+1}]</span><span>${txt}</span></li>`;
+            const barriersList = document.getElementById('res-barriers');
+            barriersList.innerHTML = '';
+            (rep.en_buyuk_3_itiraz_bariyeri || []).forEach(b => {
+                const li = document.createElement('li');
+                li.innerText = `• ${b}`;
+                barriersList.appendChild(li);
             });
 
-            // Strategic
-            document.getElementById('res-strategic').innerText = rep.stratejik_urun_tavsiyesi || 'Tavsiye girilmedi.';
+            document.getElementById('res-strategic').innerText = rep.stratejik_urun_tavsiyesi || 'Sentez tamamlandı.';
+        }
+
+        async function runCensusPoll() {
+            const city = document.getElementById('census-city').value;
+            const district = document.getElementById('census-district').value;
+            const question = document.getElementById('census-question').value;
+            const sampleSize = parseInt(document.getElementById('census-sample-size').value);
+
+            const btn = document.getElementById('run-trigger');
+            const statusLabel = document.getElementById('exec-status');
+            const deck = document.getElementById('main-content-deck');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>ANKET YÜRÜTÜLÜYOR [POLLING...]</span><span class="cursor-blink"></span>';
+            statusLabel.innerText = `DURUM: ${city.toUpperCase()} (${district}) İÇİN N=${sampleSize} NÜFUS İKİZİ SAYILIYOR`;
+            statusLabel.className = 'font-mono text-xs text-amber-400 animate-pulse';
+
+            deck.innerHTML = `
+                <div class="py-20 text-center font-mono text-xs space-y-3">
+                    <div class="text-neutral-400">[EXECUTING_MUNICIPAL_CENSUS_MONTE_CARLO]</div>
+                    <div class="text-ink-muted">TÜİK NUTS-2 ve SEGE Sosyoekonomik İlçe Ağırlıkları Yükleniyor...</div>
+                </div>
+            `;
+
+            try {
+                const resp = await fetch('/api/v1/census/poll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        city: city,
+                        district: district,
+                        question: question,
+                        sample_size: sampleSize
+                    })
+                });
+
+                const data = await resp.json();
+                renderCensusOutput(data);
+            } catch (e) {
+                deck.innerHTML = `<div class="p-6 bg-red-950/30 text-red-400 brutalist-border font-mono text-xs">Anket Hatası: ${e.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>ANKETİ ÇALIŞTIR [EXECUTE POLL]</span><span class="font-sans">→</span>';
+                statusLabel.innerText = 'DURUM: ANKET TAMAMLANDI';
+                statusLabel.className = 'font-mono text-xs text-emerald-400';
+            }
+        }
+
+        function renderCensusOutput(d) {
+            const deck = document.getElementById('main-content-deck');
+            deck.innerHTML = `
+                <!-- Grand Metric Showcase -->
+                <div class="p-8 brutalist-border bg-ink-900 space-y-6">
+                    <div class="flex items-baseline justify-between border-b border-neutral-800 pb-4">
+                        <div>
+                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">[CENSUS_REPORT // ${d.hedef_bolge}]</span>
+                            <h2 class="text-2xl font-serif text-white mt-1">"${d.soru_veya_politika}"</h2>
+                        </div>
+                        <div class="text-right font-mono">
+                            <span class="text-xs text-neutral-400">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
+                            <div class="text-[10px] text-emerald-400 font-bold">${d.hata_payi_yuzde} Hata Payı (${d.guven_araligi_yuzde_95})</div>
+                        </div>
+                    </div>
+
+                    <!-- 3-Way Vote Split -->
+                    <div class="grid grid-cols-3 gap-4 font-mono">
+                        <div class="p-4 bg-emerald-950/20 border border-emerald-900/60">
+                            <span class="text-[10px] text-emerald-500 uppercase block mb-1">KABUL / DESTEKLER</span>
+                            <span class="text-4xl font-serif font-bold text-emerald-400">%${d.genel_kabul_yuzde}</span>
+                        </div>
+                        <div class="p-4 bg-rose-950/20 border border-rose-900/60">
+                            <span class="text-[10px] text-rose-500 uppercase block mb-1">RET / KARŞI ÇIKAR</span>
+                            <span class="text-4xl font-serif font-bold text-rose-400">%${d.genel_ret_yuzde}</span>
+                        </div>
+                        <div class="p-4 bg-amber-950/20 border border-amber-900/60">
+                            <span class="text-[10px] text-amber-500 uppercase block mb-1">KARARSIZ / ÇEKİMSER</span>
+                            <span class="text-4xl font-serif font-bold text-amber-400">%${d.genel_kararsiz_yuzde}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cross-Tabs: District & Demographics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- District Breakdown -->
+                    <div class="p-6 brutalist-border bg-ink-900 space-y-4">
+                        <span class="font-mono text-[11px] text-neutral-400 uppercase tracking-wider block border-b border-neutral-800 pb-2">
+                            // İLÇE / BÖLGE BAZINDA KABUL DAĞILIMI
+                        </span>
+                        <div class="space-y-2.5 font-mono text-xs max-h-64 overflow-y-auto pr-2">
+                            ${d.ilce_kirilimi.map(x => `
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-neutral-300 text-[11px]">
+                                        <span>${x.segment} (N=${x.orneklem_sayisi})</span>
+                                        <span class="font-bold text-white">%${x.kabul_yuzde} Kabul</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-neutral-800 flex overflow-hidden">
+                                        <div style="width: ${x.kabul_yuzde}%" class="bg-emerald-400"></div>
+                                        <div style="width: ${x.ret_yuzde}%" class="bg-rose-500"></div>
+                                        <div style="width: ${x.kararsiz_yuzde}%" class="bg-amber-400"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Age & Housing Breakdown -->
+                    <div class="p-6 brutalist-border bg-ink-900 space-y-4">
+                        <span class="font-mono text-[11px] text-neutral-400 uppercase tracking-wider block border-b border-neutral-800 pb-2">
+                            // SOSYO-DEMOGRAFİK ÇAPRAZ KIRILIMLAR
+                        </span>
+                        
+                        <div class="space-y-4 font-mono text-xs">
+                            <div>
+                                <span class="text-[10px] text-neutral-500 uppercase block mb-1.5">MÜLKİYET DURUMU</span>
+                                <div class="space-y-2">
+                                    ${d.barinma_durumu_kirilimi.map(x => `
+                                        <div class="flex items-center justify-between text-[11px] bg-ink-950 p-2 brutalist-border">
+                                            <span class="text-neutral-300 font-bold">${x.segment}</span>
+                                            <span class="text-emerald-400">%${x.kabul_yuzde} Kabul</span>
+                                            <span class="text-rose-400">%${x.ret_yuzde} Ret</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-[10px] text-neutral-500 uppercase block mb-1.5">YAŞ GRUPLARI</span>
+                                <div class="space-y-2">
+                                    ${d.yas_grubu_kirilimi.map(x => `
+                                        <div class="flex items-center justify-between text-[11px] bg-ink-950 p-2 brutalist-border">
+                                            <span class="text-neutral-300">${x.segment}</span>
+                                            <span class="text-emerald-400">%${x.kabul_yuzde} Evet</span>
+                                            <span class="text-rose-400">%${x.ret_yuzde} Hayır</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+
+            // Update Right Sidebar for Census
+            document.getElementById('res-rate').innerText = `%${d.genel_kabul_yuzde}`;
+            document.getElementById('res-conf').innerText = `${d.hata_payi_yuzde} Hata Payı`;
+
+            const barriersList = document.getElementById('res-barriers');
+            barriersList.innerHTML = '';
+            (d.en_buyuk_toplumsal_direnc_noktalari || []).forEach(b => {
+                const li = document.createElement('li');
+                li.innerText = `• ${b}`;
+                barriersList.appendChild(li);
+            });
+
+            document.getElementById('res-strategic').innerText = d.belediye_stratejik_aksiyon_plani || 'Belediye analizi tamamlandı.';
         }
     </script>
 </body>
