@@ -1,11 +1,9 @@
-"""
-DataForge Enterprise REST API Server.
-Production-grade FastAPI Gateway for Synthetic Data & Cognitive Focus Group Simulation.
-"""
-from __future__ import annotations
-
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from .routes.focus_group import router as focus_group_router
 from .routes.generator import router as generator_router
 from .routes.radar import router as radar_router
@@ -31,29 +29,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Static directory setup
+STATIC_DIR = Path(__file__).parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 # API v1 Router Registration
 app.include_router(focus_group_router, prefix="/api/v1")
 app.include_router(generator_router, prefix="/api/v1")
 app.include_router(radar_router, prefix="/api/v1")
 
 
-@app.get("/", tags=["Health & Info"])
-async def root():
+@app.get("/", tags=["Studio Web Interface"])
+async def studio_ui():
+    """Serves the bespoke handcrafted DataForge Studio interface."""
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))
     return {
-        "service": "DataForge Cognitive & Synthetic Data Engine",
+        "service": "DataForge Cognitive Engine",
         "version": __version__,
-        "status": "healthy",
-        "docs": "/docs",
-        "endpoints": {
-            "focus_group": "/api/v1/focus-group/simulate",
-            "generator": "/api/v1/generate",
-            "radar_pulse": "/api/v1/radar/pulse",
-            "radar_sync": "/api/v1/radar/sync",
-            "radar_status": "/api/v1/radar/status"
-        }
+        "docs": "/docs"
     }
 
 
 @app.get("/health", tags=["Health & Info"])
 async def health():
     return {"status": "ok", "version": __version__}
+
