@@ -198,6 +198,14 @@
                     <textarea id="pitch-input" rows="4" class="w-full bg-ink-900 text-sm font-mono text-white p-3.5 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">tayyip erdoğan tekrar başkan olsun mu</textarea>
                 </div>
 
+                <!-- Optional Gemini Key -->
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+                        // GEMINI API KEY (OPSİYONEL - CANLI LLM ÇAĞRISI)
+                    </label>
+                    <input id="key-input" type="password" placeholder="AIzaSy... (Boşsa yerel Causal Engine çalışır)" class="w-full bg-ink-900 text-xs font-mono text-white p-2.5 brutalist-border focus:outline-none focus:border-white transition">
+                </div>
+
                 <!-- Scale Parameters -->
                 <div class="pt-4 brutalist-border-t space-y-4 font-mono text-xs">
                     <div class="flex items-center justify-between">
@@ -357,6 +365,7 @@
             const target = document.getElementById('target-input').value;
             const pitch = document.getElementById('pitch-input').value;
             const count = parseInt(document.getElementById('count-slider').value);
+            const apiKey = document.getElementById('key-input').value.trim();
 
             const btn = document.getElementById('run-trigger');
             const statusLabel = document.getElementById('exec-status');
@@ -375,15 +384,20 @@
             `;
 
             try {
+                const payload = {
+                    target_audience: target,
+                    pitch_or_question: pitch,
+                    count: count,
+                    monte_carlo_n: 1000
+                };
+                if (apiKey) {
+                    payload.api_key = apiKey;
+                }
+
                 const resp = await fetch('/api/v1/focus-group/simulate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        target_audience: target,
-                        pitch_or_question: pitch,
-                        count: count,
-                        monte_carlo_n: 1000
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await resp.json();

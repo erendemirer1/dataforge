@@ -14,6 +14,7 @@ class FocusGroupRequest(BaseModel):
     pitch_or_question: str = Field(..., description="Test edilecek ürün teklifi, soru veya politika")
     count: int = Field(default=6, ge=1, le=1000, description="Kalitatif masa simülasyonu katılımcı sayısı")
     monte_carlo_n: int = Field(default=1000, ge=100, le=10000, description="Kantitatif Monte Carlo örneklem büyüklüğü")
+    api_key: Optional[str] = Field(default=None, description="Opsiyonel Google Gemini API anahtarı")
 
 
 class FocusGroupDiscussionItem(BaseModel):

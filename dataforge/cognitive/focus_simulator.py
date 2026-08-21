@@ -56,7 +56,8 @@ class FocusGroupSimulator:
         target_audience: str,
         pitch_or_question: str,
         count: int = 4,
-        monte_carlo_n: int = 1000
+        monte_carlo_n: int = 1000,
+        api_key: Optional[str] = None
     ) -> dict[str, Any]:
         """
         Synthesizes deep personas, simulates focus group discussion,
@@ -89,12 +90,11 @@ class FocusGroupSimulator:
             step = len(cognitive_personas) // 6
             qualitative_personas = [cognitive_personas[i * step] for i in range(min(6, len(cognitive_personas)))]
 
-        api_key = self._get_api_key()
-        # Test if valid key
+        effective_key = api_key or self._get_api_key()
         sim_result = None
-        if api_key and not api_key.startswith("AQ."):
+        if effective_key and not effective_key.startswith("AQ."):
             try:
-                sim_result = self._simulate_with_gemini(qualitative_personas, target_audience, pitch_or_question, api_key)
+                sim_result = self._simulate_with_gemini(qualitative_personas, target_audience, pitch_or_question, effective_key)
             except Exception:
                 sim_result = None
 
@@ -135,7 +135,7 @@ class FocusGroupSimulator:
             "KESİN KURALLAR:\n"
             "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine ve travmasına uygun bir sesi olsun.\n"
             "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın (Group Dynamics).\n"
-            "3. İç ses ve dış söz arasındaki çelişkiyi veya samimiyeti yansıt.\n"
+            "3. Asla çelişkili ifadeler kurma (Örn: Hükümete kızıp aynı anda destekleme gibi mantık hataları olmasın).\n"
         )
 
         user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
@@ -194,10 +194,8 @@ class FocusGroupSimulator:
             b = p.latent_belief
             age = p.yas
             name = p.ad_soyad
-            first_name = name.split()[0]
             pain = p.en_buyuk_gunluk_derdi
             fear = p.gizli_korkusu
-            crisis = p.historical_memory.tarihsel_kirilma_ani
 
             # ----------------------------------------------------
             # CASE 1: SİYASİ LİDERLİK / BAŞKANLIK / SEÇİM
@@ -210,15 +208,15 @@ class FocusGroupSimulator:
                     accept_count += 1
                     
                     ic_ses_options = [
-                        f"Etrafımızda savaşlar sürerken ve dünya bu kadar kaynarken devleti tecrübesiz ellere bırakamayız. {pain} zorluyor ama liderlik başka bir şey.",
-                        f"Kusurları, hataları elbette var ama karşısında bu memleketi yönetecek ikinci bir dirayetli lider göremiyorum. {crisis} dönemlerini yaşayan biri olarak maceraya tahammülüm yok.",
+                        f"Etrafımızda savaşlar sürerken ve bölge bu kadar kaynarken devleti tecrübesiz ellere bırakamayız. Liderlik ve tecrübe her şeyden önemlidir.",
+                        f"Kusurlar elbette var ama karşısında bu memleketi toparlayacak ikinci bir dirayetli lider göremiyorum. Maceraya atılacak lüksümüz yok.",
                         f"Savunma sanayiinde yapılanları, İHA'ları, SİHA'ları ve uluslararası ağırlığımızı kimse inkar edemez. Geçim sıkıntısı var ama devletin başı dik durmalı.",
-                        f"Benim için en mühim olan vatanın bölünmezliği ve istikrardır. {fear} aklıma geldikçe, Tayyip Bey'in güçlü duruşunun devam etmesi gerektiğini düşünüyorum."
+                        f"Benim için en mühim olan vatanın bölünmezliği ve istikrardır. Türkiye'nin düşmanlarına karşı Tayyip Bey'in güçlü duruşunun devam etmesi gerektiğine inanıyorum."
                     ]
                     
                     dis_soz_options = [
                         f"Bakın arkadaşlar, eleştirilecek çok şey var ama şu anki jeopolitik yangın yerinde masada kimin oturacağı hayati önem taşır. Ben şahsen tecrübeden ve istikrardan yanayım.",
-                        f"Ben {occ} olarak konuşuyorum; piyasada zorluklar var doğru ama lider değişirse işler düzelecek mi sanıyorsunuz? Daha büyük bir kaos çıkar.",
+                        f"Ben bir {occ} olarak konuşuyorum; piyasada zorluklar var doğru ama lider değişirse işler düzelecek mi sanıyorsunuz? Daha büyük bir kaos çıkar.",
                         f"Mesele şahıs meselesi değil, devletin dirayeti meselesidir. Mevcut liderin uluslararası alandaki ağırlığı bu ülkenin tek güvencesidir.",
                         f"Biz bu topraklarda çok koalisyonlar, çok krizler gördük. Bugün zorluk çekiyoruz ama başımızda kararlı bir irade olması her şeyden kıymetlidir."
                     ]
@@ -228,7 +226,7 @@ class FocusGroupSimulator:
                     
                     ic_ses_options = [
                         f"Yirmi yılı aşkın süredir aynı vaatler ama geldiğimiz yer ortada: Market filesi dolmuyor, {pain} altında eziliyoruz. Artık tek bir gün bile katlanacak sabrım kalmadı.",
-                        f"{crisis} travmasını atlatamadan her geçen gün alım gücümüzün erimesi, gençlerin umutsuzluğu ve liyakatsizlik canıma yetti. Bu düzen böyle gidemez.",
+                        f"Her geçen gün alım gücümüzün erimesi, gençlerin umutsuzluğu ve liyakatsizlik canıma yetti. Bu düzen böyle gidemez.",
                         f"Ülkede adalet kalmadı, torpili olan işe giriyor, biz ise {fear} içinde kıvranıyoruz. Değişim olmadan bu millet nefes alamaz.",
                         f"Bir {occ} olarak her sabah uyandığımda paramın değer kaybetmesinden, geleceğimin kararmasından usandım. Yeni bir vizyon ve genç kadrolar şart.",
                         f"Emekli maaşıyla, sabit gelirle simit bile alamaz hale geldik. {pain} yetmezmiş gibi bir de her şey güllük gülistanlık gibi davranılması kanıma dokunuyor."

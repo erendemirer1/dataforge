@@ -24,7 +24,8 @@ async def simulate_focus_group(req: FocusGroupRequest):
             target_audience=req.target_audience,
             pitch_or_question=req.pitch_or_question,
             count=req.count,
-            monte_carlo_n=req.monte_carlo_n
+            monte_carlo_n=req.monte_carlo_n,
+            api_key=req.api_key
         )
         return result
     except Exception as e:
