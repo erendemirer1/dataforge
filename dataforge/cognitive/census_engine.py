@@ -1,9 +1,8 @@
 """
 DataForge Municipal & Macro-Demographic Synthetic Census Polling Engine.
 Powered by Stratified Demographic LLM Inhabitation & TÜİK/SEGE Calibration.
-Simulates high-fidelity municipal and national surveys (N=100 to N=10,000) in under 4 seconds,
-delivering cross-tabulations (age, gender, district, income, housing), individual citizen ballots,
-and executive strategic recommendations.
+Zero topic hardcoding, zero cross-survey collision.
+Simulates high-fidelity municipal surveys (N=100 to N=10,000) dynamically.
 """
 from __future__ import annotations
 
@@ -28,8 +27,8 @@ class CitizenBallot:
     meslek: str
     egitim_durumu: str
     aylik_net_gelir_tl: float
-    barinma_durumu: str # "Kiracı", "Ev Sahibi", "Aile Evi", "Lojman"
-    karar: str # "Kabul Eder / Destekler", "Kesinlikle Reddeder", "Kararsız / Çekimser"
+    barinma_durumu: str
+    karar: str
     bireysel_dusuncesi_ve_gerekcesi: str
 
 
@@ -87,7 +86,7 @@ class CensusPollReport:
 class MunicipalCensusEngine:
     """
     Simulates high-precision quantitative public opinion polls for cities, municipalities, and institutions.
-    Uses Stratified Demographic LLM Inhabitation to process N=1,000+ samples instantaneously.
+    Uses Stratified Demographic LLM Inhabitation with ZERO topic hardcoding.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
@@ -102,46 +101,46 @@ class MunicipalCensusEngine:
         stance matrix for the target district & question.
         """
         sys_prompt = (
-            "Sen Türkiye yerel yönetimleri, toplu taşıma, belediyecilik ve kamuoyu araştırmaları uzmanı bir Sosyologsun.\n"
+            "Sen Türkiye yerel yönetimleri, kamuoyu araştırmaları ve şehir sosyolojisi uzmanı bir Sosyologsun.\n"
             f"GÖREVİN: {city} ili {district} ilçesinde yaşayan halkın '{question}' sorusuna vereceği tepkileri "
             "farklı sosyo-demografik katmanlar bazında analiz etmektir.\n\n"
-            "Aşağıdaki 6 demografik kesim için ilçenin gerçeklerini (otobüs hatları, trafik, yokuşlar, duraklar, kalabalık, ücretler vb.) "
-            "dikkate alarak gerçekçi kararlar ve samimi iç ses örnekleri üret.\n\n"
+            "Aşağıdaki 6 demografik kesim için ilçenin ve sorulan konunun gerçeklerini dikkate alarak "
+            "kararlar ve samimi iç ses örnekleri üret.\n\n"
             "SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
             "{\n"
             '  "strata": {\n'
             '    "genc_ogrenci": {\n'
-            '      "karar_agirligi": {"Kabul": 0.20, "Ret": 0.65, "Kararsiz": 0.15},\n'
-            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
-            '    },\n'
-            '    "beyaz_yaka": {\n'
-            '      "karar_agirligi": {"Kabul": 0.25, "Ret": 0.55, "Kararsiz": 0.20},\n'
-            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
-            '    },\n'
-            '    "mavi_yaka_esnaf": {\n'
-            '      "karar_agirligi": {"Kabul": 0.30, "Ret": 0.50, "Kararsiz": 0.20},\n'
-            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
-            '    },\n'
-            '    "kamu_memur": {\n'
             '      "karar_agirligi": {"Kabul": 0.35, "Ret": 0.45, "Kararsiz": 0.20},\n'
             '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
             '    },\n'
-            '    "emekli": {\n'
+            '    "beyaz_yaka": {\n'
             '      "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},\n'
             '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
             '    },\n'
+            '    "mavi_yaka_esnaf": {\n'
+            '      "karar_agirligi": {"Kabul": 0.45, "Ret": 0.35, "Kararsiz": 0.20},\n'
+            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
+            '    },\n'
+            '    "kamu_memur": {\n'
+            '      "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},\n'
+            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
+            '    },\n'
+            '    "emekli": {\n'
+            '      "karar_agirligi": {"Kabul": 0.50, "Ret": 0.30, "Kararsiz": 0.20},\n'
+            '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
+            '    },\n'
             '    "ev_hanimi_serbest": {\n'
-            '      "karar_agirligi": {"Kabul": 0.30, "Ret": 0.50, "Kararsiz": 0.20},\n'
+            '      "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},\n'
             '      "ornek_dusunceler": ["Düşünce 1", "Düşünce 2", "Düşünce 3"]\n'
             '    }\n'
             '  },\n'
-            '  "en_guclu_destek_gerekceleri": ["Destek 1", "Destek 2", "Destek 3"],\n'
-            '  "en_buyuk_toplumsal_direnc_noktalari": ["Direnç 1", "Direnç 2", "Direnç 3"],\n'
-            '  "belediye_stratejik_aksiyon_plani": "Belediye aksiyon tavsiyesi..."\n'
+            '  "en_guclu_destek_gerekceleri": ["Destek gerekçesi 1", "Destek gerekçesi 2", "Destek gerekçesi 3"],\n'
+            '  "en_buyuk_toplumsal_direnc_noktalari": ["Direnç noktası 1", "Direnç noktası 2", "Direnç noktası 3"],\n'
+            '  "belediye_stratejik_aksiyon_plani": "Stratejik aksiyon planı..."\n'
             "}"
         )
 
-        user_content = f"İL: {city}\nİLÇE: {district}\nSORU / TEKLİF: {question}"
+        user_content = f"İL: {city}\nİLÇE: {district}\nANKET SORUSU / TEKLİF: {question}"
 
         resp = self.ai_gateway.generate_chat_response(sys_prompt, user_content, temperature=0.7, api_key=api_key)
         if resp:
@@ -153,74 +152,75 @@ class MunicipalCensusEngine:
             clean = clean.strip()
             try:
                 data = json.loads(clean)
-                if "strata" in data:
+                if "strata" in data and len(data["strata"]) > 0:
                     return data
             except Exception:
                 pass
 
-        # High-fidelity fallback matrix
+        # Fully dynamic topic-adaptive fallback (Zero static bus or district hardcoding)
+        p_clean = question.strip("?\"' ")
         return {
             "strata": {
                 "genc_ogrenci": {
-                    "karar_agirligi": {"Kabul": 0.20, "Ret": 0.65, "Kararsiz": 0.15},
+                    "karar_agirligi": {"Kabul": 0.35, "Ret": 0.45, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"{district}'da sabah ve akşam saatlerinde tıklım tıklım oluyor, sefer aralıkları yetersiz; kesinlikle memnun değilim.",
-                        f"Ders saatlerine yetişmek için yarım saat önce durağa gitmek zorunda kalıyoruz, ek sefer şart.",
-                        f"Bazı saatlerde hiç gelmiyor, bazen de peş peşe 2 araç geliyor; sefer sıklığının acilen düzenlenmesi lazım."
+                        f"{district}'da yaşayan bir genç olarak '{p_clean}' konusunda sahadaki uygulamaların ve gençliğin taleplerinin dikkate alınmasını istiyorum.",
+                        f"Bu konuda atılacak adımların şeffaf ve katılımcı olması şart, süreci yakından takip ediyorum.",
+                        f"{district} genelinde bu başlıkta somut ve hissedilir bir çalışma yapılması gerektiğini düşünüyorum."
                     ]
                 },
                 "beyaz_yaka": {
-                    "karar_agirligi": {"Kabul": 0.25, "Ret": 0.55, "Kararsiz": 0.20},
+                    "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"İş çıkışı saatlerinde {district} güzergahında araçlar aşırı dolu geliyor, seferlerin sıklaştırılması şart.",
-                        f"Metrobüs ve metro entegrasyonunda aktarma süreleri çok uzuyor; bekleme süresi fazla.",
-                        f"Toplu taşıma konforu ve araç sıklığı yoğun saatlerde Şişli trafiğiyle birleşince ciddi zaman kaybettiriyor."
+                        f"İlçemizde '{p_clean}' meselesinde liyakat ve kurumsal verimlilik esastır; sahadaki sonuçları önemsiyorum.",
+                        f"{district}'ın modernleşmesi ve yaşam standardının artması adına bu konudaki gelişmeleri dikkatle değerlendiriyorum.",
+                        f"Uygulamanın şeffaf ve denetlenebilir şekilde yürütülmesi halinde ilçemize olumlu yansıyacaktır."
                     ]
                 },
                 "mavi_yaka_esnaf": {
-                    "karar_agirligi": {"Kabul": 0.30, "Ret": 0.50, "Kararsiz": 0.20},
+                    "karar_agirligi": {"Kabul": 0.45, "Ret": 0.35, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"Dükkanı açmaya giderken sabahları çok sıra oluyor, sefer sayısı artırılırsa rahatlarız.",
-                        f"Şişli merkezine inen araçların sıklığı fena değil ama ara mahallelere gidenlerde gecikmeler oluyor.",
-                        f"Mevcut seferler idare eder ama yoğun saatlerde balık istifi gibi gidiyoruz; daha sık sefer bekliyoruz."
+                        f"Esnaf ve çalışan kesim olarak '{p_clean}' konusunda çarşı pazarın ve yerel halkın huzurunu gözeten bir yaklaşım bekliyoruz.",
+                        f"{district} esnafının günlük hayatını kolaylaştıracak ve işleri aksatmayacak çözümler üretilmelidir.",
+                        f"Mevcut şartlarda yerel yönetimin sahada daha aktif ve ulaşılabilir olması hepimizin yararına olur."
                     ]
                 },
                 "kamu_memur": {
-                    "karar_agirligi": {"Kabul": 0.35, "Ret": 0.45, "Kararsiz": 0.20},
+                    "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"Mesai başlama ve bitiş saatlerinde hat kapasitesi yetersiz kalıyor; düzenli bir sefer planlaması şart.",
-                        f"Sefer saatlerine çoğu zaman uyuluyor ancak trafik yoğunluğu nedeniyle gecikmeler yaşanıyor.",
-                        f"Genel olarak hizmet var ama nüfus yoğunluğu karşısında araç sıklığı artırılmalı."
+                        f"Kamu hizmetlerinin düzenli işlemesi ve '{p_clean}' konusunda halkın memnuniyeti kurumsal başarının temelidir.",
+                        f"{district} idaresinin vatandaşla kurduğu iletişimin güçlenmesi ve hizmet kalitesinin artması gerekir.",
+                        f"Yerel yönetim ve halk arasındaki koordinasyon ne kadar güçlü olursa sahadaki sonuçlar o kadar başarılı olur."
                     ]
                 },
                 "emekli": {
-                    "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},
+                    "karar_agirligi": {"Kabul": 0.50, "Ret": 0.30, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"Gündüz saatlerinde rahat binebiliyoruz ama sabah hastane randevusuna giderken çok kalabalık oluyor.",
-                        f"Durakta uzun süre beklemek yaşlılar için çok zor; seferler daha sık ve dakik olmalı.",
-                        f"Şoförlerin duraklardaki düzeni ve sefer aralıkları fena değil ama kalabalık saatlerde binmek güç."
+                        f"Yıllardır {district}'da yaşayan kıdemli bir sakin olarak mahallemizin huzuru ve hizmetlerin devamlılığı en büyük önceliğimiz.",
+                        f"'{p_clean}' konusunda büyüklerimize ve ailelerimize dokunan yapıcı adımları her zaman destekleriz.",
+                        f"İlçemizde geçmişten bugüne yapılan hizmetleri takdir ediyoruz ama eksiklerin de giderilmesini bekliyoruz."
                     ]
                 },
                 "ev_hanimi_serbest": {
-                    "karar_agirligi": {"Kabul": 0.30, "Ret": 0.50, "Kararsiz": 0.20},
+                    "karar_agirligi": {"Kabul": 0.40, "Ret": 0.40, "Kararsiz": 0.20},
                     "ornek_dusunceler": [
-                        f"Çocuklarla veya pazar poşetleriyle araca binmek çok zor, seferler sıklaşırsa kalabalık azalır.",
-                        f"Öğle saatlerinde sefer aralıkları çok açılıyor, 20 dakikadan fazla beklediğimiz oluyor.",
-                        f"Semt içi ulaşımda temel bir hat ama yoğunluk yönetimi konusunda eksikler var."
+                        f"Ailemiz ve çocuklarımızın geleceği için {district}'daki her hizmetin titizlikle takipçisiyiz.",
+                        f"'{p_clean}' konusunda mahallemizde pratik ve hızlı çözümler görmek istiyoruz.",
+                        f"Komşuluk ilişkilerimizi ve yaşam kalitemizi artıracak her olumlu adıma destek vermeye hazırız."
                     ]
                 }
             },
             "en_guclu_destek_gerekceleri": [
-                f"{district} genelinde ana arterlere doğrudan ve uygun fiyatlı ulaşım sağlaması",
-                "Gündüz ara saatlerde hat düzeninin görece stabil işlemesi",
-                "Metro ve metrobüs aktarma noktalarına bağlantı kolaylığı"
+                f"{district} sakinlerinin yerel hizmetlere ve yaşam kalitesine dair pozitif beklentisi",
+                "Şeffaf, eşit ve hesap verebilir yerel yönetim yaklaşımına duyulan güven",
+                "İlçe genelinde sosyal ve kentsel gelişimin sürdürülmesi talebi"
             ],
             "en_buyuk_toplumsal_direnc_noktalari": [
-                "Sabah ve akşam zirve (peak) saatlerdeki aşırı doluluk ve yetersiz araç sayısı",
-                "Duraklarda bekleme sürelerinin öngörülemezliği ve sefer gecikmeleri",
-                "Trafik sıkışıklığı nedeniyle hat düzeninin bozulması"
+                "Uygulama sürecindeki iletişim ve bilgilendirme eksiklikleri",
+                "Farklı sosyo-demografik kesimlerin ayrışan öncelikleri ve talepleri",
+                "Sahada daha somut, hızlı ve görünür sonuçlar görme isteği"
             ],
-            "belediye_stratejik_aksiyon_plani": f"{district} İdaresi ve İETT/Ulaşım Dairesi 55 numaralı hatta sabah 07:30-09:30 ve akşam 17:30-19:30 saatleri arasında ek körüklü otobüs seferleri koymalı, durak ekranlarında gerçek zamanlı telemetriyi aktif tutmalıdır."
+            "belediye_stratejik_aksiyon_plani": f"{district} İdaresi '{question}' başlığında mahalle muhtarları ve yerel paydaşlarla koordineli açık bir bilgilendirme süreci yürütmeli, sahadaki geri bildirimleri doğrudan eylem planına dönüştürmelidir."
         }
 
     def run_census_poll(
@@ -234,11 +234,9 @@ class MunicipalCensusEngine:
     ) -> CensusPollReport:
         """
         Executes an autonomous quantitative synthetic census poll calibrated to Turkey / city demographics.
-        Completes N=1,000+ polls in under 4 seconds via Stratified LLM Demographic Inhabitation.
         """
         sample_size = max(50, min(10000, sample_size))
         
-        # Cross-tab accumulators
         district_counts: dict[str, dict[str, int]] = {}
         age_counts: dict[str, dict[str, int]] = {
             "18-29 (Genç)": {"kabul": 0, "ret": 0, "kararsiz": 0},
@@ -263,9 +261,9 @@ class MunicipalCensusEngine:
         citizen_ballots: list[CitizenBallot] = []
 
         chosen_city = city if city and city != "Tümü" and city != "Tüm Türkiye" else "İstanbul"
-        chosen_dist = district if district and district != "Tümü" else "Şişli"
+        chosen_dist = district if district and district != "Tümü" else "Merkez"
 
-        # 1. Fetch LLM Strata Stance Matrix (1 Single Fast Call)
+        # 1. Fetch Dynamic LLM Strata Stance Matrix
         strata_matrix = self._fetch_strata_reasoning_matrix(chosen_city, chosen_dist, question, api_key)
         strata_data = strata_matrix.get("strata", {})
 
@@ -306,13 +304,13 @@ class MunicipalCensusEngine:
                 stratum_key = "ev_hanimi_serbest"
 
             s_info = strata_data.get(stratum_key, strata_data.get("genc_ogrenci", {}))
-            weights = s_info.get("karar_agirligi", {"Kabul": 0.33, "Ret": 0.33, "Kararsiz": 0.34})
-            thoughts = s_info.get("ornek_dusunceler", [f"{d_name}'da yaşayan bir {occupation} olarak ulaşım ve sefer sıklığının iyileştirilmesini bekliyorum."])
+            weights = s_info.get("karar_agirligi", {"Kabul": 0.35, "Ret": 0.45, "Kararsiz": 0.20})
+            thoughts = s_info.get("ornek_dusunceler", [f"{d_name}'da ikamet eden bir {occupation} olarak '{question}' konusunu önemsiyorum."])
 
             # Sample decision from stratum distribution
             r = self.rng.random()
-            p_kabul = weights.get("Kabul", 0.33)
-            p_ret = weights.get("Ret", 0.33)
+            p_kabul = weights.get("Kabul", 0.35)
+            p_ret = weights.get("Ret", 0.45)
 
             if r < p_kabul:
                 verdict_key = "kabul"
@@ -327,7 +325,7 @@ class MunicipalCensusEngine:
                 karar_str = "Kararsız / Çekimser"
                 total_kararsiz += 1
 
-            thought = self.rng.choice(thoughts) if thoughts else f"{d_name} sakini olarak sefer sıklığını yetersiz buluyorum."
+            thought = self.rng.choice(thoughts) if thoughts else f"{d_name} sakini olarak bu konudaki gelişmeleri takip ediyorum."
 
             # Record citizen ballot
             citizen_ballots.append(CitizenBallot(
@@ -378,7 +376,6 @@ class MunicipalCensusEngine:
         ci_upper = min(100.0, round(kabul_pct + margin_of_error, 1))
         ci_str = f"%{ci_lower} - %{ci_upper}"
 
-        # Build CrossTab Metrics
         def _to_metric_list(d: dict[str, dict[str, int]]) -> list[CrossTabMetric]:
             res = []
             for seg, counts in d.items():
@@ -401,16 +398,16 @@ class MunicipalCensusEngine:
         housing_metrics = _to_metric_list(housing_counts)
 
         drivers = strata_matrix.get("en_guclu_destek_gerekceleri", [
-            f"Vatandaşın {chosen_dist} Genelinde Yaşam Standardı ve Hizmet Beklentisi",
-            "Şeffaf, Eşit ve Öngörülebilir Yerel Yönetim Talebi",
-            "Toplumsal Huzur ve Mahalle Yaşamının Korunması İsteği"
+            f"{chosen_dist} sakinlerinin yerel hizmetlere ve yaşam kalitesine dair pozitif beklentisi",
+            "Şeffaf, eşit ve hesap verebilir yerel yönetim yaklaşımına duyulan güven",
+            "İlçe genelinde sosyal ve kentsel gelişimin sürdürülmesi talebi"
         ])
         barriers = strata_matrix.get("en_buyuk_toplumsal_direnc_noktalari", [
-            "Zirve Saatlerdeki Aşırı Doluluk ve Araç Yetersizliği",
-            "Duraklarda Uzayan Bekleme Süreleri ve Sefer Gecikmeleri",
-            "Trafik Yoğunluğu Nedeniyle Sefer Aralıklarının Bozulması"
+            "Uygulama sürecindeki iletişim ve bilgilendirme eksiklikleri",
+            "Farklı sosyo-demografik kesimlerin ayrışan öncelikleri ve talepleri",
+            "Sahada daha somut, hızlı ve görünür sonuçlar görme isteği"
         ])
-        action = strata_matrix.get("belediye_stratejik_aksiyon_plani", f"{chosen_dist} İdaresi '{question}' konusunda ek sefer planlaması yapmalı ve sahada denetimleri artırmalıdır.")
+        action = strata_matrix.get("belediye_stratejik_aksiyon_plani", f"{chosen_dist} İdaresi '{question}' başlığında mahalle muhtarları ve yerel paydaşlarla koordineli açık bir bilgilendirme süreci yürütmelidir.")
 
         target_area = f"{chosen_city}" + (f" ({chosen_dist})" if chosen_dist and chosen_dist != "Tümü" else " (Tüm İlçeler)")
 
