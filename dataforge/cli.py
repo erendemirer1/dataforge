@@ -1133,6 +1133,28 @@ def census_cmd(
         console.print("\n")
         console.print(t_dist)
 
+    # Individual Citizen Ballots Table
+    ballots = rep_dict.get("bireysel_oylar", [])
+    if ballots:
+        sample_ballots = ballots[:8]
+        t_ballots = Table(title=f"🗣️ N={sample:,} Kişilik Evrenden Bireysel Temsili Yurttaş Düşünceleri", border_style="bright_magenta")
+        t_ballots.add_column("Yurttaş", style="bold cyan")
+        t_ballots.add_column("Demografi & Konum", style="white")
+        t_ballots.add_column("Duruş", style="bold")
+        t_ballots.add_column("Bireysel Gerekçesi / Düşüncesi", style="italic")
+
+        for b in sample_ballots:
+            v_color = "green" if "Kabul" in b["karar"] else ("red" if "Red" in b["karar"] else "yellow")
+            t_ballots.add_row(
+                b["ad_soyad"],
+                f"{b['yas']}y // {b['meslek']}\n📍 {b['sehir_ilce']} ({b['barinma_durumu']})",
+                f"[{v_color}]{b['karar']}[/{v_color}]",
+                f"\"{b['bireysel_dusuncesi_ve_gerekcesi']}\""
+            )
+
+        console.print("\n")
+        console.print(t_ballots)
+
     # Executive Action Plan
     action = rep_dict.get("belediye_stratejik_aksiyon_plani", "")
     if action:

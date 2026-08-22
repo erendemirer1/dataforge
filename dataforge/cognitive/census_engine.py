@@ -2,7 +2,8 @@
 DataForge Municipal & Macro-Demographic Synthetic Census Polling Engine.
 Simulates high-fidelity municipal and national surveys (N=100 to N=10,000)
 with rigorous TÜİK NUTS-2, SEGE district socio-economic calibration,
-cross-tabulations (age, gender, district, income, housing), and executive strategic recommendations.
+cross-tabulations (age, gender, district, income, housing), individual citizen ballots,
+and executive strategic recommendations.
 """
 from __future__ import annotations
 
@@ -15,14 +16,19 @@ from .cognitive_persona import CognitivePersonaBuilder
 
 
 @dataclass
-class CensusPollRequest:
-    question_or_policy: str
-    city: str = "İstanbul" # "Tümü", "İstanbul", "Ankara", "İzmir", vb.
-    district: Optional[str] = "Tümü" # "Kadıköy", "Esenyurt", "Tümü", vb.
-    sample_size: int = 1000
-    target_demographic: Optional[str] = None # "Tümü", "Kiracılar", "Gençler", "Esnaflar"
-    min_age: int = 18
-    max_age: int = 80
+class CitizenBallot:
+    citizen_id: int
+    ad_soyad: str
+    yas: int
+    cinsiyet: str
+    sehir_ilce: str
+    mahalle: str
+    meslek: str
+    egitim_durumu: str
+    aylik_net_gelir_tl: float
+    barinma_durumu: str # "Kiracı", "Ev Sahibi", "Aile Evi", "Lojman"
+    karar: str # "Kabul Eder / Destekler", "Kesinlikle Reddeder", "Kararsız / Çekimser"
+    bireysel_dusuncesi_ve_gerekcesi: str
 
 
 @dataclass
@@ -52,6 +58,7 @@ class CensusPollReport:
     en_guclu_destek_gerekceleri: list[str]
     en_buyuk_toplumsal_direnc_noktalari: list[str]
     belediye_stratejik_aksiyon_plani: str
+    bireysel_oylar: list[CitizenBallot]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -70,7 +77,8 @@ class CensusPollReport:
             "barinma_durumu_kirilimi": [asdict(x) for x in self.barinma_durumu_kirilimi],
             "en_guclu_destek_gerekceleri": self.en_guclu_destek_gerekceleri,
             "en_buyuk_toplumsal_direnc_noktalari": self.en_buyuk_toplumsal_direnc_noktalari,
-            "belediye_stratejik_aksiyon_plani": self.belediye_stratejik_aksiyon_plani
+            "belediye_stratejik_aksiyon_plani": self.belediye_stratejik_aksiyon_plani,
+            "bireysel_oylar": [asdict(b) for b in self.bireysel_oylar]
         }
 
 
@@ -90,6 +98,82 @@ class MunicipalCensusEngine:
         self.profile_builder = ProfileBuilder(self.rng)
         self.persona_builder = CognitivePersonaBuilder(self.rng)
 
+    def _generate_citizen_thought(
+        self,
+        q_lower: str,
+        verdict: str,
+        age: int,
+        occupation: str,
+        income: float,
+        housing: str,
+        district: str
+    ) -> str:
+        """Generates authentic, specific Turkish reasoning for this individual citizen."""
+        occ_l = occupation.lower()
+
+        # 1. URBAN TRANSFORMATION & RENT SUPPORT
+        if any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "kira yardımı", "imar"]):
+            if verdict == "kabul":
+                if housing == "Kiracı":
+                    if income < 35000:
+                        return f"{district}'de 35 yıllık riskli binada kiracıyım. 20.000 TL kira desteği olmadan başka yere taşınmamız imkansızdı, taşınma ve depozito masraflarını karşılamamız için hayati bir destek."
+                    else:
+                        return f"Mevcut kira fiyatları uçmuşken dönüşüm sürecinde kiracının korunması binanın tahliyesini hızlandırır, dönüşümün önündeki en büyük tıkanıklığı çözer."
+                else: # Ev sahibi
+                    if age >= 55:
+                        return f"Emekli maaşımla binayı yeniletirken geçici kiralık ev tutmak beni batırırdı. 20.000 TL kira yardımı olursa binanın yıkılıp yapılmasına hemen onay veririm."
+                    else:
+                        return f"Deprem riski her an kapıda, can güvenliğimiz her şeyden önemli. Kira desteği kiracıların tahliyeyi geciktirmesini önler ve inşaat hemen başlar."
+            elif verdict == "ret":
+                if housing == "Kiracı":
+                    return f"{district}'de 20.000 TL'ye oturulacak 2+1 ev kalmadı ki! Bu para sadece yetersiz bir pansuman, evden çıkarıldıktan sonra geri dönememe korkusu yaşıyoruz."
+                else: # Ev sahibi
+                    return f"Kira yardımı kiracıya veriliyor ama müteahhit inşaat farkı olarak bizden daire başı 2 milyon TL istiyor! Emekli halimle bu borcu nasıl ödeyeceğim? Asıl finansman sorununa çözüm yok."
+            else: # Kararsız
+                return f"Fikir kağıt üzerinde güzel ama belediye bu bütçeyi tüm hak sahiplerine 18 ay boyunca aksatmadan ödeyebilecek mi? Müteahhit batarsa ortada kalma riski var."
+
+        # 2. POLITICS & LEADERSHIP
+        elif any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp"]):
+            if verdict == "kabul":
+                return f"Etrafımızdaki jeopolitik krizler ve savaş ortamında devleti maceraya atamayız. Geçim zor ama karşımızda tecrübeli ve kriz yönetebilen bir lider var."
+            elif verdict == "ret":
+                return f"Pazara çıktığımda iki poşet erzak 1000 lira olmuşken, gençler asgari ücrete mahkumken artık köklü bir değişim ve liyakat şart."
+            else:
+                return f"Hayat pahalılığı can yakıyor ama muhalefetin de güven veren bir ekonomik programı yok, iki arada bir derede kaldım."
+
+        # 3. TRANSPORT & SCOOTERS
+        elif any(w in q_lower for w in ["scooter", "martı", "yayalaştırma", "kaldırım", "trafik", "otopark"]):
+            if verdict == "kabul":
+                if "yasak" in q_lower:
+                    return f"Kaldırımlarda çoluk çocuk yürüyemez olduk, her köşeden hızla fırlıyorlar. Yayaların güvenliği için caddelerden ve kaldırımlardan temizlenmeli."
+                else:
+                    return f"{district} trafiğinde araba kullanmak imkansız; toplu taşımaya ve mikro mobiliteye yatırım yapılması şart."
+            elif verdict == "ret":
+                if "yasak" in q_lower:
+                    return f"Gençler ve çalışanlar için metroya ulaşmanın en hızlı yolu bu. Yasaklamak yerine bisiklet ve scooter yolları yapılsın."
+                else:
+                    return f"Trafik yoğunluğunu daha da artırır, esnafın mal indirmesini engeller."
+            else:
+                return f"Tamamen yasaklamak çağdışı olur ama hız sınırı ve düzgün park alanları zorunlu tutulmalı."
+
+        # 4. NIGHTLIFE & BEER & CAFES
+        elif any(w in q_lower for w in ["bira", "bar", "pub", "mekan", "kahve"]):
+            if verdict == "kabul":
+                return f"{district}'de dışarıda oturup sosyalleşmek ateş pahası oldu. Uygun fiyatlı ve kaliteli bir alternatif olursa her hafta sonu arkadaşlarla gideriz."
+            elif verdict == "ret":
+                return f"Bu devirde o fiyata kaliteli ürün ve nezih ortam sunulamaz; aşırı kalabalık ve gürültü olur."
+            else:
+                return f"Fiyat cazip ama mekanın müzik tarzını, ortamını ve hizmet kalitesini görmeden peşin karar veremem."
+
+        # 5. GENERAL MUNICIPAL / PUBLIC POLICY
+        else:
+            if verdict == "kabul":
+                return f"Mevcut şartlar altında kamu yararı taşıyan ve vatandaşın yaşam standardını doğrudan iyileştirecek mantıklı bir adım."
+            elif verdict == "ret":
+                return f"Bütçe ve uygulama gerçekleriyle uyuşmuyor; yerel halkın gerçek önceliklerine hitap etmeyen yapay bir harcama kalemi."
+            else:
+                return f"Projenin finansman modeli ve vatandaşa yansıyacak ek külfetler netleşmeden kesin bir kanaat oluşturmak güç."
+
     def run_census_poll(
         self,
         question: str,
@@ -106,10 +190,11 @@ class MunicipalCensusEngine:
         # Policy domain tags
         is_urban_transform = any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "imar", "kira yardımı"])
         is_traffic_transport = any(w in q_lower for w in ["ulaşım", "metro", "otobüs", "scooter", "otopark", "yol", "trafik", "taksi", "yayalaştırma"])
+        is_politics = any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp", "aday"])
         is_social_aid = any(w in q_lower for w in ["yardım", "kart", "burs", "anne", "kreş", "askıda", "halk ekmek"])
         is_tax_fee = any(w in q_lower for w in ["zam", "su faturası", "ücret", "vergi", "harç", "tarife"])
 
-        sample_size = max(100, min(10000, sample_size))
+        sample_size = max(50, min(10000, sample_size))
         
         # Cross-tab accumulators
         district_counts: dict[str, dict[str, int]] = {}
@@ -133,6 +218,7 @@ class MunicipalCensusEngine:
         total_kabul = 0
         total_ret = 0
         total_kararsiz = 0
+        citizen_ballots: list[CitizenBallot] = []
 
         # Generate sample population
         for i in range(sample_size):
@@ -155,69 +241,105 @@ class MunicipalCensusEngine:
             gender = p["gender"]
             income = p["monthly_income"]
             housing = p.get("housing_status", "Kiracı")
+            occupation = p.get("occupation", "Vatandaş")
             if housing not in housing_counts:
                 housing_counts[housing] = {"kabul": 0, "ret": 0, "kararsiz": 0}
             
-            # Mathematical Decision Engine calibrated to sociological variables
+            # Mathematical Decision Engine calibrated to sociological variables with authentic variance
             score = 0.0
             
             if is_urban_transform:
                 if housing == "Kiracı":
-                    score += 20.0 if "kira yardımı" in q_lower else -15.0 # Kiracı tahliye korkusu
+                    # Tenants support rent aid strongly, but low income fear displacement
+                    score += 25.0 if "kira yardımı" in q_lower else -10.0
                 else: # Ev sahibi
-                    score += 35.0 # Evini yeniletmek ister
-                if d_name in ["Kadıköy", "Beşiktaş", "Bakırköy", "Avcılar"]: # Deprem kaygısı yüksek
-                    score += 25.0
-                if income < 35000:
-                    score -= 20.0 # Ek borçlanma kaygısı
+                    if income < 35000 or age >= 58:
+                        # Retired homeowners fear high construction debt to contractors
+                        score -= 15.0
+                    else:
+                        # Wealthier homeowners want earthquake renewal
+                        score += 20.0
+                if d_name in ["Kadıköy", "Beşiktaş", "Bakırköy", "Avcılar"]:
+                    score += 15.0 # High earthquake sensitivity
+
+            elif is_politics:
+                # Political cleavage calibrated with Turkish demographic indices
+                if income < 32000 or age <= 28:
+                    score -= 30.0 # High economic pain & youth discontent
+                elif age >= 52 and income >= 35000:
+                    score += 25.0 # Traditional stability preference
+                else:
+                    score += self.rng.uniform(-20.0, 20.0)
 
             elif is_traffic_transport:
                 if "scooter" in q_lower or "yayalaştırma" in q_lower:
                     if age <= 30:
-                        score += 40.0 # Gençler mobilite sever
+                        score += 35.0 if "yasak" not in q_lower else -35.0
                     else:
-                        score -= 25.0 # Yaşlılar kaldırımda scooter istemez
-                    if d_name in ["Kadıköy", "Beşiktaş", "Şişli"]:
-                        score += 30.0
+                        score += -30.0 if "yasak" not in q_lower else 35.0
                 else: # Toplu taşıma / zam
                     if income < 35000:
-                        score -= 30.0 if "zam" in q_lower else 35.0
+                        score -= 40.0 if "zam" in q_lower else 30.0
 
             elif is_social_aid:
                 if income < 35000 or housing == "Kiracı":
-                    score += 55.0 # Dar gelirli sosyal desteği güçlü destekler
+                    score += 45.0
                 else:
-                    score += 15.0 # Üst gelir de sosyal yardıma prensipte olumlu
-
-            elif is_tax_fee:
-                if income < 45000:
-                    score -= 50.0 # Zam ve vergiye mutlak ret
-                else:
-                    score -= 25.0
-            else:
-                # General Policy
-                score += (income / 1000.0) * 0.2
-                if age < 35:
                     score += 10.0
 
-            # Noise / Individual idiosyncrasy
-            noise = self.rng.gauss(0, 20.0)
+            elif is_tax_fee:
+                score -= 45.0 if income < 45000 else -20.0
+
+            else:
+                score += (income / 2000.0) - 15.0 + self.rng.uniform(-15.0, 15.0)
+
+            # Idiosyncratic Gaussian Noise
+            noise = self.rng.gauss(0, 28.0)
             final_eval = score + noise
 
-            if final_eval > 10.0:
+            if final_eval > 12.0:
                 verdict = "kabul"
+                karar_str = "Kabul Eder / Destekler"
                 total_kabul += 1
-            elif final_eval < -10.0:
+            elif final_eval < -12.0:
                 verdict = "ret"
+                karar_str = "Kesinlikle Reddeder"
                 total_ret += 1
             else:
                 verdict = "kararsiz"
+                karar_str = "Kararsız / Çekimser"
                 total_kararsiz += 1
 
-            # Accumulate
+            # Individual citizen rationale in Turkish
+            thought = self._generate_citizen_thought(
+                q_lower=q_lower,
+                verdict=verdict,
+                age=age,
+                occupation=occupation,
+                income=income,
+                housing=housing,
+                district=d_name
+            )
+
+            # Record citizen ballot
+            citizen_ballots.append(CitizenBallot(
+                citizen_id=i + 1,
+                ad_soyad=f"{p['first_name']} {p['last_name']}",
+                yas=age,
+                cinsiyet=gender,
+                sehir_ilce=f"{p['city']} / {d_name}",
+                mahalle=p.get("neighborhood", "Merkez Mah."),
+                meslek=occupation,
+                egitim_durumu=p.get("education_level", "Lise"),
+                aylik_net_gelir_tl=income,
+                barinma_durumu=housing,
+                karar=karar_str,
+                bireysel_dusuncesi_ve_gerekcesi=thought
+            ))
+
+            # Accumulate cross-tabs
             district_counts[d_name][verdict] += 1
 
-            # Age group
             if age < 30:
                 age_counts["18-29 (Genç)"][verdict] += 1
             elif age < 50:
@@ -242,62 +364,102 @@ class MunicipalCensusEngine:
         ret_pct = round((total_ret / sample_size) * 100, 1)
         kararsiz_pct = round((total_kararsiz / sample_size) * 100, 1)
         
-        # Standard error for proportion: sqrt(p * (1-p) / N) * 1.96
         p_hat = kabul_pct / 100.0
-        margin_of_error = round(1.96 * math.sqrt((p_hat * (1 - p_hat)) / max(1, sample_size)) * 100, 2)
+        margin_of_error = round(1.96 * math.sqrt(max(0.0001, (p_hat * (1 - p_hat)) / max(1, sample_size))) * 100, 2)
         ci_lower = max(0.0, round(kabul_pct - margin_of_error, 1))
         ci_upper = min(100.0, round(kabul_pct + margin_of_error, 1))
         ci_str = f"%{ci_lower} - %{ci_upper}"
 
-        def build_crosstab_list(d: dict[str, dict[str, int]]) -> list[CrossTabMetric]:
+        # Build CrossTab Metrics
+        def _to_metric_list(d: dict[str, dict[str, int]]) -> list[CrossTabMetric]:
             res = []
             for seg, counts in d.items():
                 tot = sum(counts.values())
-                if tot > 0:
-                    res.append(CrossTabMetric(
-                        segment=seg,
-                        kabul_yuzde=round((counts["kabul"] / tot) * 100, 1),
-                        ret_yuzde=round((counts["ret"] / tot) * 100, 1),
-                        kararsiz_yuzde=round((counts["kararsiz"] / tot) * 100, 1),
-                        orneklem_sayisi=tot
-                    ))
+                if tot == 0:
+                    continue
+                res.append(CrossTabMetric(
+                    segment=seg,
+                    kabul_yuzde=round((counts["kabul"] / tot) * 100, 1),
+                    ret_yuzde=round((counts["ret"] / tot) * 100, 1),
+                    kararsiz_yuzde=round((counts["kararsiz"] / tot) * 100, 1),
+                    orneklem_sayisi=tot
+                ))
             return res
 
-        # Drivers & Resistance
-        if is_urban_transform:
-            destek = ["Can güvenliği ve deprem riskini minimize etme arzusu", "Mülk değerinin ve yaşam kalitesinin artması", "Kira yardımlarıyla geçiş sürecinin güvenceye alınması"]
-            direnc = ["Kiracıların dönüşüm sonrası bölgeden tahliye edilme ve fahiş kira korkusu", "Mülk sahiplerinin ek inşaat maliyeti ve müteahhit güvensizliği", "Bürokratik süreçlerin ve onayların yıllarca uzaması endişesi"]
-            action = "Belediye müteahhit ile vatandaş arasında 'garantör kamu hakemi' olmalı ve kiracılara rezerv konut tahsis güvencesi sunulmalıdır."
-        elif is_traffic_transport:
-            destek = ["Trafik keşmekeşini azaltma ve toplu ulaşım konforu", "Genç nüfusun mikro-mobilite ve bisiklet/yaya yolu talebi", "Ulaşım maliyetlerinde tasarruf"]
-            direnc = ["Kaldırımlarda yaya güvenliğinin tehlikeye girmesi", "Esnafın araçla yük indirme-bindirme zorluğu çekmesi", "Toplu taşıma ücret artışlarına dar gelirlinin mutlak tepkisi"]
-            action = "Yayalaştırma projelerinde esnaf için özel lojistik saatleri belirlenmeli, scooter ve mikro araçlar için ayrılmış hız limitli şeritler zorunlu tutulmalıdır."
-        elif is_social_aid:
-            destek = ["Derin mutfak yoksulluğuna ve dar gelirliye doğrudan nefes aldırma", "Sosyal adaletin ve dayanışmanın güçlenmesi", "Kadın ve çocuk odaklı temel gıda güvencesi"]
-            direnc = ["Yardımların partizanlık veya liyakatsiz dağıtılma şüphesi", "Vergilerin etkin kullanılmadığı düşüncesi"]
-            action = "Sosyal yardımlar doğrudan açık ve şeffaf dijital kent kartlarına yüklenmeli, mahalle bakkallarıyla entegre edilerek yerel esnaf da desteklenmelidir."
-        else:
-            destek = ["Hizmet kalitesinin artırılması beklentisi", "Şeffaf ve hesap verebilir belediyecilik vizyonu"]
-            direnc = ["Ekonomik külfet ve yaşam alanına müdahale endişesi", "Halkın fikrinin yeterince alınmadığı hissi"]
-            action = "Mahalle bazlı katılımcı bütçe toplantıları yapılmalı ve pilot uygulamalarla halkın güveni test edilmelidir."
+        district_metrics = _to_metric_list(district_counts)
+        age_metrics = _to_metric_list(age_counts)
+        gender_metrics = _to_metric_list(gender_counts)
+        income_metrics = _to_metric_list(income_counts)
+        housing_metrics = _to_metric_list(housing_counts)
 
-        target_str = f"{city}" + (f" / {district}" if district and district != "Tümü" else " (Tüm İlçeler)")
+        # Strategic Action & Barriers
+        if is_urban_transform:
+            drivers = [
+                "Deprem Riskli Binaların Hızlı Tahliye Edilebilmesi",
+                "Kira Artışları Karşısında Kiracıların Mağduriyetinin Önlenmesi",
+                "Hak Sahiplerinin Taşınma ve Yerleşme Maliyetlerinin Karşılanması"
+            ]
+            barriers = [
+                "Müteahhit İnşaat Farkı Borçlanma Korkusu (Özellikle Emeklilerde)",
+                "Belediye Kira Yardımı Sürekliliğine ve Bütçesine Yönelik Şüpheler",
+                "Dönüşüm Sonrası Eski Mahalleye Geri Dönememe ve Ayrışma Kaygısı"
+            ]
+            action = "Belediye müteahhit ile hak sahipleri arasında 'garantör kamu hakemi' olmalı, sabit gelirli emeklilere sıfır faizli yapım kredisi ve kiracılara rezerv konut tahsis güvencesi sunmalıdır."
+        elif is_politics:
+            drivers = [
+                "Jeopolitik Kriz Ortamında Devlet Liderliği ve İstikrar Arayışı",
+                "Savunma Sanayii ve Güvenlik Politikalarına Duyulan Güven",
+                "Geleneksel Siyasi Aidiyet ve Taban Sadakati"
+            ]
+            barriers = [
+                "Mutfak Enflasyonu ve Emekli/Sabit Gelirlinin Alım Gücü Kaybı",
+                "Liyakat Erozyonu ve Kurumsal Güvensizlik",
+                "Genç Kuşakta Gelecek ve İstihdam Umutsuzluğu"
+            ]
+            action = "Mutfaktaki reel hayat pahalılığına doğrudan can suyu olacak gelir politikaları geliştirilmeli ve gençlere şeffaf kariyer güvencesi verilmelidir."
+        elif is_traffic_transport:
+            drivers = [
+                "Kaldırım ve Yaya Güvenliğinin Sağlanması",
+                "Toplu Taşımayla Entegre Trafik Akışının Rahatlatılması",
+                "Gürültü ve Düzensiz Park Kirliliğinin Önlenmesi"
+            ]
+            barriers = [
+                "Son Kilometre (Last-Mile) Hızlı Ulaşım Alternatifinin Kısıtlanması",
+                "Genç Çalışanlar ve Kuryelerin Zaman Kaybı",
+                "Altyapı Yetersizliği ve Özel Şerit Eksikliği"
+            ]
+            action = "Toptan yasaklama yerine mikro mobilite araçlarına hız limiti (15 km/s) ve zorunlu ayrılmış park cepleri tahsis edilmelidir."
+        else:
+            drivers = [
+                "Halkın Doğrudan Yaşam Standartlarını İyileştirme Potansiyeli",
+                "Şeffaf ve Öngörülebilir Kamu Yönetimi",
+                "Ekonomik Kolaylık ve Erişilebilirlik"
+            ]
+            barriers = [
+                "Finansman ve Bütçe Yetersizliği Endişesi",
+                "Uygulama Sürecinde Bürokratik Tıkanıklıklar",
+                "Yerel Katılım ve Ön Danışma Eksikliği"
+            ]
+            action = "Şeffaf yerel bilgilendirme toplantıları düzenlenmeli ve kademeli pilot uygulama modeli tercih edilmelidir."
+
+        target_area = f"{city}" + (f" ({district})" if district and district != "Tümü" else " (Tüm İlçeler)")
 
         return CensusPollReport(
             soru_veya_politika=question,
-            hedef_bolge=target_str,
+            hedef_bolge=target_area,
             orneklem_buyuklugu=sample_size,
             guven_araligi_yuzde_95=ci_str,
             hata_payi_yuzde=margin_of_error,
             genel_kabul_yuzde=kabul_pct,
             genel_ret_yuzde=ret_pct,
             genel_kararsiz_yuzde=kararsiz_pct,
-            ilce_kirilimi=build_crosstab_list(district_counts),
-            yas_grubu_kirilimi=build_crosstab_list(age_counts),
-            cinsiyet_kirilimi=build_crosstab_list(gender_counts),
-            gelir_segmenti_kirilimi=build_crosstab_list(income_counts),
-            barinma_durumu_kirilimi=build_crosstab_list(housing_counts),
-            en_guclu_destek_gerekceleri=destek,
-            en_buyuk_toplumsal_direnc_noktalari=direnc,
-            belediye_stratejik_aksiyon_plani=action
+            ilce_kirilimi=district_metrics,
+            yas_grubu_kirilimi=age_metrics,
+            cinsiyet_kirilimi=gender_metrics,
+            gelir_segmenti_kirilimi=income_metrics,
+            barinma_durumu_kirilimi=housing_metrics,
+            en_guclu_destek_gerekceleri=drivers,
+            en_buyuk_toplumsal_direnc_noktalari=barriers,
+            belediye_stratejik_aksiyon_plani=action,
+            bireysel_oylar=citizen_ballots
         )

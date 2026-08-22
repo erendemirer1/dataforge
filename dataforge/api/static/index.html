@@ -713,7 +713,39 @@
                     </div>
 
                 </div>
+
+                <!-- 3. INDIVIDUAL CITIZEN BALLOTS & UNIQUE THOUGHTS (1.000+ KİŞİLİK TEK TEK DÜŞÜNCE VE OY DEFTERİ) -->
+                <div class="p-6 brutalist-border bg-ink-900 space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-4">
+                        <div>
+                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">[INDIVIDUAL_BALLOTS // N=${d.orneklem_buyuklugu}]</span>
+                            <h3 class="text-xl font-serif text-white mt-0.5">Bireysel Yurttaş Sandık ve Düşünce Kayıtları</h3>
+                        </div>
+                        
+                        <!-- Search & Filter Controls -->
+                        <div class="flex items-center space-x-2 font-mono text-xs">
+                            <input id="ballot-search" type="text" oninput="filterBallots()" placeholder="İsim, meslek, ilçe ara..." class="bg-ink-950 text-white p-2 brutalist-border focus:outline-none focus:border-white text-xs w-48">
+                            <select id="ballot-filter" onchange="filterBallots()" class="bg-ink-950 text-white p-2 brutalist-border focus:outline-none text-xs">
+                                <option value="ALL" selected>Tümü (${d.orneklem_buyuklugu})</option>
+                                <option value="KABUL">Sadece Kabul Edenler</option>
+                                <option value="RET">Sadece Reddedenler</option>
+                                <option value="KARARSIZ">Sadece Kararsızlar</option>
+                                <option value="Kiracı">Kiracılar</option>
+                                <option value="Ev Sahibi">Ev Sahipleri</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Ballots List -->
+                    <div id="ballots-container" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
             `;
+
+            // Store ballots globally for instant filtering
+            window._currentCensusBallots = d.bireysel_oylar || [];
+            renderBallotsList(window._currentCensusBallots);
 
             // Update Right Sidebar for Census
             document.getElementById('res-rate').innerText = `%${d.genel_kabul_yuzde}`;
@@ -728,6 +760,73 @@
             });
 
             document.getElementById('res-strategic').innerText = d.belediye_stratejik_aksiyon_plani || 'Belediye analizi tamamlandı.';
+        }
+
+        function filterBallots() {
+            const query = (document.getElementById('ballot-search').value || '').toLowerCase();
+            const filterType = document.getElementById('ballot-filter').value;
+            const ballots = window._currentCensusBallots || [];
+
+            const filtered = ballots.filter(b => {
+                const matchQuery = !query || 
+                    b.ad_soyad.toLowerCase().includes(query) || 
+                    b.meslek.toLowerCase().includes(query) || 
+                    b.sehir_ilce.toLowerCase().includes(query) ||
+                    b.bireysel_dusuncesi_ve_gerekcesi.toLowerCase().includes(query);
+
+                let matchFilter = true;
+                if (filterType === 'KABUL') matchFilter = b.karar.includes('Kabul');
+                else if (filterType === 'RET') matchFilter = b.karar.includes('Red');
+                else if (filterType === 'KARARSIZ') matchFilter = b.karar.includes('Kararsız');
+                else if (filterType === 'Kiracı') matchFilter = b.barinma_durumu === 'Kiracı';
+                else if (filterType === 'Ev Sahibi') matchFilter = b.barinma_durumu === 'Ev Sahibi';
+
+                return matchQuery && matchFilter;
+            });
+
+            renderBallotsList(filtered);
+        }
+
+        function renderBallotsList(list) {
+            const container = document.getElementById('ballots-container');
+            if (!container) return;
+
+            if (list.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center font-mono text-xs text-neutral-500">Aramanıza uygun kayıt bulunamadı.</div>';
+                return;
+            }
+
+            container.innerHTML = list.slice(0, 100).map((b, idx) => {
+                let badgeClass = 'text-amber-400 border-amber-800 bg-amber-950/20';
+                if (b.karar.includes('Kabul')) {
+                    badgeClass = 'text-emerald-400 border-emerald-800 bg-emerald-950/20';
+                } else if (b.karar.includes('Red')) {
+                    badgeClass = 'text-rose-400 border-rose-800 bg-rose-950/20';
+                }
+
+                return `
+                    <div class="p-4 brutalist-border bg-ink-950 space-y-2">
+                        <div class="flex items-baseline justify-between border-b border-neutral-800 pb-2">
+                            <div class="flex items-center space-x-3 font-mono text-xs">
+                                <span class="text-neutral-500">[#${b.citizen_id || idx+1}]</span>
+                                <span class="font-bold text-white">${b.ad_soyad}</span>
+                                <span class="text-neutral-400">// ${b.yas} Yaş, ${b.meslek}</span>
+                                <span class="text-neutral-500">// 📍 ${b.sehir_ilce} (${b.barinma_durumu})</span>
+                            </div>
+                            <span class="px-2 py-0.5 font-mono text-[10px] uppercase border ${badgeClass}">
+                                ${b.karar}
+                            </span>
+                        </div>
+                        <p class="font-serif italic text-sm text-neutral-200 leading-relaxed pt-1">
+                            "${b.bireysel_dusuncesi_ve_gerekcesi}"
+                        </p>
+                    </div>
+                `;
+            }).join('');
+
+            if (list.length > 100) {
+                container.innerHTML += `<div class="p-3 text-center font-mono text-xs text-neutral-500 border-t border-neutral-800">... ve ${list.length - 100} bireysel oy kaydı daha mevcut. Arama yaparak filtreleyebilirsiniz.</div>`;
+            }
         }
     </script>
 </body>
