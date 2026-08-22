@@ -611,6 +611,7 @@
                 });
 
                 const data = await resp.json();
+                window._lastCensusReport = data;
                 renderCensusOutput(data);
             } catch (e) {
                 deck.innerHTML = `<div class="p-6 bg-red-950/30 text-red-400 brutalist-border font-mono text-xs">Anket Hatası: ${e.message}</div>`;
@@ -676,9 +677,14 @@
                             <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">[CENSUS_REPORT // ${d.hedef_bolge}]</span>
                             <h2 class="text-2xl font-serif text-white mt-1">"${d.soru_veya_politika}"</h2>
                         </div>
-                        <div class="text-right font-mono">
-                            <span class="text-xs text-neutral-400">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
-                            <div class="text-[10px] text-emerald-400 font-bold">${d.hata_payi_yuzde} Hata Payı (${d.guven_araligi_yuzde_95})</div>
+                        <div class="text-right font-mono flex items-center space-x-3">
+                            <div>
+                                <span class="text-xs text-neutral-400">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
+                                <div class="text-[10px] text-emerald-400 font-bold">${d.hata_payi_yuzde} Hata Payı (${d.guven_araligi_yuzde_95})</div>
+                            </div>
+                            <button onclick="exportExecutiveReport()" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white font-mono text-[10px] uppercase tracking-wider brutalist-border transition">
+                                📄 RESMİ BRİFİ AÇ [PRINT/PDF]
+                            </button>
                         </div>
                     </div>
 
@@ -860,9 +866,14 @@
                                 <span class="text-neutral-400">// ${b.yas} Yaş, ${b.meslek}</span>
                                 <span class="text-neutral-500">// 📍 ${b.sehir_ilce} (${b.barinma_durumu})</span>
                             </div>
-                            <span class="px-2 py-0.5 font-mono text-[10px] uppercase border ${badgeClass}">
-                                ${b.karar}
-                            </span>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="openInterrogationModal(${b.citizen_id || idx+1})" class="px-2 py-0.5 bg-neutral-800 hover:bg-neutral-700 text-amber-300 font-mono text-[10px] uppercase border border-neutral-700 transition">
+                                    💬 BİREBİR MÜLAKAT YAP
+                                </button>
+                                <span class="px-2 py-0.5 font-mono text-[10px] uppercase border ${badgeClass}">
+                                    ${b.karar}
+                                </span>
+                            </div>
                         </div>
                         <p class="font-serif italic text-sm text-neutral-200 leading-relaxed pt-1">
                             "${b.bireysel_dusuncesi_ve_gerekcesi}"
@@ -915,6 +926,157 @@
                 status.className = "font-mono text-[11px] text-rose-400";
             }
         }
+
+        // ==========================================
+        // 1-ON-1 DEEP SOCRATIC INTERROGATION MODAL
+        // ==========================================
+        window._activeInterrogationPersona = null;
+        window._interrogationHistory = [];
+
+        function openInterrogationModal(citizenId) {
+            const ballots = window._currentCensusBallots || [];
+            const persona = ballots.find(b => (b.citizen_id || b.id) === citizenId) || ballots[0];
+            if (!persona) return;
+
+            window._activeInterrogationPersona = persona;
+            window._interrogationHistory = [];
+
+            document.getElementById('modal-persona-name').innerText = persona.ad_soyad;
+            document.getElementById('modal-persona-bio').innerText = `${persona.yas} Yaş, ${persona.meslek} // 📍 ${persona.sehir_ilce} (${persona.barinma_durumu})`;
+            document.getElementById('modal-persona-initial').innerText = `"${persona.bireysel_dusuncesi_ve_gerekcesi}"`;
+            document.getElementById('modal-chat-history').innerHTML = '';
+            document.getElementById('modal-question-input').value = '';
+
+            const modal = document.getElementById('interrogation-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeInterrogationModal() {
+            document.getElementById('interrogation-modal').classList.add('hidden');
+        }
+
+        async function sendInterrogationQuestion() {
+            const input = document.getElementById('modal-question-input');
+            const q = input.value.trim();
+            if (!q || !window._activeInterrogationPersona) return;
+
+            const chat = document.getElementById('modal-chat-history');
+            const btn = document.getElementById('modal-send-btn');
+
+            // Append User Question
+            chat.innerHTML += `
+                <div class="p-3 bg-neutral-900 border border-neutral-800 text-right space-y-1 font-mono text-xs">
+                    <span class="text-[10px] text-amber-400 uppercase tracking-widest font-bold">SİZ (ARAŞTIRMACI):</span>
+                    <p class="text-white text-sm font-sans">${q}</p>
+                </div>
+            `;
+            chat.scrollTop = chat.scrollHeight;
+            input.value = '';
+            btn.disabled = true;
+            btn.innerText = 'DÜŞÜNÜYOR...';
+
+            window._interrogationHistory.push({ role: 'user', content: q });
+
+            try {
+                const questionCtx = document.getElementById('census-question')?.value || '';
+                const resp = await fetch('/api/v1/society/interrogate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        persona_dict: {
+                            id: window._activeInterrogationPersona.citizen_id || 1,
+                            first_name: window._activeInterrogationPersona.ad_soyad.split(' ')[0],
+                            last_name: window._activeInterrogationPersona.ad_soyad.split(' ').slice(1).join(' '),
+                            age: window._activeInterrogationPersona.yas,
+                            occupation: window._activeInterrogationPersona.meslek,
+                            city: window._activeInterrogationPersona.sehir_ilce.split('/')[0].trim(),
+                            district: window._activeInterrogationPersona.sehir_ilce.split('/')[1]?.trim() || 'Merkez',
+                            monthly_income: window._activeInterrogationPersona.aylik_net_gelir_tl || 35000.0,
+                            housing_status: window._activeInterrogationPersona.barinma_durumu
+                        },
+                        user_question: q,
+                        conversation_history: window._interrogationHistory,
+                        survey_context: questionCtx
+                    })
+                });
+
+                const data = await resp.json();
+                window._interrogationHistory.push({ role: 'persona', content: data.cevap_metni });
+
+                // Append Persona Answer + Subconscious Voice
+                chat.innerHTML += `
+                    <div class="p-4 bg-ink-950 border border-neutral-800 space-y-2.5 font-mono text-xs">
+                        <div class="flex items-center justify-between border-b border-neutral-900 pb-1.5">
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase">${data.persona_ad_soyad} (${data.persona_meslek}):</span>
+                            <span class="text-[9px] text-neutral-500 uppercase border border-neutral-800 px-1.5 py-0.5">${data.kullanilan_arguman_tipi}</span>
+                        </div>
+                        <div class="p-2.5 bg-amber-950/20 border-l-2 border-amber-500 font-mono text-[11px] text-amber-200/90 italic">
+                            🧠 BİLİNÇALTI İÇ SES: "${data.bilincalti_refleksi}"
+                        </div>
+                        <p class="font-sans text-sm text-neutral-100 leading-relaxed pt-1">
+                            "${data.cevap_metni}"
+                        </p>
+                    </div>
+                `;
+                chat.scrollTop = chat.scrollHeight;
+            } catch (e) {
+                chat.innerHTML += `<div class="p-3 bg-red-950/40 text-red-400 text-xs font-mono">Hata: ${e.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'GÖNDER [ASK] →';
+            }
+        }
+
+        async function exportExecutiveReport() {
+            if (!window._lastCensusReport) return;
+            const res = await fetch('/api/v1/society/export-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ report_data: window._lastCensusReport })
+            });
+            const html = await res.text();
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.close();
+        }
     </script>
+
+    <!-- ========================================== -->
+    <!-- MODAL: 1-ON-1 DEEP SOCRATIC INTERROGATION  -->
+    <!-- ========================================== -->
+    <div id="interrogation-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-2xl bg-ink-950 brutalist-border p-6 space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-neutral-800 pb-3 shrink-0">
+                <div>
+                    <span class="font-mono text-[10px] text-amber-400 uppercase tracking-widest">[BİREBİR DERİN SOKRATİK MÜLAKAT]</span>
+                    <h3 id="modal-persona-name" class="text-2xl font-serif text-white mt-0.5">Yurttaş İsmi</h3>
+                    <div id="modal-persona-bio" class="font-mono text-xs text-neutral-400">35 Yaş, Mühendis // İstanbul / Kadıköy</div>
+                </div>
+                <button onclick="closeInterrogationModal()" class="text-neutral-400 hover:text-white font-mono text-sm px-2 py-1 brutalist-border">
+                    ✕ KAPAT
+                </button>
+            </div>
+
+            <!-- Initial Stance Quote -->
+            <div class="p-3 bg-ink-900 brutalist-border shrink-0">
+                <span class="font-mono text-[10px] text-neutral-500 uppercase block mb-1">İLK ANKET VERDİĞİ GEREKÇE:</span>
+                <p id="modal-persona-initial" class="font-serif italic text-xs text-neutral-300">"..."</p>
+            </div>
+
+            <!-- Conversation Stream -->
+            <div id="modal-chat-history" class="flex-1 overflow-y-auto space-y-3 p-3 bg-ink-900 brutalist-border min-h-[220px]">
+                <!-- Chat Bubbles Render Here -->
+            </div>
+
+            <!-- Question Input -->
+            <div class="flex items-center space-x-2 shrink-0 pt-2">
+                <input id="modal-question-input" type="text" onkeydown="if(event.key==='Enter') sendInterrogationQuestion()" placeholder="Bu yurttaşa derinlemesine bir soru sorun (ör: 'Kiran ne kadar?', 'Belediye şunu yaparsa onaylar mısın?')..." class="flex-1 bg-ink-900 text-white font-mono text-xs p-3 brutalist-border focus:outline-none focus:border-amber-400">
+                <button id="modal-send-btn" onclick="sendInterrogationQuestion()" class="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-black font-mono font-bold text-xs uppercase tracking-wider transition">
+                    GÖNDER [ASK] →
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
