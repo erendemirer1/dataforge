@@ -1,7 +1,7 @@
 """
 DataForge Universal Zero-Config AI & Cognitive Inhabitation Gateway.
-Provides completely automatic, user-transparent LLM and generative reasoning.
-Directly communicates with gemini-3.6-flash with proper thinking timeout.
+Provides multi-model automatic failover across Google Generative AI endpoints
+(gemini-3.5-flash, gemini-3.1-flash-lite-preview, gemini-3.6-flash) with thinking timeout.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 class UniversalAIGateway:
     """
-    Zero-config AI Gateway with intelligent fail-fast circuit breaker and multi-backend support.
+    Zero-config AI Gateway with automatic multi-model failover.
     """
 
     _instance = None
@@ -26,6 +26,11 @@ class UniversalAIGateway:
         self.gemini_key = os.getenv("GEMINI_API_KEY", "")
         self._gemini_working: Optional[bool] = None
         self._ollama_working: Optional[bool] = None
+        self.models_priority = [
+            "gemini-3.5-flash",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3.6-flash"
+        ]
 
     def _load_env(self):
         env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
@@ -52,19 +57,20 @@ class UniversalAIGateway:
         api_key: Optional[str] = None
     ) -> Optional[str]:
         """
-        Attempts seamless generation via available backends.
+        Attempts seamless generation via available backends and multi-model failover.
         """
         key_to_use = api_key or self.gemini_key
 
-        # 1. Try Gemini with modern 3.6-flash endpoint
+        # 1. Try Gemini multi-model priority chain
         if key_to_use:
-            try:
-                res = self._call_gemini(system_instruction, user_prompt, temperature, key_to_use)
-                if res:
-                    self._gemini_working = True
-                    return res
-            except Exception:
-                pass
+            for model_name in self.models_priority:
+                try:
+                    res = self._call_gemini(model_name, system_instruction, user_prompt, temperature, key_to_use)
+                    if res:
+                        self._gemini_working = True
+                        return res
+                except Exception:
+                    continue
 
         # 2. Try Local Ollama if running
         if self._ollama_working is not False:
@@ -80,7 +86,7 @@ class UniversalAIGateway:
 
         return None
 
-    def _call_gemini(self, system_instruction: str, user_prompt: str, temperature: float, key: str) -> Optional[str]:
+    def _call_gemini(self, model: str, system_instruction: str, user_prompt: str, temperature: float, key: str) -> Optional[str]:
         payload = {
             "contents": [
                 {"role": "user", "parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]}
@@ -90,22 +96,23 @@ class UniversalAIGateway:
             }
         }
         
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         try:
             req = urllib.request.Request(
                 url,
                 data=json.dumps(payload).encode("utf-8"),
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=45) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 candidates = data.get("candidates", [])
                 if candidates:
                     parts = candidates[0].get("content", {}).get("parts", [])
                     if parts:
                         return parts[0].get("text")
-        except Exception as e:
+        except Exception:
             return None
+        return None
 
     def _call_ollama(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
         url = f"{self.ollama_endpoint}/api/generate"
