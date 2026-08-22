@@ -1,21 +1,20 @@
 """
 DataForge Deep Multi-Agent Focus Group & Psychological Simulation Studio.
+Powered by UniversalAIGateway (Zero-Config AI Inference).
 Simulates realistic group dynamics, Dual-Process System 1/2 reactions,
 Inner Subconscious Thoughts vs. Spoken Dialogue, and Executive Market Intelligence.
-Integrates McFadden Econometric Utility Engine for N=1,000 Monte Carlo statistical census.
 """
 from __future__ import annotations
 
-import os
 import re
 import json
 import random
-import urllib.request
 from typing import Any, Optional
 from .cognitive_persona import CognitivePersonaBuilder, DeepCognitivePersona
 from .utility_engine import EconometricUtilityEngine, QuantitativeMarketResult
 from .consistency_auditor import CognitiveConsistencyAuditor
 from .conversation_engine import LivingRoundtableEngine
+from .llm_gateway import UniversalAIGateway
 from ..social.social_radar import SocialRadarEngine
 from ..ml.prompt_synthesizer import DynamicPromptEngine
 
@@ -23,7 +22,7 @@ from ..ml.prompt_synthesizer import DynamicPromptEngine
 class FocusGroupSimulator:
     """
     Executes deep psychological focus groups with grounded, neuro-sociologically complete personas.
-    Combines qualitative focus groups with N=1,000 quantitative Monte Carlo econometrics and Causal Consistency Audits.
+    Zero-config AI execution: The user never needs to supply or configure an API key.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
@@ -34,10 +33,7 @@ class FocusGroupSimulator:
         self.social_radar = SocialRadarEngine(self.rng)
         self.consistency_auditor = CognitiveConsistencyAuditor()
         self.roundtable_engine = LivingRoundtableEngine(self.rng)
-
-    def _get_api_key(self) -> str:
-        """Resolve Gemini API key."""
-        return self.prompt_engine._get_gemini_key() or ""
+        self.ai_gateway = UniversalAIGateway.get_instance()
 
     def _extract_price_from_pitch(self, pitch: str) -> Optional[float]:
         """Extract monetary price from text in TL. Returns None if topic is non-commercial."""
@@ -63,7 +59,6 @@ class FocusGroupSimulator:
     ) -> dict[str, Any]:
         """
         Synthesizes deep personas, simulates focus group discussion,
-        audits consistency against latent belief vectors,
         and computes an N=1,000 quantitative Monte Carlo census.
         """
         # 1. Synthesize demographic qualitative personas (4-8 around the roundtable)
@@ -88,22 +83,15 @@ class FocusGroupSimulator:
             simulations_count=mc_n
         )
 
-        # 4. Simulate Multi-Agent Focus Group with LLM
+        # 4. Simulate Multi-Agent Focus Group with AI Gateway or Living Causal Roundtable
         qualitative_personas = cognitive_personas
         if len(cognitive_personas) > 8:
             step = len(cognitive_personas) // 6
             qualitative_personas = [cognitive_personas[i * step] for i in range(min(6, len(cognitive_personas)))]
 
-        effective_key = api_key or self._get_api_key()
-        sim_result = None
-        if effective_key and not effective_key.startswith("AQ."):
-            try:
-                sim_result = self._simulate_with_gemini(qualitative_personas, target_audience, pitch_or_question, effective_key)
-            except Exception:
-                sim_result = None
-
+        sim_result = self._simulate_with_ai(qualitative_personas, target_audience, pitch_or_question)
         if not sim_result:
-            sim_result = self._fallback_simulation(qualitative_personas, pitch_or_question)
+            sim_result = self.roundtable_engine.generate_organic_roundtable(qualitative_personas, pitch_or_question)
 
         # 5. Run Cognitive Consistency Audit
         sim_result = self.consistency_auditor.audit_and_recalibrate(
@@ -117,68 +105,66 @@ class FocusGroupSimulator:
 
         return sim_result
 
-    def _simulate_with_gemini(
+    def _simulate_with_ai(
         self,
         personas: list[DeepCognitivePersona],
         target_audience: str,
-        pitch: str,
-        api_key: str
-    ) -> dict[str, Any]:
-        """Simulates authentic inner monologue and spoken dialogue with Gemini."""
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={api_key}"
-
+        pitch: str
+    ) -> Optional[dict[str, Any]]:
+        """Simulates authentic inner monologue and spoken dialogue via Universal AI Gateway."""
         personas_json = json.dumps([p.to_dict() for p in personas], ensure_ascii=False, indent=2)
 
         sys_prompt = (
-            "Sen Türkiye toplumunu, insanının kalbini, öfkesini, acısını, çaresizliğini, mizahını ve gururunu "
+            "Sen Türkiye sosyolojisini, insanının kalbini, öfkesini, geçim derdini, mizahını ve gururunu "
             "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın. "
             f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insan profili veriliyor.\n\n"
             "GÖREVİN:\n"
-            "Bu insanların moderatörün ortaya attığı teklif, soru veya siyasi/toplumsal gelişme karşısındaki "
-            "gerçek tepkilerini bir masada simüle edeceksin.\n\n"
+            "Bu insanların moderatörün ortaya attığı teklif/soru karşısındaki "
+            "gerçek tepkilerini bir yuvarlak masada simüle edeceksin.\n\n"
             "KESİN KURALLAR:\n"
-            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine ve travmasına uygun bir sesi olsun.\n"
-            "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın (Group Dynamics).\n"
-            "3. Asla çelişkili ifadeler kurma (Örn: Hükümete kızıp aynı anda destekleme gibi mantık hataları olmasın).\n"
+            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine ve hayat şartlarına uygun bir sesi olsun.\n"
+            "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın.\n"
+            "3. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
+            "{\n"
+            '  "odak_grubu_tartismasi": [\n'
+            '    {\n'
+            '      "kisi_id": 1,\n'
+            '      "ad_soyad": "Ad Soyad",\n'
+            '      "meslek": "Meslek",\n'
+            '      "karar": "Kabul Eder / Destekler" | "Kesinlikle Reddeder" | "Kararsız / Çekimser",\n'
+            '      "ic_ses_bilincalti": "Karakterin iç sesi...",\n'
+            '      "disa_soylenen_soz": "Masada yüksek sesle söylediği söz..."\n'
+            '    }\n'
+            '  ],\n'
+            '  "yonetici_pazar_analiz_raporu": {\n'
+            '    "genel_kabul_orani_yuzde": 65.0,\n'
+            '    "en_buyuk_3_itiraz_bariyeri": ["Bariyer 1", "Bariyer 2", "Bariyer 3"],\n'
+            '    "fiyat_duyarlilik_analizi": "Fiyat ve maliyet hassasiyeti analizi...",\n'
+            '    "kutuplasma_indeksi_skoru": "0.75 / 1.0 (Orta-Yüksek Kutuplaşma)",\n'
+            '    "what_if_karsi_olgusal_stres_testi": {\n'
+            '      "senaryo_1_guvence": "Kabul oranı artışı...",\n'
+            '      "senaryo_2_fiyat": "Fiyat artarsa ret oranı...",\n'
+            '      "en_hizli_ikna_olacak_segment": "Segment tanımı..."\n'
+            '    },\n'
+            '    "stratejik_urun_tavsiyesi": "Stratejik tavsiye..."\n'
+            '  }\n'
+            "}"
         )
 
         user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
 
-        payload = {
-            "contents": [{"parts": [{"text": f"{sys_prompt}\n\n{user_content}"}]}]
-        }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            text = data["candidates"][0]["content"]["parts"][0]["text"]
-            return self._robust_json_parse(text)
+        response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content)
+        if not response_text:
+            return None
 
-    def _robust_json_parse(self, text: str) -> dict[str, Any]:
-        """Robustly extracts and parses JSON."""
-        clean_text = text.replace("```json", "").replace("```", "").strip()
+        clean_json = response_text.strip()
+        if clean_json.startswith("```json"):
+            clean_json = clean_json[7:]
+        if clean_json.endswith("```"):
+            clean_json = clean_json[:-3]
+        clean_json = clean_json.strip()
+
         try:
-            return json.loads(clean_text)
+            return json.loads(clean_json)
         except Exception:
-            pass
-
-        start_idx = clean_text.find("{")
-        end_idx = clean_text.rfind("}")
-        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-            sub = clean_text[start_idx:end_idx + 1]
-            try:
-                return json.loads(sub)
-            except Exception:
-                sub_fixed = re.sub(r',\s*([}\]])', r'\1', sub)
-                return json.loads(sub_fixed)
-        raise ValueError("Could not parse JSON from model response")
-
-    def _fallback_simulation(self, personas: list[DeepCognitivePersona], pitch: str) -> dict[str, Any]:
-        """
-        Delegates to LivingRoundtableEngine to synthesize organic,
-        interruption-rich, living multi-agent human dialogue.
-        """
-        return self.roundtable_engine.generate_organic_roundtable(personas, pitch)
+            return None
