@@ -159,33 +159,12 @@
                 
                 <!-- MODE 1: FOCUS GROUP CONTROLS -->
                 <div id="controls-focus" class="space-y-6">
-                    <!-- Presets -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // TOPLUMSAL KESİT ŞABLONLARI
-                        </label>
-                        <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
-                            <button onclick="setFocusSample('gazi ve şehit aileleri', 'tayyip erdoğan tekrar başkan olsun mu')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [01] GAZİ & ŞEHİT
-                            </button>
-                            <button onclick="setFocusSample('oyuncu topluluğu ve genç yazılımcılar', 'türkiyede oyunların ve discordun yasaklanması')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [02] GENÇ & GAMER
-                            </button>
-                            <button onclick="setFocusSample('çarşı ve sanayi esnafları', 'pos komisyonlarının devlet eliyle yüzde 1 e sabitlenmesi')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [03] SANAYİ ESNAFI
-                            </button>
-                            <button onclick="setFocusSample('kiracılar ve ev sahipleri', 'konut kiralarında yüzde 25 tavan zam sınırının geri getirilmesi')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [04] KİRACI & MÜLK
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- Target Audience -->
                     <div>
                         <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
                             // HEDEF KİTLE KÜMESİ (AUDIENCE)
                         </label>
-                        <input id="target-input" type="text" value="gazi ve şehit aileleri" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition">
+                        <input id="target-input" type="text" placeholder="Örn: 18-30 Yaş Gençler, Çarşı Esnafı, Kiracılar, Memurlar..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition">
                     </div>
 
                     <!-- Question / Pitch -->
@@ -193,7 +172,7 @@
                         <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
                             // MASAYA ATILACAK SORU / POLİTİKA
                         </label>
-                        <textarea id="pitch-input" rows="3" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">tayyip erdoğan tekrar başkan olsun mu</textarea>
+                        <textarea id="pitch-input" rows="3" placeholder="Masaya yatırmak istediğiniz konuyu, politika teklifini veya soruyu buraya yazın..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- Gemini Key Optional -->
@@ -216,39 +195,18 @@
 
                 <!-- MODE 2: CENSUS & MUNICIPAL SURVEY CONTROLS -->
                 <div id="controls-census" class="space-y-6 hidden">
-                    <!-- Municipal Presets -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // BELEDİYE ÖRNEK ANKETLERİ
-                        </label>
-                        <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
-                            <button onclick="setCensusSample('İstanbul', 'Kadıköy', 'Kadıköy rıhtımda ve kaldırımlarda elektrikli scooter kullanımı tamamen yasaklanmalı mı?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [01] KADIKÖY SCOOTER
-                            </button>
-                            <button onclick="setCensusSample('İstanbul', 'Tümü', 'İstanbulda kentsel dönüşümde kiracılara aylık 20.000 TL kira desteği verilsin mi?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [02] İBB DÖNÜŞÜM
-                            </button>
-                            <button onclick="setCensusSample('Ankara', 'Çankaya', 'Kızılay ve Tunalı bölgesinin tamamen yayalaştırılması projesini onaylıyor musunuz?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [03] ANKARA YAYALAŞTIRMA
-                            </button>
-                            <button onclick="setCensusSample('İzmir', 'Alsancak', 'Kordonboyunda gece 24:00ten sonra canlı müzik ve gürültü kısıtlaması getirilsin mi?')" class="text-left p-2.5 bg-ink-900 hover:bg-ink-850 brutalist-border text-neutral-300 transition hover:border-neutral-500">
-                                [04] İZMİR KORDON
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- City Selector -->
                     <div>
                         <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
                             // HEDEF ŞEHİR (CITY FILTER)
                         </label>
                         <select id="census-city" onchange="updateDistrictOptions()" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
-                            <option value="İstanbul" selected>İstanbul (TÜİK TR10)</option>
+                            <option value="Tüm Türkiye" selected>Tüm Türkiye (81 İl / NUTS-2 Ağırlıklı)</option>
+                            <option value="İstanbul">İstanbul (TÜİK TR10)</option>
                             <option value="Ankara">Ankara (TÜİK TR51)</option>
                             <option value="İzmir">İzmir (TÜİK TR31)</option>
                             <option value="Bursa">Bursa (TÜİK TR41)</option>
                             <option value="Antalya">Antalya (TÜİK TR61)</option>
-                            <option value="Tüm Türkiye">Tüm Türkiye (NUTS-2 Ağırlıklı)</option>
                         </select>
                     </div>
 
@@ -276,9 +234,9 @@
                     <!-- Policy Question -->
                     <div>
                         <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // ANKET SORUSU / BELEDİYE PROJESİ
+                            // ANKET SORUSU / POLİTİKA PROJESİ
                         </label>
-                        <textarea id="census-question" rows="3" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed">İstanbulda kentsel dönüşümde kiracılara aylık 20.000 TL kira desteği verilsin mi?</textarea>
+                        <textarea id="census-question" rows="3" placeholder="Halka sormak istediğiniz anket sorusunu veya politika teklifini buraya yazın..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed"></textarea>
                     </div>
 
                     <!-- Sample Size -->
@@ -414,18 +372,6 @@
                 canvasTag.innerText = "[SECTION 02 // CENSUS & POLL REPORT]";
                 canvasRight.innerText = "BELEDİYE KAMUOYU RAPORU";
             }
-        }
-
-        function setFocusSample(target, pitch) {
-            document.getElementById('target-input').value = target;
-            document.getElementById('pitch-input').value = pitch;
-        }
-
-        function setCensusSample(city, district, question) {
-            document.getElementById('census-city').value = city;
-            updateDistrictOptions();
-            document.getElementById('census-district').value = district;
-            document.getElementById('census-question').value = question;
         }
 
         function updateDistrictOptions() {
