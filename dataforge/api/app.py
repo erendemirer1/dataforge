@@ -8,6 +8,7 @@ from .routes.focus_group import router as focus_group_router
 from .routes.generator import router as generator_router
 from .routes.radar import router as radar_router
 from .routes.census import router as census_router
+from .routes.counterfactual import router as counterfactual_router
 from .. import __version__
 
 app = FastAPI(
@@ -40,6 +41,7 @@ app.include_router(focus_group_router, prefix="/api/v1")
 app.include_router(census_router, prefix="/api/v1")
 app.include_router(generator_router, prefix="/api/v1")
 app.include_router(radar_router, prefix="/api/v1")
+app.include_router(counterfactual_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Studio Web Interface"])
@@ -58,4 +60,3 @@ async def studio_ui():
 @app.get("/health", tags=["Health & Info"])
 async def health():
     return {"status": "ok", "version": __version__}
-
