@@ -1,6 +1,6 @@
 """
 DataForge Municipal & Macro-Demographic Synthetic Census Polling Engine.
-Powered by AutonomousCognitiveReasoner (Zero-Hardcoding, Causal DAG Inhabitation).
+Powered by AutonomousCognitiveReasoner (100% LLM & Causal Inhabitation).
 Simulates high-fidelity municipal and national surveys (N=100 to N=10,000)
 with rigorous TÜİK NUTS-2, SEGE district socio-economic calibration,
 cross-tabulations (age, gender, district, income, housing), individual citizen ballots,
@@ -14,7 +14,7 @@ from typing import Any, Optional
 from dataclasses import dataclass, asdict
 from ..engine.profile_builder import ProfileBuilder
 from .cognitive_persona import CognitivePersonaBuilder
-from .autonomous_reasoner import AutonomousCognitiveReasoner, AutonomousSemanticParser
+from .autonomous_reasoner import AutonomousCognitiveReasoner
 
 
 @dataclass
@@ -94,7 +94,6 @@ class MunicipalCensusEngine:
         self.profile_builder = ProfileBuilder(self.rng)
         self.persona_builder = CognitivePersonaBuilder(self.rng)
         self.reasoner = AutonomousCognitiveReasoner(self.rng)
-        self.parser = AutonomousSemanticParser()
 
     def run_census_poll(
         self,
@@ -107,7 +106,6 @@ class MunicipalCensusEngine:
         """
         Executes an autonomous quantitative synthetic census poll calibrated to Turkey / city demographics.
         """
-        topic = self.parser.parse(question)
         sample_size = max(50, min(10000, sample_size))
         
         # Cross-tab accumulators
@@ -162,24 +160,20 @@ class MunicipalCensusEngine:
             cog_persona = self.persona_builder.build_from_raw(p_dict, record_id=i + 1)
             cog_persona.barinma_durumu = housing
 
-            # Autonomous Causal Evaluation (No hardcoded keyword branches)
-            verdict, util_score, dominant_driver = self.reasoner.evaluate_persona_stance(cog_persona, topic)
+            # Pure LLM-driven autonomous evaluation
+            ballot_res = self.reasoner.evaluate_and_synthesize_ballot(cog_persona, question)
+            karar_str = ballot_res["karar"]
+            thought = ballot_res["bireysel_dusuncesi_ve_gerekcesi"]
 
-            if verdict == "KABUL":
+            if "Kabul" in karar_str:
                 verdict_key = "kabul"
-                karar_str = "Kabul Eder / Destekler"
                 total_kabul += 1
-            elif verdict == "RED":
+            elif "Red" in karar_str or "Karşı" in karar_str:
                 verdict_key = "ret"
-                karar_str = "Kesinlikle Reddeder"
                 total_ret += 1
             else:
                 verdict_key = "kararsiz"
-                karar_str = "Kararsız / Çekimser"
                 total_kararsiz += 1
-
-            # Synthesize authentic individual citizen thought
-            thought = self.reasoner.synthesize_inner_thought(cog_persona, topic, verdict, dominant_driver)
 
             # Record citizen ballot
             citizen_ballots.append(CitizenBallot(
@@ -252,21 +246,19 @@ class MunicipalCensusEngine:
         income_metrics = _to_metric_list(income_counts)
         housing_metrics = _to_metric_list(housing_counts)
 
-        # Strategic Action & Barriers derived from semantic topic analysis
-        subj = topic.target_subject
         target_label = district if district and district != "Tümü" else city
 
         drivers = [
-            f"Vatandaşın '{subj}' Konusunda Hak ve Yaşam Standardı Beklentisi",
-            f"{target_label} Genelinde Şeffaf ve Eşit Hizmet Talebi",
-            f"Toplumsal Barış ve Huzurun Sağlanması İsteği"
+            f"Vatandaşın {target_label} Genelinde Yaşam Standardı ve Hizmet Beklentisi",
+            f"Şeffaf, Eşit ve Öngörülebilir Yerel Yönetim Talebi",
+            f"Toplumsal Huzur ve Mahalle Yaşamının Korunması İsteği"
         ]
         barriers = [
-            f"'{subj}' Konusunda Olası Güvenlik ve Asayiş Endişeleri",
-            f"Uygulama Sürecindeki Maliyet ve Denetim Belirsizliği",
-            f"Farklı Sosyo-Demografik Grupların Ayrışan Çıkarları"
+            f"Uygulama Sürecindeki Maliyet, Bütçe ve Denetim Belirsizliği",
+            f"Olası Asayiş, Trafik veya Altyapı Sorunları Kaygısı",
+            f"Farklı Sosyo-Demografik Kesimlerin Ayrışan Öncelikleri"
         ]
-        action = f"{target_label} İdaresi '{subj}' konusunda paydaşların katılımıyla şeffaf bir danışma süreci yürütmeli; güvenlik ve denetim mekanizmalarını netleştirmelidir."
+        action = f"{target_label} İdaresi '{question}' konusunda yerel paydaşların katılımıyla şeffaf bir danışma süreci yürütmeli; denetim ve uygulama mekanizmalarını netleştirmelidir."
 
         target_area = f"{city}" + (f" ({district})" if district and district != "Tümü" else " (Tüm İlçeler)")
 
