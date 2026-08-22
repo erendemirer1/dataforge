@@ -98,8 +98,8 @@ class InterrogationEngine:
                     persona_ad_soyad=dossier.ad_soyad,
                     persona_meslek=dossier.meslek,
                     persona_sehir_ilce=f"{dossier.sehir} / {dossier.ilce}",
-                    cevap_metni=data.get("cevap_metni", "Bu konuyu değerlendiriyorum."),
-                    bilincalti_refleksi=data.get("bilincalti_refleksi", "Şartlarımızı göz önünde bulundurmam lazım."),
+                    cevap_metni=data.get("cevap_metni", ""),
+                    bilincalti_refleksi=data.get("bilincalti_refleksi", ""),
                     kullanilan_arguman_tipi=data.get("kullanilan_arguman_tipi", "Bireysel Tecrübe")
                 )
             except Exception:

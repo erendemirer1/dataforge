@@ -62,7 +62,7 @@ class CounterfactualStressEngine:
                     "aylik_net_gelir_tl": 35000.0,
                     "barinma_durumu": "Kiracı" if i % 2 == 0 else "Ev Sahibi",
                     "karar": "Kabul Eder / Destekler" if i % 3 == 0 else ("Kesinlikle Reddeder" if i % 3 == 1 else "Kararsız / Çekimser"),
-                    "bireysel_dusuncesi_ve_gerekcesi": "Mevcut şartları değerlendiriyorum."
+                    "bireysel_dusuncesi_ve_gerekcesi": ""
                 }
                 for i in range(100)
             ]
