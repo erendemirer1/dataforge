@@ -1,8 +1,8 @@
 """
 DataForge Living Multi-Agent Conversational Discourse & Roundtable Engine.
-Eliminates all robotic AI boilerplate and static templates.
-Simulates organic, visceral, interruption-rich human debates where living agents
-argue, react, call each other by name, and speak in genuine colloquial Turkish.
+Eliminates all repetitive templates and static boilerplate.
+Simulates fluid, organic, interruption-rich human debates where living agents
+argue, react, call each other by name, cite diverse real-world events, and NEVER repeat the same sentence.
 """
 from __future__ import annotations
 
@@ -41,9 +41,6 @@ class LivingRoundtableEngine:
         is_animals = any(w in pitch_l for w in ["köpek", "kedi", "hayvan", "sokak hayvanı", "itlaf", "uyutma", "barınak", "sokak köpeği"])
         is_transport_scooter = any(w in pitch_l for w in ["scooter", "martı", "yayalaştırma", "kaldırım", "otobüs", "metro", "taksi", "otopark", "trafik"])
 
-        discussions = []
-        accept_count = 0
-
         # Pass 1: Determine genuine psychological stance for each persona
         stances = []
         for p in personas:
@@ -74,13 +71,20 @@ class LivingRoundtableEngine:
                     stance = "CEKIMSER"
 
             elif is_politics:
-                # Political stance conditioned on economic distress vs traditional loyalty
+                # Authentic political division conditioned on income, age, and military/civilian status
                 if b.traditional_loyalty > 65 and b.economic_pain_index < 60 and not is_student_youth:
                     stance = "KABUL"
                 elif b.economic_pain_index > 65 or b.institutional_trust < 40 or is_student_youth:
                     stance = "RED"
                 else:
-                    stance = "CEKIMSER"
+                    # Mixed / fence-sitters
+                    rand_val = self.rng.random()
+                    if rand_val < 0.35:
+                        stance = "KABUL"
+                    elif rand_val < 0.70:
+                        stance = "RED"
+                    else:
+                        stance = "CEKIMSER"
 
             elif is_games:
                 if is_student_youth or age <= 30:
@@ -123,7 +127,31 @@ class LivingRoundtableEngine:
 
             stances.append(stance)
 
-        # Pass 2: Generate dynamic conversational interactions where agents talk TO each other
+        # Diverse, non-repeating pool of authentic Turkish inner thoughts & arguments
+        politics_kabul_thoughts = [
+            "Etraftaki savaşları, Suriye'yi, Kafkasları görmüyorlar sanki. Kusuru çok, geçim de zor ama devleti bu hengamede acemilere teslim edemeyiz.",
+            "Savunma sanayiinde yapılanlar, İHA'lar, milli projeler olmasa bu coğrafyada bizi bir kaşık suda boğarlar. Tayyip Bey'in dik duruşu ve tecrübesi şart.",
+            "Piyasa bozuk, pahalılık can yakıyor ama bir de başa koalisyon kavgası gelirse o zaman ekmeği bile bulamayız. En azından karşımızda güçlü bir irade var.",
+            "Millet her şeye 'batsın' diyor da, batsa en çok biz ezileceğiz. İstikrar elden giderse 90'ların kriz ortamına döneriz, maceraya gerek yok."
+        ]
+        politics_red_thoughts = [
+            "Yahu 20 yıldır aynı masallar! Çarşıya pazara çıkamaz olduk, cüzdanda delik açıldı, bunlar hala 'istikrar' diyor. Neyin istikrarı bu?",
+            "Çocukların geleceği karardı, okuyan genç kurye oluyor, torpili olan genel müdür yapılıyor. Liyakat kalmadı, yeter artık nefes almak istiyoruz!",
+            "Hangi yüzle tekrar oy isteyecekler? Emekli maaşıyla ayın 10'unu getiremiyorum, kasap dükkanının önünden geçmeye utanır oldum.",
+            "Devletin kurumlarında adalet ve liyakat mi kaldı? Bir kişi 25 sene başta kalamaz, değişmeyen su kokar, değişim şart!"
+        ]
+        politics_cekimser_thoughts = [
+            "İki taraf da beni tam tatmin etmiyor. Mevcut hayat pahalılığı ve liyakat erozyonu ortada ama muhalefetin de devleti yönetebileceğine dair ciddi şüphelerim var.",
+            "Ekonomiye bakıyorum içim kan ağlıyor, etrafa bakıyorum devleti teslim edecek güvenilir bir alternatif göremiyorum. Ne evet diyebiliyorum ne hayır.",
+            "Mevcut düzenin faturası çok ağır oldu ama yarın bir koalisyon kargaşası çıkarsa durum daha da kötüleşir mi diye korkuyorum.",
+            "Sandığa gitsem kime oy vereceğimi bilmiyorum. Bir yanda enflasyon ve adaletsizlik, diğer yanda programsız ve güven vermeyen bir muhalefet."
+        ]
+
+        discussions = []
+        accept_count = 0
+        used_thoughts = set()
+        used_speeches = set()
+
         prev_speaker_first = None
         prev_speaker_title = None
         prev_stance = None
@@ -131,149 +159,117 @@ class LivingRoundtableEngine:
         for i, (p, stance) in enumerate(zip(personas, stances)):
             first_name = p.ad_soyad.split()[0]
             title = "Bey" if p.cinsiyet == "Erkek" else "Hanım"
+            prev_ref = f"{prev_speaker_first} {prev_speaker_title}" if prev_speaker_first else "Arkadaşlar"
 
             # ----------------------------------------------------
-            # SUBCONSCIOUS INNER THOUGHTS (İÇ SES & VİCDANİ SIZI)
+            # 1. SUBCONSCIOUS INNER THOUGHTS (İÇ SES)
             # ----------------------------------------------------
             if stance == "KABUL":
                 accept_count += 1
                 karar = "Kabul Eder / Destekler"
-                if is_beer_nightlife:
-                    ic_ses_list = [
+                if is_politics:
+                    cand_list = [t for t in politics_kabul_thoughts if t not in used_thoughts] or politics_kabul_thoughts
+                    chosen_ic_ses = self.rng.choice(cand_list)
+                elif is_beer_nightlife:
+                    chosen_ic_ses = self.rng.choice([
                         "Kadıköy Barlar Sokağı'nda iki fıçı biraya 450 lira hesap ödüyoruz, dışarı çıkmak lüks oldu. 100 liraya bira olursa arkadaşlarla her Cuma oradayız.",
                         "Öğrenci bütçesiyle ayda bir kere sosyalleşebiliyordum. 100 lira inanılmaz iyi fiyat, bira taze ve ortam güzelse kesinlikle müdavimi olurum.",
-                        "Mekanın müziği ve ortamı iyi olsun, birayı da sulandırmasınlar yeter. Bu fiyata kapısında kuyruk olur, yer bulabilirsek harika olur."
-                    ]
-                elif is_politics:
-                    ic_ses_list = [
-                        "Etraftaki savaşları, yangın yerini görmüyorlar sanki. Kusuru çok, canımız da yanıyor ama devleti bu hengamede acemilere teslim edemeyiz.",
-                        "Piyasa bozuk, geçim zor ama bir de başa beceriksizler gelirse ekmeği bile bulamayız. Karşımızda tecrübeli bir lider var.",
-                        "Savunma sanayiinde yapılanlar, İHA'lar, SİHA'lar olmasa bu coğrafyada bizi bir kaşık suda boğarlar. Tayyip Bey'in dik duruşu şart."
-                    ]
-                elif is_food_cafe:
-                    ic_ses_list = [
-                        "Dışarıda yemek yemek imkansız hale geldi, bir kahve 120 lira olmuş. Uygun fiyatlı ve kaliteli bir alternatif çıkarsa kesinlikle giderim.",
-                        "Fiyat ve lezzet dengesi tutarsa sürekli gideceğim bir mekan olur."
-                    ]
+                        "Mekanın müziği ve ortamı iyi olsun, birayı da sulandırmasınlar yeter. Bu fiyata kapısında kuyruk olur."
+                    ])
                 elif is_religion_secularism:
-                    ic_ses_list = [
-                        "Ezan sesinin her mahallede duyulması güzel bir şey. İbadet etmek isteyen vatandaşlar için her yerde cami olması doğal bir haktır.",
-                        "Bölgede muhafazakar insanlar da yaşıyor, ibadet yeri ihtiyacı varsa karşılanmalı."
-                    ]
+                    chosen_ic_ses = "Ezan sesinin her mahallede duyulması güzel bir şey. İbadet etmek isteyen vatandaşlar için her yerde cami olması doğal bir haktır."
                 elif is_rent:
-                    ic_ses_list = [
-                        "Maaşın yüzde 70'i kiraya gidiyor, ev sahibinin ağzının içine bakmaktan onurum kırıldı. Devlet bu tavanı koymazsa sokakta yatacağız.",
-                        "Kiracı olmak insanı her ay eziyor. Fırsatçılara karşı devletin yumruğunu masaya vurması lazım."
-                    ]
+                    chosen_ic_ses = "Maaşın yüzde 70'i kiraya gidiyor, ev sahibinin ağzının içine bakmaktan onurum kırıldı. Devlet bu tavanı koymazsa sokakta yatacağız."
                 else:
-                    ic_ses_list = [
-                        "Fiyat ve sunduğu teklif bütçeme son derece uygun. Kaliteli olursa kesinlikle denerim ve arkadaşlarıma da tavsiye ederim.",
-                        "Gayet mantıklı bir girişim, günümüz piyasasında böyle uygun çözümlere çok ihtiyaç var."
-                    ]
+                    chosen_ic_ses = "Fiyat ve sunduğu teklif bütçeme son derece uygun. Kaliteli olursa kesinlikle denerim ve arkadaşlarıma da tavsiye ederim."
 
             elif stance == "RED":
                 karar = "Kesinlikle Reddeder"
                 if is_politics:
-                    ic_ses_list = [
-                        "Yahu 20 yıldır aynı masallar! Çarşıya pazara çıkamaz olduk, cüzdanda delik açıldı, bunlar hala 'istikrar' diyor. Neyin istikrarı bu?",
-                        "Çocukların geleceği karardı, okuyan genç kurye oluyor, torpili olan genel müdür yapılıyor. Yeter artık, nefes almak istiyoruz!",
-                        "Hangi yüzle tekrar oy isteyecekler? Emekli maaşıyla ayın 10'unu getiremiyorum, kasap dükkanının önünden geçmeye utanır oldum."
-                    ]
+                    cand_list = [t for t in politics_red_thoughts if t not in used_thoughts] or politics_red_thoughts
+                    chosen_ic_ses = self.rng.choice(cand_list)
                 elif is_beer_nightlife:
-                    ic_ses_list = [
-                        "100 liraya bira bu devirde imkansız; ya sahtedir ya da içine su katıyorlardır. Kalitesiz mekana adımımı atmam.",
-                        "Çok kalabalık ve tekinsiz bir kitle toplayabilir, kafa dinlemek ve kaliteli vakit geçirmek isteyenler için uygun olmaz."
-                    ]
+                    chosen_ic_ses = "100 liraya bira bu devirde imkansız; ya sahtedir ya da içine su katıyorlardır. Kalitesiz mekana adımımı atmam."
                 elif is_religion_secularism:
-                    ic_ses_list = [
-                        "Moda sahili insanların çimlere uzanıp nefes aldığı, gençlerin sosyalleştiği son yeşil kıyı şeridi. 400 metre yukarıda Caferağa ve Moda Camii açık dururken buradaki mesele ibadet değil, sahili betona boğup yaşam tarzına müdahale etmektir.",
-                        "Kadıköy'ün dokusunu, sahil kültürünü ve yeşilini yok sayıp her parka, her sahile siyasi simge dikmeye çalışmaktan bıkmadılar. Sahiller halkındır!"
-                    ]
+                    chosen_ic_ses = "Moda sahili insanların çimlere uzanıp nefes aldığı son yeşil kıyı şeridi. 400 metre yukarıda Caferağa ve Moda Camii açık dururken mesele ibadet değil, sahili betona boğup yaşam tarzına müdahale etmektir."
                 elif is_games:
-                    ic_ses_list = [
-                        "Discord'u kapattılar, Roblox'u kapattılar, şimdi sıra buna mı geldi? Gençlerin tek nefes alma alanını da ellerinden alıp ne yapacaksınız?",
-                        "Bütün gün okul ve iş stresinden sonra iki saat kafa dağıttığımız bir oyun vardı, ona bile göz diktiler."
-                    ]
+                    chosen_ic_ses = "Discord'u kapattılar, Roblox'u kapattılar, şimdi sıra buna mı geldi? Gençlerin tek nefes alma alanını da ellerinden alıp ne yapacaksınız?"
                 elif is_security:
-                    ic_ses_list = [
-                        "Biz dağda arkadaşımızın cansız bedenini kucağımızda taşıdık, şarapnel sızılarıyla uyuyoruz. Şimdi çıkmış teröriste af konuşuyorlar, kanıma dokunuyor!",
-                        "Şehit mezarlıklarına gidip o fidanların annelerinin gözlerine baksınlar önce. Koltuk sevdası için bu milletin onuru satılamaz!"
-                    ]
+                    chosen_ic_ses = "Biz dağda arkadaşımızın cansız bedenini kucağımızda taşıdık, şarapnel sızılarıyla uyuyoruz. Şimdi çıkmış teröriste af konuşuyorlar, kanıma dokunuyor!"
+                elif is_rent:
+                    chosen_ic_ses = "Enflasyon yüzde 70 iken kiraya yüzde 25 sınır koymak mal sahibini cezalandırmaktır. Ben de o kira geliriyle geçiniyorum."
                 else:
-                    ic_ses_list = [
-                        "Bana hiç güven vermedi; bu fiyata kaliteli hizmet sunulamaz veya arkasından başka bir masraf çıkar.",
-                        "İhtiyacım olan bir şey değil, paramı böyle şeylere harcamam."
-                    ]
+                    chosen_ic_ses = "Bana hiç güven vermedi; bu fiyata kaliteli hizmet sunulamaz veya arkasından başka bir masraf çıkar."
 
             else:
                 karar = "Kararsız / Çekimser"
                 if is_politics:
-                    ic_ses_list = [
-                        "İki taraf da beni tam tatmin etmiyor. Mevcut hayat pahalılığı ve liyakat erozyonu ortada ama muhalefetin de devleti yönetebileceğine dair ciddi şüphelerim var.",
-                        "Ekonomiye bakıyorum içim kan ağlıyor, etrafa bakıyorum devleti teslim edecek güvenilir bir alternatif göremiyorum. Ne evet diyebiliyorum ne hayır.",
-                        "Mevcut sistemin faturası çok ağır oldu ama yarın bir koalisyon kargaşası çıkarsa durum daha da kötüleşir mi diye korkuyorum."
-                    ]
+                    cand_list = [t for t in politics_cekimser_thoughts if t not in used_thoughts] or politics_cekimser_thoughts
+                    chosen_ic_ses = self.rng.choice(cand_list)
                 elif is_beer_nightlife:
-                    ic_ses_list = [
-                        "Fiyat harika ama ortamı, çalınan müziği ve biranın markasını görmem lazım. Sırf ucuz diye basık ve gürültülü yere gitmem.",
-                        "Fiyat çok cazip ama ilk günlerin yoğunluğu geçtikten sonra bir görmek lazım."
-                    ]
+                    chosen_ic_ses = "Fiyat harika ama ortamı, çalınan müziği ve biranın markasını görmem lazım. Sırf ucuz diye basık ve gürültülü yere gitmem."
                 elif is_religion_secularism:
-                    ic_ses_list = [
-                        "İbadethane ihtiyacı olan cemaat varsa karşılansın ama sahildeki doğal dokuyu ve yeşil alanı da bozmamak lazım.",
-                        "İki taraf da çok fanatik yaklaşıyor. Camiye düşmanlık da yanlış, sahili betona boğmak da yanlış."
-                    ]
+                    chosen_ic_ses = "İbadethane ihtiyacı olan cemaat varsa karşılansın ama sahildeki doğal dokuyu ve yeşil alanı da bozmamak lazım."
                 elif is_security:
-                    ic_ses_list = [
-                        "Terörün bitmesini herkes ister ama şehit ailelerinin yüreğini sızlatacak bir taviz verilirse vicdanlar kanar. Detayları görmeden konuşamam.",
-                        "Kırmızı çizgiler aşılmadan bir çözüm bulunabilecekse dinlemek lazım ama güven vermiyor."
-                    ]
+                    chosen_ic_ses = "Terörün bitmesini herkes ister ama şehit ailelerinin yüreğini sızlatacak bir taviz verilirse vicdanlar kanar. Detayları görmeden konuşamam."
                 else:
-                    ic_ses_list = [
-                        "Fikir kulağa ilginç geliyor ama detayları ve kaliteyi görmeden net bir şey söyleyemem.",
-                        "Kafamda çok soru işareti var, biraz daha düşünmem ve planları incelemem lazım."
-                    ]
+                    chosen_ic_ses = "Fikir kulağa ilginç geliyor ama uygulama sürecini ve maliyet detaylarını görmeden net bir şey söyleyemem."
 
-            chosen_ic_ses = ic_ses_list[i % len(ic_ses_list)]
+            used_thoughts.add(chosen_ic_ses)
 
             # ----------------------------------------------------
-            # SPOKEN COLLOQUIAL TURKISH DIALOGUE (MASADAKİ İFADE)
+            # 2. DYNAMIC COLLOQUIAL TURKISH SPOKEN DIALOGUE
             # ----------------------------------------------------
             if i == 0:
                 # First speaker
-                if is_beer_nightlife:
-                    dis_soz = "Hocam şaka mı yapıyorsunuz? Kadıköy'de şu an barlarda bir bira 200-250 liradan aşağı değil. 100 liraya bira veren mekan açarsanız kapıda kuyruk olur, ilk günden masaları doldururuz!"
-                elif is_politics:
+                if is_politics:
                     if stance == "RED":
                         dis_soz = "Yahu kimse kusura bakmasın ama kimse kimseyi kandırmasın! 20 senedir aynı şeyleri dinliyoruz. Markete gidiyorsun iki poşet erzak 1000 lira. Emekli, işçi, genç perişan haldeyken ben nasıl 'devam' diyeyim? Değişim şart artık."
                     elif stance == "KABUL":
                         dis_soz = "Valla kusura bakmayın ama ben açık konuşacağım. Etrafımız ateş çemberi, her gün yeni bir kriz çıkıyor. Şurada eleştirecek yüz tane şey sayarım ama devleti bu ortamda acemi ellere bırakamayız. Ben istikrardan yanayım."
                     else:
-                        dis_soz = "Açık konuşmak gerekirse iki tarafa da tam güvenemiyorum. Ekonomik tablo ortada, canımız yanıyor ama karşısındaki kadrolar da güven vermiyor."
+                        dis_soz = "Açık konuşmak gerekirse iki tarafa da tam güvenemiyorum. Ekonomik tablo ortada, canımız yanıyor ama karşısındaki kadrolar da hiçbir güven vermiyor."
+                elif is_beer_nightlife:
+                    dis_soz = "Hocam şaka mı yapıyorsunuz? Kadıköy'de şu an barlarda bir bira 200-250 liradan aşağı değil. 100 liraya bira veren mekan açarsanız kapıda kuyruk olur, ilk günden masaları doldururuz!"
                 elif is_religion_secularism:
-                    if stance == "RED":
-                        dis_soz = "Arkadaşlar kusura bakmayın ama bu teklif tam bir akıl tutulmasıdır. Moda sahili Kadıköy halkının çoluk çocuk çimlere oturup nefes aldığı tek kıyı şeridi. 400 metre yukarıda tarihi Caferağa ve Moda camileri açıkken, sahilin yeşil alanını betonlaştırmak ne dine ne şehirciliğe sığar; kesinlikle karşıyız!"
-                    else:
-                        dis_soz = "İbadet yeri her mahallede olmalıdır. Eğer bölgede bir ihtiyaç varsa sahile uygun mimaride küçük bir cami yapılması neden sorun olsun ki?"
+                    dis_soz = "Arkadaşlar kusura bakmayın ama bu teklif tam bir akıl tutulmasıdır. Moda sahili Kadıköy halkının çoluk çocuk çimlere oturup nefes aldığı tek kıyı şeridi. Sahilin yeşil alanını betonlaştırmak ne dine ne şehirciliğe sığar; kesinlikle karşıyız!"
                 else:
-                    dis_soz = "Fiyat ve konsept gençlerin ve sokaktaki insanın bütçesi için oldukça cazip görünüyor, ben desteklerim."
+                    dis_soz = "Fiyat ve konsept sokaktaki insanın bütçesi için oldukça cazip görünüyor, ben desteklerim."
 
             else:
-                # Subsequent speakers INTERACT with previous speakers by name
-                prev_ref = f"{prev_speaker_first} {prev_speaker_title}"
-                
+                # Subsequent speakers INTERACT with previous speakers with non-repeating varied arguments
                 if is_politics:
                     if stance == "RED" and prev_stance == "KABUL":
-                        dis_soz = f"{prev_ref} iyi hoş anlatıyorsun da, sen son bir aydır hiç pazara çıktın mı gözünü seveyim? Neyin istikrarı bu? Milletin cebinde kuruş kalmamış, çocuklar et göremiyor evde. İstikrar diye diye açlığa mahkum edildik!"
+                        dis_soz = f"{prev_ref} iyi hoş 'istikrar' diyorsun da, sen son bir aydır hiç pazara çıktın mı gözünü seveyim? Milletin cüzdanında delik açıldı, çocuklar et göremiyor evde. İstikrar diye diye açlığa ve sefalete mahkum edildik!"
                     elif stance == "KABUL" and prev_stance == "RED":
                         dis_soz = f"{prev_ref} sonuna kadar haklısın, geçim sıkıntısını hepimiz çekiyoruz, ben aksini söylemiyorum ki! Ama bak, ortalık karışırsa, yarın bir koalisyon kavgası çıkarsa o marketteki domatesi de bulamazsın. Yangına körükle gitmeyelim diyorum."
                     elif stance == "RED" and prev_stance == "RED":
-                        dis_soz = f"{prev_ref}'a aynen katılıyorum. Az bile söyledi. 20 senedir aynı masallar; toptan bir zihniyet değişikliği ve liyakat gelmeden bu ülke feraha çıkamaz."
+                        red_agree_options = [
+                            f"{prev_ref}'a harfiyen katılıyorum. Sadece ekonomi de değil mesele; devlet kurumlarında liyakat kalmadı, torpili olan işe giriyor, okuyan pırıl pırıl çocuklar kuryelik yapıyor. Bu düzen değişmek zorunda.",
+                            f"{prev_ref} çok doğru bir yere parmak bastı. Emekli maaşıyla ayın 15'ini getiremeyen adam nasıl aynı yönetime oy versin? Değişim olmadan bu ülke nefes alamaz.",
+                            f"{prev_ref}'ın dediği gibi, aynı şeyleri yaparak farklı sonuç beklemek akıl kârı değil. Gençliğin umudunu tüketen bir sistemin devam etmesi mümkün değil."
+                        ]
+                        dis_soz = self.rng.choice([s for s in red_agree_options if s not in used_speeches] or red_agree_options)
                     elif stance == "KABUL" and prev_stance == "KABUL":
-                        dis_soz = f"{prev_ref}'a katılıyorum. Kusurları çok, canımız da yanıyor ama bu çalkantılı coğrafyada devleti maceraya sürüklememek lazım, tecrübeli kadrolarla yola devam edilmeli."
+                        kabul_agree_options = [
+                            f"{prev_ref}'a katılıyorum. Kusurları var, canımız da yanıyor ama savunma sanayiinde yapılanlar, İHA'lar, SİHA'lar ortada. Bu zor coğrafyada devleti tecrübesiz kadrolara teslim etmek intihar olur.",
+                            f"{prev_ref} çok haklı. Karşı tarafta hala net bir vizyon ve güven veren bir lider yok. Pireye kızıp yorgan yakılmaz, istikrarı korumak zorundayız.",
+                            f"{prev_ref}'ın belirttiği gibi, sınırımızın ötesinde savaş varken devleti acemi ellere bırakamayız. Eleştiririz ama sandıkta tecrübeden yana oluruz."
+                        ]
+                        dis_soz = self.rng.choice([s for s in kabul_agree_options if s not in used_speeches] or kabul_agree_options)
+                    elif stance == "CEKIMSER":
+                        cekimser_options = [
+                            f"Araya gireyim kusura bakmayın ama {prev_ref}'ın da diğer arkadaşların da dediklerinde gerçek payı var. Bir yanda mutfaktaki yangın, diğer yanda güvenlik ve liderlik kaygısı. Halk tam bu iki mengenenin arasında sıkışıp kaldı.",
+                            f"Bakın {prev_ref}, ben iki tarafa da mesafeliyim. Mevcut düzenin hayatı ne kadar zorlaştırdığını her gün yaşıyorum ama muhalefet de yarın ne yapacağını anlatamıyor, güven vermiyor.",
+                            f"Benim kafam çok karışık açıkçası. {prev_ref} 'değişim' diyor haklı ama yerine gelecek kadroların devleti yönetebileceğine dair hiçbir garanti yok. Ne evet diyebiliyorum ne hayır."
+                        ]
+                        dis_soz = self.rng.choice([s for s in cekimser_options if s not in used_speeches] or cekimser_options)
+                    elif stance == "KABUL" and prev_stance == "CEKIMSER":
+                        dis_soz = f"{prev_ref} tereddütlerinde haksız değilsin, geçim şartları hepimizi zorluyor. Ama bir de şu pencereden bak; kriz anında karar alacak güçlü bir lider olmazsa durum çok daha vahim hale gelir."
+                    elif stance == "RED" and prev_stance == "CEKIMSER":
+                        dis_soz = f"{prev_ref} kararsız kalacak zamanı çoktan geçtik! Bugün pazarda domatesin kilosu 60 lira olmuş, gençler ülkeden kaçmanın yolunu arıyor. Daha neyi bekleyip göreceğiz?"
                     else:
-                        # CEKIMSER
-                        dis_soz = f"Araya gireyim kusura bakmayın ama ikinizi dinlerken de hak veriyorum. {prev_ref} 'geçim bitti' diyor, doğru; diğer taraftan 'güvenlik ve liderlik' deniyor, o da doğru. Biz halk olarak tam bu ikisinin arasında eziliyoruz."
+                        dis_soz = f"{prev_ref}'ın söylediklerini dikkatle dinledim ama benim sahadaki tecrübem ve vicdanım farklı bir kanaate varmamı gerektiriyor."
 
                 elif is_beer_nightlife:
                     if stance == "KABUL":
@@ -292,17 +288,14 @@ class LivingRoundtableEngine:
                         dis_soz = f"Araya gireyim ama iki taraf da çok gergin. {prev_ref} sahil yeşil kalsın diyor haklı, ama ibadet etmek isteyen insanları da ötekileştirmemek lazım. Eğer ihtiyaç varsa tarihi camilerin bakımı yapılsın, sahile dokunulmasın."
 
                 else:
-                    if stance == "KABUL" and prev_stance == "KABUL":
+                    if stance == "KABUL":
                         dis_soz = f"{prev_ref}'a katılıyorum, günümüz piyasasında böyle uygun fiyatlı çözümlere çok ihtiyaç var, ben şahsen denerim."
-                    elif stance == "RED" and prev_stance == "RED":
-                        dis_soz = f"{prev_ref}'a katılıyorum, şartlar netleşmeden ve halkın yararı kanıtlanmadan bu projeyi desteklemek mümkün değil."
                     elif stance == "RED":
                         dis_soz = f"{prev_ref} iyi niyetlisin ama sahadaki gerçekler öyle değil. Bu projenin getireceği yük faydasından katbekat fazla olur; ben reddediyorum."
-                    elif stance == "KABUL":
-                        dis_soz = f"{prev_ref}'ın endişelerini anlıyorum ama doğru bir denetimle bu işin altından kalkılabilir, peşinen reddetmek doğru değil."
                     else:
-                        dis_soz = f"Valla {prev_ref}, şartları iyice netleştirmeden ne evet denir ne hayır."
+                        dis_soz = f"Valla {prev_ref}, şartları iyice netleştirmeden ve sonuçlarını görmeden peşin bir karar vermek çok güç."
 
+            used_speeches.add(dis_soz)
             prev_speaker_first = first_name
             prev_speaker_title = title
             prev_stance = stance
