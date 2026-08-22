@@ -1,6 +1,6 @@
 """
 DataForge Deep Multi-Agent Focus Group & Psychological Simulation Studio.
-Powered by UniversalAIGateway (Zero-Config AI Inference).
+Powered by UniversalAIGateway & CognitiveDossier (Institutional-Grade Computational Social Science).
 Simulates realistic group dynamics, Dual-Process System 1/2 reactions,
 Inner Subconscious Thoughts vs. Spoken Dialogue, and Executive Market Intelligence.
 """
@@ -11,6 +11,7 @@ import json
 import random
 from typing import Any, Optional
 from .cognitive_persona import CognitivePersonaBuilder, DeepCognitivePersona
+from .cognitive_dossier import CognitiveDossierBuilder
 from .utility_engine import EconometricUtilityEngine, QuantitativeMarketResult
 from .consistency_auditor import CognitiveConsistencyAuditor
 from .conversation_engine import LivingRoundtableEngine
@@ -28,6 +29,7 @@ class FocusGroupSimulator:
     def __init__(self, rng: Optional[random.Random] = None):
         self.rng = rng or random.Random()
         self.persona_builder = CognitivePersonaBuilder(self.rng)
+        self.dossier_builder = CognitiveDossierBuilder(self.rng)
         self.prompt_engine = DynamicPromptEngine(self.rng)
         self.utility_engine = EconometricUtilityEngine(self.rng)
         self.social_radar = SocialRadarEngine(self.rng)
@@ -113,17 +115,18 @@ class FocusGroupSimulator:
         api_key: Optional[str] = None
     ) -> Optional[dict[str, Any]]:
         """Simulates authentic inner monologue and spoken dialogue via Universal AI Gateway."""
-        personas_json = json.dumps([p.to_dict() for p in personas], ensure_ascii=False, indent=2)
+        dossiers = [self.dossier_builder.build_dossier(p) for p in personas]
+        dossiers_text = "\n\n".join([f"[KATILIMCI #{d.kisi_id}]\n{d.to_llm_system_context()}" for d in dossiers])
 
         sys_prompt = (
             "Sen Türkiye sosyolojisini, insanının kalbini, öfkesini, geçim derdini, mizahını ve gururunu "
             "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın.\n"
-            f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insan profili veriliyor.\n\n"
+            f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insanın 50+ parametreli TAM BİYOGRAFİK DOSYASI veriliyor.\n\n"
             "GÖREVİN:\n"
             "Bu insanların moderatörün ortaya attığı teklif/soru karşısındaki "
             "gerçek tepkilerini bir yuvarlak masada simüle edeceksin.\n\n"
             "KESİN KURALLAR:\n"
-            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine, yaşadığı ilçeye, gelirine ve hayat şartlarına uygun bir dili olsun.\n"
+            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakter kendi biyografik dosyasındaki mesleğine, ilçesine, kirasına, net maaşına, Haidt ahlak puanlarına ve korkularına dayanarak konuşsun.\n"
             "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın (Group Dynamics).\n"
             "3. Karakterler sorulan konuya ('" + pitch + "') DOĞRUDAN kendi hayatlarından örnekler vererek cevap versin.\n"
             "4. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
@@ -153,7 +156,7 @@ class FocusGroupSimulator:
             "}"
         )
 
-        user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
+        user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCI BİYOGRAFİK DOSYALARI:\n{dossiers_text}"
 
         response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content, api_key=api_key)
         if not response_text:

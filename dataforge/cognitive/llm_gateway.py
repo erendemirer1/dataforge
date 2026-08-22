@@ -2,6 +2,7 @@
 DataForge Universal Zero-Config AI & Cognitive Inhabitation Gateway.
 Provides completely automatic, user-transparent LLM and generative reasoning.
 Seamlessly cascades through provided API keys, environment credentials, local Ollama, and cloud models.
+Includes intelligent fail-fast circuit breakers for sub-second offline fallbacks.
 """
 from __future__ import annotations
 
@@ -56,16 +57,19 @@ class UniversalAIGateway:
         """
         key_to_use = api_key or self.gemini_key
 
-        # 1. Try Gemini if key is available
-        if key_to_use:
+        # 1. Try Gemini if key is available and not marked broken
+        if key_to_use and self._gemini_working is not False:
             try:
                 res = self._call_gemini(system_instruction, user_prompt, temperature, key_to_use)
                 if res:
+                    self._gemini_working = True
                     return res
+                else:
+                    self._gemini_working = False
             except Exception:
-                pass
+                self._gemini_working = False
 
-        # 2. Try Local Ollama if running
+        # 2. Try Local Ollama if running and not marked broken
         if self._ollama_working is not False:
             try:
                 res = self._call_ollama(system_instruction, user_prompt, temperature)
@@ -88,38 +92,31 @@ class UniversalAIGateway:
                 "temperature": temperature
             }
         }
-        # Try gemini-2.0-flash, gemini-1.5-flash
-        for model in ["gemini-2.0-flash", "gemini-1.5-flash"]:
-            # Mode A: Query param key
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
-            try:
-                req = urllib.request.Request(
-                    url,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"}
-                )
-                with urllib.request.urlopen(req, timeout=6) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    return data["candidates"][0]["content"]["parts"][0]["text"]
-            except Exception:
-                # Mode B: Bearer token header
-                url_bearer = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-                try:
-                    req_bearer = urllib.request.Request(
-                        url_bearer,
-                        data=json.dumps(payload).encode("utf-8"),
-                        headers={
-                            "Content-Type": "application/json",
-                            "Authorization": f"Bearer {key}"
-                        }
-                    )
-                    with urllib.request.urlopen(req_bearer, timeout=6) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                        return data["candidates"][0]["content"]["parts"][0]["text"]
-                except Exception:
-                    continue
-
-        return None
+        # Try gemini-2.0-flash
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}"
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+        except Exception:
+            # Try Bearer
+            url_bearer = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+            req_bearer = urllib.request.Request(
+                url_bearer,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {key}"
+                }
+            )
+            with urllib.request.urlopen(req_bearer, timeout=3) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["candidates"][0]["content"]["parts"][0]["text"]
 
     def _call_ollama(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
         url = f"{self.ollama_endpoint}/api/generate"
@@ -135,6 +132,6 @@ class UniversalAIGateway:
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=2) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             return data.get("response")
