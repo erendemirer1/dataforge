@@ -37,9 +37,9 @@ class AutonomousSemanticParser:
 
     PROFANITY_OR_BAN_WORDS = ["yasak", "kısıtlama", "engellensin", "kapatılsın", "ceza", "itlaf", "uyutma"]
     LIBERTY_WORDS = ["serbest", "açılsın", "kaldırılsın", "özgürlük", "destek", "izin", "gelsin", "kolaylık"]
-    SECURITY_WORDS = ["güvenlik", "terör", "asayiş", "olay", "kavga", "savaş", "şiddet", "çatışma", "polis", "asker", "provokasyon"]
+    SECURITY_WORDS = ["güvenlik", "terör", "asayiş", "olay", "kavga", "savaş", "şiddet", "çatışma", "polis", "asker", "provokasyon", "tribün", "taraftar"]
     ECONOMIC_BURDEN_WORDS = ["zam", "vergi", "harç", "fiyat artışı", "pahalı", "maliyet", "yük", "borç", "enflasyon"]
-    ECONOMIC_BENEFIT_WORDS = ["indirim", "ucuz", "burs", "kira yardımı", "destek", "ücretsiz", "sosyal yardım", "maaş zammı"]
+    ECONOMIC_BENEFIT_WORDS = ["indirim", "ucuz", "burs", "kira yardımı", "destek", "ücretsiz", "sosyal yardım", "maaş zammı", "öğrenci"]
     MORAL_SACRED_WORDS = ["cami", "ezan", "din", "şehit", "vatan", "bayrak", "kutsal", "milli", "tarihi", "değerler"]
 
     def parse(self, prompt: str) -> TopicSemanticVector:
@@ -79,7 +79,7 @@ class AutonomousSemanticParser:
 
         # 5. Care / Harm
         care = 0.0
-        if any(w in p_lower for w in ["çocuk", "yaşlı", "engelli", "hayvan", "köpek", "can", "deprem", "mağdur"]):
+        if any(w in p_lower for w in ["çocuk", "yaşlı", "engelli", "hayvan", "köpek", "can", "deprem", "mağdur", "öğrenci", "burs"]):
             care += 0.80
 
         # 6. Loyalty / Group Pride
@@ -127,7 +127,7 @@ class AutonomousCognitiveReasoner:
 
         # 1. Moral & Value Alignment Dot Product
         moral_utility = (
-            (h.care_harm - 50.0) * topic.care_harm_salience * 0.25 +
+            (h.care_harm - 50.0) * topic.care_harm_salience * 0.30 +
             (h.fairness_cheating - 50.0) * topic.fairness_salience * 0.20 +
             (h.loyalty_betrayal - 50.0) * topic.loyalty_salience * 0.25 +
             (h.authority_subversion - 50.0) * topic.authority_salience * 0.30 +
@@ -138,7 +138,6 @@ class AutonomousCognitiveReasoner:
         # 2. Economic & Class Habitus Utility (Bourdieu & Kahneman Prospect Theory)
         economic_impact = topic.economic_salience * (100.0 - b.economic_capital_score) * 0.40
         if economic_impact < 0:
-            # Loss aversion lambda multiplier (2.25x pain for perceived losses)
             economic_impact *= n.loss_aversion_lambda
 
         # 3. Security & Institutional Trust Factor
@@ -150,7 +149,6 @@ class AutonomousCognitiveReasoner:
         # 4. Status Quo Inertia & Age Resistance
         age_inertia = (persona.yas - 40) * 0.30 if persona.yas > 45 else 0.0
         if topic.liberty_salience > 0.3 and persona.yas >= 55:
-            # Older cohorts more cautious of sudden disruptions
             age_inertia -= 10.0
 
         # Total Latent Causal Utility
@@ -169,9 +167,9 @@ class AutonomousCognitiveReasoner:
         drivers.sort(key=lambda x: x[1], reverse=True)
         dominant_driver = drivers[0][0]
 
-        if final_utility > 12.0:
+        if final_utility > 10.0:
             verdict = "KABUL"
-        elif final_utility < -12.0:
+        elif final_utility < -10.0:
             verdict = "RED"
         else:
             verdict = "CEKIMSER"
@@ -186,58 +184,123 @@ class AutonomousCognitiveReasoner:
         dominant_driver: str
     ) -> str:
         """
-        Synthesizes a deep, authentic subconscious internal monologue grounded in persona DNA.
+        Synthesizes a deep, authentic subconscious internal monologue grounded in persona DNA via combinatorial clauses.
         """
         age = persona.yas
+        age = persona.yas
         occ = persona.meslek
-        district = persona.sehir_ilce.split('/')[-1].strip()
-        income = persona.aylik_serbest_harcanabilir_tl
+        parts = persona.sehir_ilce.split('/')
+        district = parts[-1].strip() if len(parts) > 1 else persona.sehir_ilce
+        if district in ["Merkez", "Merkez Mah.", ""]:
+            district = parts[0].strip() if len(parts) > 0 else "Semtimiz"
         housing = getattr(persona, 'barinma_durumu', 'Kiracı')
-
         prompt_clean = topic.target_subject
 
+        # Clause 1: Persona Situational Anchor
+        prefixes = [
+            f"Ben bir {occ} olarak,",
+            f"{district}'da yaşayan {age} yaşında bir yurttaş olarak,",
+            f"Bu mahallede {housing.lower()} olarak ikamet eden biri olarak,",
+            f"Kendi aile bütçemizi ve günlük hayatımızı düşündüğümde,",
+            f"Geleceğe ve toplumun genel gidişatına baktığımda,",
+            f"{district} sokaklarındaki havayı soluyan biri olarak,"
+        ]
+        prefix = self.rng.choice(prefixes)
+
+        # Clause 2 & 3: Causal Core & Dynamic Consequence
         if verdict == "KABUL":
-            openers = [
-                f"Şu anki şartlarda '{prompt_clean}' adımı gayet makul görünüyor.",
-                f"İnsanların önyargılarını bir kenara bırakıp '{prompt_clean}' konusuna destek vermesi lazım.",
-                f"Bizim gibi {district} sakinleri ve çalışan kesim için olumlu bir gelişme olur.",
-                f"Yasaklarla ve kısıtlamalarla hiçbir yere varamayız; '{prompt_clean}' fikrini destekliyorum."
-            ]
-            reasons = [
-                f"Benim bir {occ} olarak gördüğüm kadarıyla bu durum hem hayatı kolaylaştırır hem de gereksiz gerginliği bitirir.",
-                f"Ekonomik ve sosyal açıdan bakınca topluma faydası zararından katbekat fazla olacaktır.",
-                f"Hak ve adalet çerçevesinde kurallara uyulduğu sürece kimseyi engellememek gerekir.",
-                f"Gençlerin ve sokaktaki insanın önünü açacak her türlü yapıcı adıma evet demek lazım."
-            ]
-        elif verdict == "RED":
-            openers = [
-                f"Yahu kusura bakmasınlar ama '{prompt_clean}' işi tam bir basiretsizlik olur.",
-                f"Bu devirde kalkıp '{prompt_clean}' teklifiyle gelmek sahadaki gerçeklerden kopuk olmaktır.",
-                f"{district} gibi bir yerde bunun yaratacağı huzursuzluğu ve güvenlik riskini kimse hesap etmiyor mu?",
-                f"Kendi içimizde bu kadar dert ve geçim sıkıntısı varken bir de '{prompt_clean}' ile uğraşamayız."
-            ]
-            reasons = [
-                f"Yıllardır bir {occ} olarak bu toplumun nabzını tutuyorum; bu adım provokasyona ve kutuplaşmaya çanak tutar.",
-                f"Faturası yine bizim gibi sabit gelirli ve huzur arayan vatandaşa çıkar, kesinlikle karşıyım.",
-                f"Milli hassasiyetleri ve kamu güvenliğini hiçe sayarak atılacak her adım kaos getirir.",
-                f"Bizim önceliğimiz huzur ve istikrar; bu tür tartışmalı adımlarla ortalığı karıştırmaya gerek yok."
-            ]
-        else: # CEKIMSER
-            openers = [
-                f"'{prompt_clean}' meselesinde iki tarafın da haklı ve haksız olduğu yönler var.",
-                f"Fikir kulağa prensipte fena gelmiyor ama uygulama ve niyet konusunda ciddi şüphelerim var.",
-                f"Ne tamamen evet diyebiliyorum ne de kestirip atabiliyorum; kafamda çok soru işareti var.",
-                f"{district} ortamında bu işin nasıl yönetileceği netleşmeden konuşmak çok erken."
-            ]
-            reasons = [
-                f"Bir yandan kamu yararı ve özgürlük düşünülüyor, diğer yandan olası taşkınlıklar ve maliyetler tedirgin ediyor.",
-                f"Kurallar çok sıkı tutulmazsa iyi niyetle başlayan iş büyük bir probleme dönüşebilir.",
-                f"Detayları, denetim mekanizmasını ve vatandaşa yansıyacak etkilerini görmeden peşin hüküm vermek istemiyorum."
+            if dominant_driver == "Geçim ve Maddi Şartlar":
+                cores = [
+                    f"'{prompt_clean}' adımı mevcut hayat pahalılığında dar gelirli ve çalışan kesime ciddi bir nefes aldırır.",
+                    f"maddi zorlukların arttığı bu süreçte '{prompt_clean}' desteği ekonomik olarak çok isabetli bir adım.",
+                    f"bu uygulamanın getireceği mali kolaylık hane bütçelerine doğrudan can suyu olacaktır."
+                ]
+            elif dominant_driver == "Toplumsal Dayanışma ve Şefkat":
+                cores = [
+                    f"'{prompt_clean}' gibi sosyal dayanışmayı ve ihtiyaç sahiplerini gözeten projelere sahip çıkmamız şart.",
+                    f"gençlerin, öğrencilerin ve mağdur kesimlerin elinden tutan bu yaklaşımı son derece insani buluyorum.",
+                    f"toplum olarak birbirimize destek olmamız gereken bu günlerde '{prompt_clean}' vicdani bir sorumluluktur."
+                ]
+            elif dominant_driver == "Özgürlük ve Hakkaniyet":
+                cores = [
+                    f"önyargıları bir kenara bırakıp '{prompt_clean}' konusunda hakkaniyetle davranmak en doğrusudur.",
+                    f"yasakçılık ve kısıtlama yerine kurallara uyularak '{prompt_clean}' alanının açılması adaleti sağlar.",
+                    f"kimseyi ötekileştirmeden, eşit şartlarda bu imkanın sunulması toplumsal barışa katkı sunar."
+                ]
+            elif dominant_driver == "Milli Güvenlik ve Asayiş":
+                cores = [
+                    f"gerekli emniyet ve denetim tedbirleri alındığı müddetçe '{prompt_clean}' sürecinde hiçbir güvenlik zafiyeti yaşanmaz.",
+                    f"sağduyulu ve kontrollü bir yönetimle '{prompt_clean}' konusu huzur bozulmadan başarıyla yürütülür."
+                ]
+            else:
+                cores = [
+                    f"'{prompt_clean}' adımı {district} halkının yaşam standardını doğrudan yükseltecektir.",
+                    f"bu gelişme semtimiz ve günlük yaşamımız için son derece olumlu sonuçlar doğurur."
+                ]
+            
+            consequences = [
+                "Dolayısıyla peşin hükümlü olmadan bu adımı sonuna kadar destekliyorum.",
+                "Bu yüzden bu projeye tereddütsüz evet diyorum.",
+                "Toplumun yararına olan bu kararın arkasında durmak gerekir."
             ]
 
-        p_open = self.rng.choice(openers)
-        p_reason = self.rng.choice(reasons)
-        return f"{p_open} {p_reason}"
+        elif verdict == "RED":
+            if dominant_driver == "Geçim ve Maddi Şartlar":
+                cores = [
+                    f"çarşı pazardaki yangın ortadayken '{prompt_clean}' ile bütçeye veya vatandaşa ek yük getirilmesini kabul edemem.",
+                    f"geçim derdi ve enflasyon altında ezilirken böyle bir maliyetin halkın sırtına yüklenmesi haksızlıktır.",
+                    f"öncelikli ekonomik sorunlar dururken kaynakların '{prompt_clean}' için harcanması doğru değil."
+                ]
+            elif dominant_driver == "Milli Güvenlik ve Asayiş":
+                cores = [
+                    f"geçmişte yaşanan gerginlikler ortadayken '{prompt_clean}' adımı sokaklarımızda büyük provokasyon ve güvenlik riski yaratır.",
+                    f"asayişin ve kamu düzeninin bozulma ihtimali çok yüksek; '{prompt_clean}' kararı huzurumuzu tehlikeye atar.",
+                    f"toplumu kutuplaştıracak ve gerilim çıkaracak böyle bir adıma izin verilmesi telafisi zor sonuçlar doğurur."
+                ]
+            elif dominant_driver == "Geleneksel Değerler ve Huzur":
+                cores = [
+                    f"{district}'ın yerleşik huzurunu ve mahalle dokusunu zedeleyecek '{prompt_clean}' dayatmasına razı olamam.",
+                    f"toplumun hassasiyetlerini ve geleneksel yapısını hiçe sayan bu teklif semtimizde huzursuzluk yaratır."
+                ]
+            else:
+                cores = [
+                    f"sahadaki gerçeklerden kopuk şekilde '{prompt_clean}' teklifiyle gelinmesini son derece hatalı buluyorum.",
+                    f"vatandaşın gerçek talepleriyle örtüşmeyen bu adımın faydadan çok zarar getireceğini düşünüyorum."
+                ]
+
+            consequences = [
+                "Bu sebeple bu teklife kesinlikle karşı çıkıyorum.",
+                "Huzurumuz ve güvenliğimiz için bu adıma hayır diyorum.",
+                "Böyle bir uygulamanın hayata geçirilmesini doğru bulmuyorum."
+            ]
+
+        else: # CEKIMSER
+            if dominant_driver == "Geçim ve Maddi Şartlar":
+                cores = [
+                    f"'{prompt_clean}' teklifi teoride güzel duruyor fakat finansmanının nasıl karşılanacağı kafamı kurcalıyor.",
+                    f"maliyetin vatandaşa nasıl yansıyacağı netleşmeden bu konuda peşin bir kanaat oluşturmak güç."
+                ]
+            elif dominant_driver == "Milli Güvenlik ve Asayiş":
+                cores = [
+                    f"iyi niyetli bir adım olabilir ancak olası provokasyon ve asayiş riskleri beni ciddi şekilde tedirgin ediyor.",
+                    f"emniyet ve denetim tarafı çok sağlam tutulmadan bu adımın atılması riskli görünüyor."
+                ]
+            else:
+                cores = [
+                    f"'{prompt_clean}' meselesinde iki tarafın da haklı yönleri var; şartları iyice incelemeden karar vermek zor.",
+                    f"detaylar ve uygulamanın getireceği somut sonuçlar netleşmeden ne evet ne hayır diyebiliyorum."
+                ]
+
+            consequences = [
+                "Bu yüzden şimdilik çekimser kalmayı tercih ediyorum.",
+                "Uygulamanın sahadaki gidişatını görmeden kesin bir taraf seçmek istemiyorum.",
+                "Kafamdaki soru işaretleri giderilmeden net bir duruş sergileyemem."
+            ]
+
+        core = self.rng.choice(cores)
+        consequence = self.rng.choice(consequences)
+
+        return f"{prefix} {core} {consequence}"
 
     def synthesize_spoken_dialogue(
         self,
