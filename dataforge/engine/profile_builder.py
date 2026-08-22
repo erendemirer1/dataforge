@@ -176,6 +176,7 @@ class ProfileBuilder:
         else:
             candidates = self.labor_engine.get_candidate_occupations(
                 age=age,
+                gender=gender,
                 city=city_name,
                 district=district_name,
                 sege_tier=archetype.tier,

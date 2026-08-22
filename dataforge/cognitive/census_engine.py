@@ -87,12 +87,6 @@ class MunicipalCensusEngine:
     Simulates high-precision quantitative public opinion polls for cities, municipalities, and institutions.
     """
 
-    ISTANBUL_DISTRICTS = [
-        "Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Fatih", "Esenyurt", 
-        "Bağcılar", "Ümraniye", "Pendik", "Maltepe", "Sarıyer", "Kartal",
-        "Küçükçekmece", "Bakırköy", "Zeytinburnu", "Ataşehir", "Başakşehir", "Beylikdüzü"
-    ]
-
     def __init__(self, rng: Optional[random.Random] = None):
         self.rng = rng or random.Random()
         self.profile_builder = ProfileBuilder(self.rng)
@@ -106,13 +100,33 @@ class MunicipalCensusEngine:
         occupation: str,
         income: float,
         housing: str,
-        district: str
+        district: str,
+        city: str
     ) -> str:
         """Generates authentic, specific Turkish reasoning for this individual citizen."""
         occ_l = occupation.lower()
 
-        # 1. URBAN TRANSFORMATION & RENT SUPPORT
-        if any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "kira yardımı", "imar"]):
+        # 1. DISTRICT / CITY SATISFACTION & MUNICIPAL LIVING ("memnun musunuz", "nasıl buluyorsunuz", "yaşanır mı")
+        if any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"]):
+            if verdict == "kabul":
+                if age >= 50:
+                    return f"{district}'da uzun yıllardır yaşıyorum. Parklar, pazar yerleri ve mahalle kültürü ailemiz ve emekliler için oldukça sakin ve huzurlu; genel olarak memnunuz."
+                elif housing == "Kiracı":
+                    return f"Kira ve geçim maliyetleri merkeze kıyasla çok daha makul. Ulaşım hatları da düzenli çalıştığı sürece {district} yaşanabilecek bir yer."
+                else:
+                    return f"{district} belediyesinin temel hizmetleri, temizlik ve çevre düzenlemeleri gayet iyi çalışıyor. Komşuluk ilişkilerimizden ve semtimizden memnunuz."
+            elif verdict == "ret":
+                if age <= 30 or any(w in occ_l for w in ["öğrenci", "yazılım", "mühendis", "avukat", "stajyer"]):
+                    return f"{district}'da gençler için sosyal ve kültürel alan neredeyse hiç yok. Tiyatroya gitmek veya bir kafede oturmak için bile merkeze taşınmak zorunda kalıyoruz."
+                elif "ulaşım" in q_lower or any(w in occ_l for w in ["şoför", "kurye", "işçi"]):
+                    return f"İş çıkışı saatlerinde toplu taşıma ve trafik büyük çileye dönüşüyor. {district}'ın altyapısı bu nüfus artışını kaldırmıyor, çok yetersiz."
+                else:
+                    return f"{district}'da sokakların bakımı, çevre kirliliği ve düzensiz yapılaşma yaşam kalitemizi düşürüyor; mevcut yönetimden memnun değilim."
+            else: # Kararsız
+                return f"{district} sakin ve huzurlu bir ilçe ama sosyal imkanlar çok kısıtlı. Merkeze uzaklığı günlük hayatı zorlaştırıyor, ne tam memnunum ne de tamamen şikayetçiyim."
+
+        # 2. URBAN TRANSFORMATION & RENT SUPPORT
+        elif any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "kira yardımı", "imar"]):
             if verdict == "kabul":
                 if housing == "Kiracı":
                     if income < 35000:
@@ -132,7 +146,7 @@ class MunicipalCensusEngine:
             else: # Kararsız
                 return f"Fikir kağıt üzerinde güzel ama belediye bu bütçeyi tüm hak sahiplerine 18 ay boyunca aksatmadan ödeyebilecek mi? Müteahhit batarsa ortada kalma riski var."
 
-        # 2. POLITICS & LEADERSHIP
+        # 3. POLITICS & LEADERSHIP
         elif any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp"]):
             if verdict == "kabul":
                 return f"Etrafımızdaki jeopolitik krizler ve savaş ortamında devleti maceraya atamayız. Geçim zor ama karşımızda tecrübeli ve kriz yönetebilen bir lider var."
@@ -141,7 +155,7 @@ class MunicipalCensusEngine:
             else:
                 return f"Hayat pahalılığı can yakıyor ama muhalefetin de güven veren bir ekonomik programı yok, iki arada bir derede kaldım."
 
-        # 3. TRANSPORT & SCOOTERS
+        # 4. TRANSPORT & SCOOTERS
         elif any(w in q_lower for w in ["scooter", "martı", "yayalaştırma", "kaldırım", "trafik", "otopark"]):
             if verdict == "kabul":
                 if "yasak" in q_lower:
@@ -156,7 +170,7 @@ class MunicipalCensusEngine:
             else:
                 return f"Tamamen yasaklamak çağdışı olur ama hız sınırı ve düzgün park alanları zorunlu tutulmalı."
 
-        # 4. NIGHTLIFE & BEER & CAFES
+        # 5. NIGHTLIFE & BEER & CAFES
         elif any(w in q_lower for w in ["bira", "bar", "pub", "mekan", "kahve"]):
             if verdict == "kabul":
                 return f"{district}'de dışarıda oturup sosyalleşmek ateş pahası oldu. Uygun fiyatlı ve kaliteli bir alternatif olursa her hafta sonu arkadaşlarla gideriz."
@@ -165,14 +179,14 @@ class MunicipalCensusEngine:
             else:
                 return f"Fiyat cazip ama mekanın müzik tarzını, ortamını ve hizmet kalitesini görmeden peşin karar veremem."
 
-        # 5. GENERAL MUNICIPAL / PUBLIC POLICY
+        # 6. GENERAL MUNICIPAL / PUBLIC POLICY
         else:
             if verdict == "kabul":
-                return f"Mevcut şartlar altında kamu yararı taşıyan ve vatandaşın yaşam standardını doğrudan iyileştirecek mantıklı bir adım."
+                return f"Mevcut şartlar altında {district} halkı için kamu yararı taşıyan ve yaşam standardını iyileştirecek olumlu bir adım."
             elif verdict == "ret":
-                return f"Bütçe ve uygulama gerçekleriyle uyuşmuyor; yerel halkın gerçek önceliklerine hitap etmeyen yapay bir harcama kalemi."
+                return f"{district}'ın öncelikli sorunları dururken bu konuya bütçe ve mesai harcanmasını doğru bulmuyorum."
             else:
-                return f"Projenin finansman modeli ve vatandaşa yansıyacak ek külfetler netleşmeden kesin bir kanaat oluşturmak güç."
+                return f"Uygulamanın vatandaşa yansıyacak maliyetleri ve getireceği somut faydalar netleşmeden kesin bir kanaat oluşturmak güç."
 
     def run_census_poll(
         self,
@@ -188,6 +202,7 @@ class MunicipalCensusEngine:
         q_lower = question.lower()
         
         # Policy domain tags
+        is_satisfaction = any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"])
         is_urban_transform = any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "imar", "kira yardımı"])
         is_traffic_transport = any(w in q_lower for w in ["ulaşım", "metro", "otobüs", "scooter", "otopark", "yol", "trafik", "taksi", "yayalaştırma"])
         is_politics = any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp", "aday"])
@@ -220,20 +235,19 @@ class MunicipalCensusEngine:
         total_kararsiz = 0
         citizen_ballots: list[CitizenBallot] = []
 
+        chosen_city = city if city and city != "Tümü" else None
+        chosen_dist = district if district and district != "Tümü" else None
+
         # Generate sample population
         for i in range(sample_size):
-            p = self.profile_builder.build_profile(record_id=i + 1)
-            
-            # City & District override
-            if city and city != "Tümü":
-                p["city"] = city
-                if city == "İstanbul":
-                    if district and district != "Tümü":
-                        p["district"] = district
-                    else:
-                        p["district"] = self.rng.choice(self.ISTANBUL_DISTRICTS)
+            p = self.profile_builder.build_profile(
+                record_id=i + 1,
+                city=chosen_city,
+                district=chosen_dist
+            )
             
             d_name = p.get("district", "Merkez")
+            c_name = p.get("city", "İstanbul")
             if d_name not in district_counts:
                 district_counts[d_name] = {"kabul": 0, "ret": 0, "kararsiz": 0}
 
@@ -248,26 +262,35 @@ class MunicipalCensusEngine:
             # Mathematical Decision Engine calibrated to sociological variables with authentic variance
             score = 0.0
             
-            if is_urban_transform:
+            if is_satisfaction:
+                # District / Municipal satisfaction scoring
+                if age >= 50:
+                    score += 15.0 # Older residents appreciate quiet routine
+                elif age <= 28:
+                    score -= 20.0 # Youth crave cultural/social activities
+                if housing == "Ev Sahibi":
+                    score += 10.0
+                if "sincan" in q_lower or d_name.lower() == "sincan":
+                    # Realistic Sincan satisfaction profile (Suburban conservative-worker demographic)
+                    if income < 35000:
+                        score += 15.0 # Low cost of living appreciation
+                    else:
+                        score -= 10.0 # High income wants more prestige/amenities
+
+            elif is_urban_transform:
                 if housing == "Kiracı":
-                    # Tenants support rent aid strongly, but low income fear displacement
                     score += 25.0 if "kira yardımı" in q_lower else -10.0
                 else: # Ev sahibi
                     if income < 35000 or age >= 58:
-                        # Retired homeowners fear high construction debt to contractors
                         score -= 15.0
                     else:
-                        # Wealthier homeowners want earthquake renewal
                         score += 20.0
-                if d_name in ["Kadıköy", "Beşiktaş", "Bakırköy", "Avcılar"]:
-                    score += 15.0 # High earthquake sensitivity
 
             elif is_politics:
-                # Political cleavage calibrated with Turkish demographic indices
                 if income < 32000 or age <= 28:
-                    score -= 30.0 # High economic pain & youth discontent
+                    score -= 30.0
                 elif age >= 52 and income >= 35000:
-                    score += 25.0 # Traditional stability preference
+                    score += 25.0
                 else:
                     score += self.rng.uniform(-20.0, 20.0)
 
@@ -277,7 +300,7 @@ class MunicipalCensusEngine:
                         score += 35.0 if "yasak" not in q_lower else -35.0
                     else:
                         score += -30.0 if "yasak" not in q_lower else 35.0
-                else: # Toplu taşıma / zam
+                else:
                     if income < 35000:
                         score -= 40.0 if "zam" in q_lower else 30.0
 
@@ -297,17 +320,17 @@ class MunicipalCensusEngine:
             noise = self.rng.gauss(0, 28.0)
             final_eval = score + noise
 
-            if final_eval > 12.0:
+            if final_eval > 10.0:
                 verdict = "kabul"
-                karar_str = "Kabul Eder / Destekler"
+                karar_str = "Kabul Eder / Memnun" if is_satisfaction else "Kabul Eder / Destekler"
                 total_kabul += 1
-            elif final_eval < -12.0:
+            elif final_eval < -10.0:
                 verdict = "ret"
-                karar_str = "Kesinlikle Reddeder"
+                karar_str = "Kesinlikle Memnun Değil" if is_satisfaction else "Kesinlikle Reddeder"
                 total_ret += 1
             else:
                 verdict = "kararsiz"
-                karar_str = "Kararsız / Çekimser"
+                karar_str = "Kararsız / Kısmen Memnun" if is_satisfaction else "Kararsız / Çekimser"
                 total_kararsiz += 1
 
             # Individual citizen rationale in Turkish
@@ -318,7 +341,8 @@ class MunicipalCensusEngine:
                 occupation=occupation,
                 income=income,
                 housing=housing,
-                district=d_name
+                district=d_name,
+                city=c_name
             )
 
             # Record citizen ballot
@@ -327,7 +351,7 @@ class MunicipalCensusEngine:
                 ad_soyad=f"{p['first_name']} {p['last_name']}",
                 yas=age,
                 cinsiyet=gender,
-                sehir_ilce=f"{p['city']} / {d_name}",
+                sehir_ilce=f"{c_name} / {d_name}",
                 mahalle=p.get("neighborhood", "Merkez Mah."),
                 meslek=occupation,
                 egitim_durumu=p.get("education_level", "Lise"),
@@ -393,7 +417,20 @@ class MunicipalCensusEngine:
         housing_metrics = _to_metric_list(housing_counts)
 
         # Strategic Action & Barriers
-        if is_urban_transform:
+        target_label = district if district and district != "Tümü" else city
+        if is_satisfaction:
+            drivers = [
+                f"{target_label}'da Yaşam Maliyetlerinin ve Kiraların Uygunluğu",
+                "Temel Belediye Hizmetleri, Parklar ve Aile Huzuru",
+                "Metro, Başkentray ve Toplu Taşıma Entegrasyonu"
+            ]
+            barriers = [
+                "Gençler İçin Nitelikli Sosyal, Kültürel ve Sanatsal Alan Yetersizliği",
+                "İş Çıkışı Saatlerinde Ulaşım ve Sefer Sıklığı Problemleri",
+                "Sanayi / Organize Bölge Kaynaklı Çevre ve Altyapı Şikayetleri"
+            ]
+            action = f"{target_label} Belediyesi genç nüfusu ilçede tutacak gençlik ve kültür merkezleri açmalı, organize sanayi ile mahalleler arasındaki yeşil tampon bölgeleri artırmalıdır."
+        elif is_urban_transform:
             drivers = [
                 "Deprem Riskli Binaların Hızlı Tahliye Edilebilmesi",
                 "Kira Artışları Karşısında Kiracıların Mağduriyetinin Önlenmesi",

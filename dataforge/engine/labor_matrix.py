@@ -1,11 +1,10 @@
 """
 DataForge Comprehensive ISCO-08 Turkish Occupational & Labor Market Matrix.
 Contains 200+ detailed occupations spanning 15 economic sectors with TÜİK İBBS regional weighting,
-entry education, age boundaries, and sector compensation scales.
+gender alignment, entry education, age boundaries, and sector compensation scales.
 """
 from __future__ import annotations
 
-import json
 import random
 import sqlite3
 from pathlib import Path
@@ -52,6 +51,18 @@ PROVINCE_TO_IBBS1 = {
     "Mardin": "TRC", "Batman": "TRC", "Şırnak": "TRC", "Siirt": "TRC",
 }
 
+MALE_SKEWED_OCCUPATIONS = {
+    "İnşaat Kalıp & Demir Ustası",
+    "Kaynakçı & Metal İşleme Ustası",
+    "Oto Motor & Mekanik Ustası",
+    "Uluslararası TIR / Kamyon Şoförü",
+    "CNC Freze & Torna Operatörü",
+    "Traktör & Biçerdöver Operatörü",
+    "Sıhhi Tesisat & Doğalgaz Ustası",
+    "Bina Elektrik Tesisat Ustası",
+    "Gemi Kaptanı & Güverte Zabiti"
+}
+
 
 class LaborMatrixEngine:
     """Manages empirical regional, demographic, and sectoral occupation sampling."""
@@ -94,9 +105,7 @@ class LaborMatrixEngine:
             cur.execute("CREATE INDEX IF NOT EXISTS idx_labor_sector ON labor_occupations(sector)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_labor_title ON labor_occupations(title)")
 
-            cur.execute("SELECT COUNT(*) FROM labor_occupations")
-            if cur.fetchone()[0] < 50:
-                self._seed_default_matrix()
+            self._seed_default_matrix()
 
     def _seed_default_matrix(self) -> None:
         """Seed verified 150+ Turkish occupations with empirical regional, SEGE, and wage distributions."""
@@ -104,11 +113,12 @@ class LaborMatrixEngine:
             # --- BİLİŞİM, YAZILIM & TEKNOLOJİ ---
             ("2512", "Yazılım Geliştirici", "Bilişim", 22, 50, "Lisans", "1,2,3", "TR1,TR3,TR4,TR5", 95000.0),
             ("2512", "Kıdemli Yazılım Mimarı", "Bilişim", 30, 60, "Lisans", "1,2", "TR1,TR5,TR3", 165000.0),
-            ("2519", "Veri Bilimci & Yapay Zeka Mühendisi", "Bilişim", 23, 50, "Lisans / Yüksek Lisans", "1,2", "TR1,TR5,TR3", 110000.0),
+            ("2519", "Veri Bilimci & Yapay Zeka Mühendisi", "Bilişim", 23, 50, "Lisans", "1,2", "TR1,TR5,TR3", 110000.0),
             ("2511", "Sistem & Siber Güvenlik Uzmanı", "Bilişim", 24, 52, "Lisans", "1,2,3", "TR1,TR5,TR4", 98000.0),
             ("2513", "Web & Mobil Arayüz Geliştirici", "Bilişim", 22, 45, "Ön Lisans / Lisans", "1,2,3", "all", 82000.0),
             ("2522", "Bilişim Sistemleri Ağ Yöneticisi", "Bilişim", 24, 55, "Ön Lisans / Lisans", "1,2,3", "all", 75000.0),
             ("2514", "Yazılım Test Otomasyon Mühendisi", "Bilişim", 22, 48, "Lisans", "1,2", "TR1,TR5,TR3", 85000.0),
+            ("2515", "Junior Yazılım Geliştirici", "Bilişim", 21, 26, "Lisans", "1,2,3", "TR1,TR5,TR3,TR4", 45000.0),
 
             # --- SAĞLIK & TIP ---
             ("2212", "Uzman Cerrah / Hekim", "Sağlık", 32, 65, "Tıpta Uzmanlık", "1,2,3", "all", 185000.0),
@@ -142,14 +152,16 @@ class LaborMatrixEngine:
             ("2411", "SMMM Mali Müşavir", "Finans", 27, 65, "Lisans", "1,2,3", "all", 95000.0),
             ("1211", "Banka Şube Müdürü", "Finans", 35, 60, "Lisans", "1,2,3", "all", 145000.0),
             ("2412", "Bankacı / Portföy Yöneticisi", "Finans", 23, 50, "Lisans", "1,2,3", "all", 68000.0),
-            ("1120", "Genel Müdür Yardımcısı / Direktör", "Yönetim", 35, 62, "Lisans / Yüksek Lisans", "1,2", "TR1,TR5,TR3,TR4", 240000.0),
+            ("1120", "Genel Müdür Yardımcısı / Direktör", "Yönetim", 35, 62, "Lisans", "1,2", "TR1,TR5,TR3,TR4", 240000.0),
             ("1221", "Pazarlama Direktörü", "Yönetim", 32, 55, "Lisans", "1,2", "TR1,TR3,TR5", 160000.0),
             ("1212", "İnsan Kaynakları Müdürü", "Yönetim", 30, 55, "Lisans", "1,2,3", "all", 95000.0),
             ("2433", "Saha Satış & İş Geliştirme Uzmanı", "Ticaret", 23, 48, "Lisans", "1,2,3", "all", 65000.0),
+            ("9997", "Stajyer Avukat", "Hukuk", 22, 26, "Lisans", "1,2,3", "all", 24000.0),
+            ("9998", "Stajyer Mühendis", "Mühendislik", 21, 26, "Lisans", "1,2,3", "all", 25000.0),
 
             # --- EĞİTİM & AKADEMİ ---
             ("2310", "Prof. Dr. / Akademisyen", "Akademi", 35, 67, "Doktora", "1,2", "TR1,TR5,TR3,TR4,TR7", 135000.0),
-            ("2310", "Doçent & Araştırma Görevlisi", "Akademi", 25, 65, "Yüksek Lisans / Doktora", "1,2,3", "all", 82000.0),
+            ("2310", "Doçent & Araştırma Görevlisi", "Akademi", 25, 65, "Yüksek Lisans", "1,2,3", "all", 82000.0),
             ("2341", "Sınıf Öğretmeni", "Eğitim", 23, 60, "Lisans", "all", "all", 55000.0),
             ("2330", "Matematik & Fen Bilimleri Öğretmeni", "Eğitim", 23, 60, "Lisans", "all", "all", 58000.0),
             ("2342", "Okul Öncesi Öğretmeni", "Eğitim", 22, 55, "Lisans", "all", "all", 52000.0),
@@ -187,18 +199,17 @@ class LaborMatrixEngine:
             ("5221", "Esnaf / Bakkal & Market Sahibi", "Esnaf", 25, 65, "Lise", "all", "all", 75000.0),
             ("5221", "Kasap & Şarküteri İşletmecisi", "Esnaf", 25, 65, "Lise", "all", "all", 85000.0),
             ("7512", "Fırıncı & Ekmek Ustası", "Gıda", 22, 60, "İlkokul / Lise", "all", "all", 65000.0),
-            ("5141", "Kuaför / Erkek Berberi", "Kişisel Bakım", 20, 60, "Mesleki Belge", "all", "all", 68000.0),
+            ("5141", "Kuaför / Güzellik Uzmanı", "Kişisel Bakım", 20, 60, "Mesleki Belge", "all", "all", 68000.0),
             ("7126", "Sıhhi Tesisat & Doğalgaz Ustası", "Zanaat", 22, 60, "Mesleki Belge", "all", "all", 72000.0),
             ("7411", "Bina Elektrik Tesisat Ustası", "Zanaat", 22, 60, "Meslek Lisesi", "all", "all", 70000.0),
             ("5221", "Kuyumcu & Sarraf", "Ticaret", 28, 65, "Lise / Lisans", "1,2,3", "all", 175000.0),
             ("5120", "Restoran Şefi / Aşçıbaşı", "Gastronomi", 25, 58, "Lise / Ön Lisans", "1,2,3", "all", 88000.0),
-            ("5223", "Mağaza Satış Danışmanı / Kasiyer", "Perakende", 19, 45, "Lise", "all", "all", 32000.0),
+            ("5223", "Mağaza Satış Danışmanı", "Perakende", 19, 45, "Lise", "all", "all", 32000.0),
             ("5131", "Garson / Servis Elemanı", "Gastronomi", 18, 40, "Lise", "all", "all", 34000.0),
+            ("5224", "Part-Time Barista / Kasiyer", "Hizmet", 18, 24, "Lise / Üniversite", "all", "all", 20000.0),
 
-            # --- ÖĞRENCİ & PART-TIME ---
-            ("9999", "Üniversite Öğrencisi (Part-Time / Burs)", "Öğrenci", 18, 24, "Üniversite (Öğrenci)", "all", "all", 14000.0),
-            ("9998", "Stajyer Mühendis / Avukat / Yazılımcı", "Giriş Seviye", 20, 25, "Lisans", "all", "all", 18000.0),
-            ("5223", "Part-Time Kasiyer / Barista", "Hizmet", 18, 24, "Lise / Üniversite", "all", "all", 15000.0),
+            # --- ÖĞRENCİ ---
+            ("9999", "Üniversite Öğrencisi", "Öğrenci", 18, 24, "Üniversite (Öğrenci)", "all", "all", 15000.0),
 
             # --- EMEKLİLER (58+ YAŞ) ---
             ("9901", "Emekli Memur", "Emekli", 58, 85, "Lisans", "all", "all", 42000.0),
@@ -213,7 +224,7 @@ class LaborMatrixEngine:
             cur = conn.cursor()
             cur.execute("DELETE FROM labor_occupations")
             cur.executemany("""
-                INSERT INTO labor_occupations (
+                INSERT OR REPLACE INTO labor_occupations (
                     isco_code, title, sector, min_age, max_age,
                     education, tier_affinity, regional_affinity, base_median_pay
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -223,11 +234,12 @@ class LaborMatrixEngine:
     def get_candidate_occupations(
         self,
         age: int,
+        gender: str = "",
         city: str = "",
         district: str = "",
         sege_tier: int = 2,
     ) -> list[dict[str, Any]]:
-        """Filter real occupations using demographic, geographic (İBBS-1), and SEGE criteria."""
+        """Filter real occupations using demographic, gender, geographic (İBBS-1), and SEGE criteria."""
         region = PROVINCE_TO_IBBS1.get(city, "all")
         tier_str = str(sege_tier)
 
@@ -238,6 +250,10 @@ class LaborMatrixEngine:
                 WHERE min_age <= ? AND max_age >= ?
             """, (age, age))
             rows = [dict(r) for r in cur.fetchall()]
+
+        # Gender sanity check (Strict Turkish labor market realities)
+        if gender == "Kadın":
+            rows = [r for r in rows if r["title"] not in MALE_SKEWED_OCCUPATIONS]
 
         # Filter by retirement age law (No retiree under 58, high retiree over 65)
         if age < 58:
@@ -255,7 +271,7 @@ class LaborMatrixEngine:
         if tier_matches:
             rows = tier_matches
 
-        # Filter / Boost by İBBS-1 Regional Affinity (e.g. Tarım in TR5/TR6, Teknoloji in TR1)
+        # Filter / Boost by İBBS-1 Regional Affinity
         if region != "all":
             reg_matches = [
                 r for r in rows
