@@ -22,7 +22,7 @@ from ..ml.prompt_synthesizer import DynamicPromptEngine
 class FocusGroupSimulator:
     """
     Executes deep psychological focus groups with grounded, neuro-sociologically complete personas.
-    Zero-config AI execution: The user never needs to supply or configure an API key.
+    Zero-config AI execution: Cascades transparently through LLM and causal deliberation.
     """
 
     def __init__(self, rng: Optional[random.Random] = None):
@@ -89,9 +89,9 @@ class FocusGroupSimulator:
             step = len(cognitive_personas) // 6
             qualitative_personas = [cognitive_personas[i * step] for i in range(min(6, len(cognitive_personas)))]
 
-        sim_result = self._simulate_with_ai(qualitative_personas, target_audience, pitch_or_question)
+        sim_result = self._simulate_with_ai(qualitative_personas, target_audience, pitch_or_question, api_key)
         if not sim_result:
-            sim_result = self.roundtable_engine.generate_organic_roundtable(qualitative_personas, pitch_or_question)
+            sim_result = self.roundtable_engine.generate_organic_roundtable(qualitative_personas, pitch_or_question, api_key)
 
         # 5. Run Cognitive Consistency Audit
         sim_result = self.consistency_auditor.audit_and_recalibrate(
@@ -109,22 +109,24 @@ class FocusGroupSimulator:
         self,
         personas: list[DeepCognitivePersona],
         target_audience: str,
-        pitch: str
+        pitch: str,
+        api_key: Optional[str] = None
     ) -> Optional[dict[str, Any]]:
         """Simulates authentic inner monologue and spoken dialogue via Universal AI Gateway."""
         personas_json = json.dumps([p.to_dict() for p in personas], ensure_ascii=False, indent=2)
 
         sys_prompt = (
             "Sen Türkiye sosyolojisini, insanının kalbini, öfkesini, geçim derdini, mizahını ve gururunu "
-            "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın. "
+            "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın.\n"
             f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insan profili veriliyor.\n\n"
             "GÖREVİN:\n"
             "Bu insanların moderatörün ortaya attığı teklif/soru karşısındaki "
             "gerçek tepkilerini bir yuvarlak masada simüle edeceksin.\n\n"
             "KESİN KURALLAR:\n"
-            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine ve hayat şartlarına uygun bir sesi olsun.\n"
-            "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın.\n"
-            "3. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
+            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine, yaşadığı ilçeye, gelirine ve hayat şartlarına uygun bir dili olsun.\n"
+            "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın (Group Dynamics).\n"
+            "3. Karakterler sorulan konuya ('" + pitch + "') DOĞRUDAN kendi hayatlarından örnekler vererek cevap versin.\n"
+            "4. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
             '    {\n'
@@ -153,7 +155,7 @@ class FocusGroupSimulator:
 
         user_content = f"HEDEF KİTLE: {target_audience}\nSUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
 
-        response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content)
+        response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content, api_key=api_key)
         if not response_text:
             return None
 

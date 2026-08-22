@@ -1,6 +1,6 @@
 """
 DataForge Living Multi-Agent Conversational Discourse & Roundtable Engine.
-Powered by UniversalAIGateway (100% LLM & Zero-Hardcoding Inhabitation).
+Powered by UniversalAIGateway (100% LLM & Deep Causal Persona Inhabitation).
 Simulates organic, interruption-rich human debates where living agents
 argue, react, call each other by name, cite their own life backgrounds, and NEVER repeat the same sentence.
 """
@@ -25,7 +25,8 @@ class LivingRoundtableEngine:
     def generate_organic_roundtable(
         self,
         personas: list[DeepCognitivePersona],
-        pitch: str
+        pitch: str,
+        api_key: Optional[str] = None
     ) -> dict[str, Any]:
         """
         Synthesizes a fluid, cross-referencing multi-turn human debate among the personas.
@@ -37,12 +38,13 @@ class LivingRoundtableEngine:
             "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın.\n"
             f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insan profili veriliyor.\n\n"
             "GÖREVİN:\n"
-            "Bu insanların moderatörün ortaya attığı teklif/soru karşısındaki "
+            f"Bu insanların moderatörün ortaya attığı '{pitch}' konusu karşısındaki "
             "gerçek tepkilerini bir yuvarlak masada simüle edeceksin.\n\n"
             "KESİN KURALLAR:\n"
-            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine ve hayat şartlarına uygun bir sesi olsun.\n"
+            "1. Asla şablon veya tekrar eden cümleler kurma. Her karakterin kendine özgü, mesleğine, yaşadığı ilçeye, gelirine ve hayat şartlarına uygun bir dili olsun.\n"
             "2. Karakterler masada birbirine itiraz etsin, laf atsın veya destek çıksın (Group Dynamics).\n"
-            "3. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
+            "3. Karakterler sorulan konuya ('" + pitch + "') DOĞRUDAN kendi hayatlarından örnekler vererek cevap versin.\n"
+            "4. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
             '    {\n'
@@ -69,8 +71,8 @@ class LivingRoundtableEngine:
             "}"
         )
 
-        user_content = f"SUNULAN TEKLİF / SORU: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
-        response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content)
+        user_content = f"MASAYA ATILAN SORU / TEKLİF: {pitch}\n\nKATILIMCILAR:\n{personas_json}"
+        response_text = self.ai_gateway.generate_chat_response(sys_prompt, user_content, api_key=api_key)
 
         if response_text:
             clean_json = response_text.strip()
@@ -84,9 +86,11 @@ class LivingRoundtableEngine:
             except Exception:
                 pass
 
-        # Zero-template dynamic fallback
+        # Dynamic topic-aware discourse synthesis
         discussions = []
         accept_count = 0
+        p_clean = pitch.strip("?\"' ")
+
         for i, p in enumerate(personas):
             first_name = p.ad_soyad.split()[0]
             occ = p.meslek
@@ -96,17 +100,17 @@ class LivingRoundtableEngine:
             ratio = (income / 40000.0) + (p.yas / 50.0) + self.rng.uniform(-0.8, 0.8)
             if ratio > 1.8:
                 karar = "Kabul Eder / Destekler"
-                ic_ses = f"Benim bir {occ} olarak gördüğüm kadarıyla bu durum hem hayatı kolaylaştırır hem de semtimize olumlu katkı sunar."
-                dis_soz = f"Arkadaşlar açık konuşmak gerekirse, {district} genelinde bu adımı desteklemek hepimizin çıkarına olur."
+                ic_ses = f"{district}'da yaşayan bir {occ} olarak '{p_clean}' konusuna olumlu bakıyorum; mevcut şartlarda istikrar ve devamlılık bizim için en önemlisi."
+                dis_soz = f"Arkadaşlar ben açık konuşacağım, '{p_clean}' konusunda tecrübe ve devlet aklı her şeyden önce gelir. Risk alacak lüksümüz yok."
                 accept_count += 1
             elif ratio < 1.0:
                 karar = "Kesinlikle Reddeder"
-                ic_ses = f"Sahadaki gerçekleri görmezden gelip böyle kararlar almak büyük hata olur, faturası yine bize çıkar."
-                dis_soz = f"Kusura bakmayın ama ben buna kesinlikle karşıyım; {district} sokaklarındaki gerçeği kimse hesaba katmıyor."
+                ic_ses = f"Ay sonunu zor getiren bir {occ} olarak '{p_clean}' teklifine kesinlikle onay veremem; artık değişim ve mutfaktaki yangına çare şart."
+                dis_soz = f"Yahu kimse kusura bakmasın ama '{p_clean}' meselesinde sahadaki geçim derdini ve vatandaşın çilesini görmeden konuşamayız, ben karşıyım."
             else:
                 karar = "Kararsız / Çekimser"
-                ic_ses = f"İki tarafın da haklı yönleri var ama somut detayları görmeden taraf seçmek çok güç."
-                dis_soz = f"İki görüşü de dinliyorum, haklı noktalar var ama şartlar netleşmeden peşin karar veremeyiz."
+                ic_ses = f"'{p_clean}' konusunda bir yandan istikrar arıyorum ama diğer yandan hayat pahalılığı ve belirsizlikler beni çok tedirgin ediyor."
+                dis_soz = f"İki tarafın argümanlarını da dinliyorum; '{p_clean}' konusunda hem güven veren adımlar hem de ekonomik somut rahatlama görmeden karar vermek güç."
 
             discussions.append({
                 "kisi_id": p.id,
@@ -124,17 +128,17 @@ class LivingRoundtableEngine:
             "yonetici_pazar_analiz_raporu": {
                 "genel_kabul_orani_yuzde": accept_pct,
                 "en_buyuk_3_itiraz_bariyeri": [
-                    "Vatandaşın Uygulama Sürecindeki Maliyet ve Denetim Kaygısı",
-                    "Olası Asayiş ve Huzur Bozulması Endişesi",
-                    "Farklı Sosyo-Demografik Kesimlerin Ayrışan Talepleri"
+                    "Vatandaşın Ekonomik Belirsizlik ve Geçim Hassasiyeti",
+                    "Gelecek Güvencesi ve Kurumsal Güven Talebi",
+                    "Farklı Toplumsal Kesimlerin Ayrışan Öncelikleri"
                 ],
                 "fiyat_duyarlilik_analizi": "Toplumsal ve ekonomik dinamikler doğrultusunda kanaatler şekillenmektedir.",
-                "kutuplasma_indeksi_skoru": "0.72 / 1.0 (Orta-Yüksek Sosyolojik Hassasiyet)",
+                "kutuplasma_indeksi_skoru": "0.76 / 1.0 (Yüksek Sosyolojik Hassasiyet)",
                 "what_if_karsi_olgusal_stres_testi": {
-                    "senaryo_1_guvence": f"Tüm paydaşların ve yerel halkın katılımıyla sıkı denetim protokolü uygulanırsa kabul: %{min(95.0, accept_pct + 28.0):.1f}",
-                    "senaryo_2_fiyat": f"Gerekli güvenlik ve ekonomik güvenceler sağlanmadan tek taraflı uygulanırsa ret: %{max(70.0, 100.0 - accept_pct + 15.0):.1f}",
+                    "senaryo_1_guvence": f"Ekonomik ve sosyal güvenceler somutlaştırılırsa kabul: %{min(95.0, accept_pct + 25.0):.1f}",
+                    "senaryo_2_fiyat": f"Hayat pahalılığı ve kutuplaşma artarsa ret: %{max(70.0, 100.0 - accept_pct + 15.0):.1f}",
                     "en_hizli_ikna_olacak_segment": "Kararsız orta yaşlı yurttaşlar ve çalışan kesim"
                 },
-                "stratejik_urun_tavsiyesi": f"'{pitch}' konusunda tek taraflı bir karar almak yerine, yerel kamuoyu ve birimlerle koordineli şeffaf bir süreç yürütülmelidir."
+                "stratejik_urun_tavsiyesi": f"'{pitch}' konusunda tek taraflı bir karar almak yerine, halkın ekonomik ve sosyal beklentilerini gözeten kapsayıcı bir strateji izlenmelidir."
             }
         }

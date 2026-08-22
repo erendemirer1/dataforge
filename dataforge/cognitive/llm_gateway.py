@@ -1,8 +1,7 @@
 """
 DataForge Universal Zero-Config AI & Cognitive Inhabitation Gateway.
 Provides completely automatic, user-transparent LLM and generative reasoning.
-No API key setup or user configuration is ever required from the end user.
-Includes fail-fast circuit breaker and connection caching.
+Seamlessly cascades through provided API keys, environment credentials, local Ollama, and cloud models.
 """
 from __future__ import annotations
 
@@ -16,7 +15,7 @@ from typing import Any, Optional
 
 class UniversalAIGateway:
     """
-    Zero-config AI Gateway with intelligent fail-fast circuit breaker.
+    Zero-config AI Gateway with intelligent fail-fast circuit breaker and multi-backend support.
     """
 
     _instance = None
@@ -49,24 +48,24 @@ class UniversalAIGateway:
         system_instruction: str,
         user_prompt: str,
         temperature: float = 0.7,
-        max_tokens: int = 1000
+        max_tokens: int = 1500,
+        api_key: Optional[str] = None
     ) -> Optional[str]:
         """
-        Attempts seamless generation via available backends without bothering the user.
+        Attempts seamless generation via available backends.
         """
-        # 1. Try Gemini if enabled and not marked broken
-        if self.gemini_key and self._gemini_working is not False:
-            try:
-                res = self._call_gemini(system_instruction, user_prompt, temperature)
-                if res:
-                    self._gemini_working = True
-                    return res
-                else:
-                    self._gemini_working = False
-            except Exception:
-                self._gemini_working = False
+        key_to_use = api_key or self.gemini_key
 
-        # 2. Try Local Ollama if not marked broken
+        # 1. Try Gemini if key is available
+        if key_to_use:
+            try:
+                res = self._call_gemini(system_instruction, user_prompt, temperature, key_to_use)
+                if res:
+                    return res
+            except Exception:
+                pass
+
+        # 2. Try Local Ollama if running
         if self._ollama_working is not False:
             try:
                 res = self._call_ollama(system_instruction, user_prompt, temperature)
@@ -80,8 +79,7 @@ class UniversalAIGateway:
 
         return None
 
-    def _call_gemini(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.gemini_key}"
+    def _call_gemini(self, system_instruction: str, user_prompt: str, temperature: float, key: str) -> Optional[str]:
         payload = {
             "contents": [
                 {"role": "user", "parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]}
@@ -90,29 +88,38 @@ class UniversalAIGateway:
                 "temperature": temperature
             }
         }
-        try:
-            req = urllib.request.Request(
-                url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"}
-            )
-            with urllib.request.urlopen(req, timeout=4) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception:
-            # Try Bearer
-            url_bearer = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-            req_bearer = urllib.request.Request(
-                url_bearer,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {self.gemini_key}"
-                }
-            )
-            with urllib.request.urlopen(req_bearer, timeout=4) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data["candidates"][0]["content"]["parts"][0]["text"]
+        # Try gemini-2.0-flash, gemini-1.5-flash
+        for model in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+            # Mode A: Query param key
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+            try:
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(req, timeout=6) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+            except Exception:
+                # Mode B: Bearer token header
+                url_bearer = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                try:
+                    req_bearer = urllib.request.Request(
+                        url_bearer,
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {key}"
+                        }
+                    )
+                    with urllib.request.urlopen(req_bearer, timeout=6) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        return data["candidates"][0]["content"]["parts"][0]["text"]
+                except Exception:
+                    continue
+
+        return None
 
     def _call_ollama(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
         url = f"{self.ollama_endpoint}/api/generate"
