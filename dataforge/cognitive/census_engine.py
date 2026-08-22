@@ -106,8 +106,34 @@ class MunicipalCensusEngine:
         """Generates authentic, specific Turkish reasoning for this individual citizen."""
         occ_l = occupation.lower()
 
-        # 1. DISTRICT / CITY SATISFACTION & MUNICIPAL LIVING ("memnun musunuz", "nasıl buluyorsunuz", "yaşanır mı")
-        if any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"]):
+        # 1. SPORTS & FOOTBALL & AWAY FANS & AMEDSPOR / BEŞİKTAŞ / ÇARŞI
+        if any(w in q_lower for w in ["amed", "taraftar", "tribün", "maç", "futbol", "fenerbahçe", "galatasaray", "trabzonspor", "çarşı", "deplasman", "stadyum", "inönü", "passolig"]):
+            if verdict == "kabul":
+                kabul_sports = [
+                    f"Futbol kardeşlik ve spordur. Beşiktaş ve Çarşı geleneğinde yasakçılık değil, hakkaniyet vardır. Provokasyon olmadığı sürece her takımın taraftarı Tüpraş Stadyumu'na gelebilmelidir.",
+                    f"Deplasman yasakları Türk futboluna zarar veriyor. Emniyet ve federasyon güvenliği sağlasın, deplasman tribününde kardeşçe maç izlensin.",
+                    f"Tribünlerdeki kutuplaşmayı bitirmek için bu adımlar şart. Spor birleştirici olmalı; siyasi kavgaları sahaya ve tribüne sokmamalıyız.",
+                    f"{district}'ta yaşayan bir sporsever olarak kimsenin ötekileştirilmesini doğru bulmuyorum. Kurallara uyan her taraftar misafir edilmelidir."
+                ]
+                return self.rng.choice(kabul_sports)
+            elif verdict == "ret":
+                ret_sports = [
+                    f"Geçmiş maçlarda yaşanan olaylar ve gerginlikler ortada. Maçta siyasi sloganlar atılır veya tahrik olursa {district} semtinde büyük çatışmalar çıkar; güvenlik açısından kesinlikle izin verilmemeli.",
+                    f"İstiklal Marşı'na ve milli değerlerimize saygısızlık yapılma riski çok yüksek. Tribünlerin terör ve siyaset propagandasına alet edilmesine izin verilemez.",
+                    f"{district} çarşısında ve stadyum çevresinde esnafın ve halkın can güvenliği tehlikeye girer. İki tarafın fanatikleri karşı karşıya gelirse önü alınamaz, yasak sürmeli.",
+                    f"Futbol maçı izlemek yerine olay çıkarmaya gelecek gruplar var. Huzurumuzu bozmaya değmez, deplasman yasağı yerinde bir karardır."
+                ]
+                return self.rng.choice(ret_sports)
+            else:
+                cekimser_sports = [
+                    f"Prensipte yasaklara karşıyım ama provokasyon ihtimali çok yüksek. Çok sıkı polis denetimi ve passolig kontrolü olmadan bu riski almak zor.",
+                    f"Olay çıkmayacağının garantisi olsa gelsinler derim ama iki taraf da çok gergin. Maçın olaysız bitmesi mucize olur gibi geliyor.",
+                    f"Spor barışı için güzel bir niyet ama saha dışındaki gerilim yatışmadan tribünleri açmak tedirgin ediyor."
+                ]
+                return self.rng.choice(cekimser_sports)
+
+        # 2. DISTRICT / CITY SATISFACTION & MUNICIPAL LIVING ("memnun musunuz", "nasıl buluyorsunuz", "yaşanır mı")
+        elif any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"]):
             if verdict == "kabul":
                 if age >= 50:
                     return f"{district}'da uzun yıllardır yaşıyorum. Parklar, pazar yerleri ve mahalle kültürü ailemiz ve emekliler için oldukça sakin ve huzurlu; genel olarak memnunuz."
@@ -122,31 +148,31 @@ class MunicipalCensusEngine:
                     return f"İş çıkışı saatlerinde toplu taşıma ve trafik büyük çileye dönüşüyor. {district}'ın altyapısı bu nüfus artışını kaldırmıyor, çok yetersiz."
                 else:
                     return f"{district}'da sokakların bakımı, çevre kirliliği ve düzensiz yapılaşma yaşam kalitemizi düşürüyor; mevcut yönetimden memnun değilim."
-            else: # Kararsız
+            else:
                 return f"{district} sakin ve huzurlu bir ilçe ama sosyal imkanlar çok kısıtlı. Merkeze uzaklığı günlük hayatı zorlaştırıyor, ne tam memnunum ne de tamamen şikayetçiyim."
 
-        # 2. URBAN TRANSFORMATION & RENT SUPPORT
+        # 3. URBAN TRANSFORMATION & RENT SUPPORT
         elif any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "kira yardımı", "imar"]):
             if verdict == "kabul":
                 if housing == "Kiracı":
                     if income < 35000:
-                        return f"{district}'de 35 yıllık riskli binada kiracıyım. 20.000 TL kira desteği olmadan başka yere taşınmamız imkansızdı, taşınma ve depozito masraflarını karşılamamız için hayati bir destek."
+                        return f"{district}'de 35 yıllık riskli binada kiracıyım. Kira desteği olmadan başka yere taşınmamız imkansızdı, taşınma ve depozito masraflarını karşılamamız için hayati bir destek."
                     else:
                         return f"Mevcut kira fiyatları uçmuşken dönüşüm sürecinde kiracının korunması binanın tahliyesini hızlandırır, dönüşümün önündeki en büyük tıkanıklığı çözer."
                 else: # Ev sahibi
                     if age >= 55:
-                        return f"Emekli maaşımla binayı yeniletirken geçici kiralık ev tutmak beni batırırdı. 20.000 TL kira yardımı olursa binanın yıkılıp yapılmasına hemen onay veririm."
+                        return f"Emekli maaşımla binayı yeniletirken geçici kiralık ev tutmak beni batırırdı. Kira yardımı olursa binanın yıkılıp yapılmasına hemen onay veririm."
                     else:
                         return f"Deprem riski her an kapıda, can güvenliğimiz her şeyden önemli. Kira desteği kiracıların tahliyeyi geciktirmesini önler ve inşaat hemen başlar."
             elif verdict == "ret":
                 if housing == "Kiracı":
-                    return f"{district}'de 20.000 TL'ye oturulacak 2+1 ev kalmadı ki! Bu para sadece yetersiz bir pansuman, evden çıkarıldıktan sonra geri dönememe korkusu yaşıyoruz."
+                    return f"{district}'de bu yardımla oturulacak ev kalmadı ki! Bu para yetersiz bir pansuman, evden çıkarıldıktan sonra geri dönememe korkusu yaşıyoruz."
                 else: # Ev sahibi
-                    return f"Kira yardımı kiracıya veriliyor ama müteahhit inşaat farkı olarak bizden daire başı 2 milyon TL istiyor! Emekli halimle bu borcu nasıl ödeyeceğim? Asıl finansman sorununa çözüm yok."
-            else: # Kararsız
-                return f"Fikir kağıt üzerinde güzel ama belediye bu bütçeyi tüm hak sahiplerine 18 ay boyunca aksatmadan ödeyebilecek mi? Müteahhit batarsa ortada kalma riski var."
+                    return f"Kira yardımı kiracıya veriliyor ama müteahhit inşaat farkı olarak bizden daire başı milyonlar istiyor! Emekli halimle bu borcu nasıl ödeyeceğim? Asıl finansman sorununa çözüm yok."
+            else:
+                return f"Fikir kağıt üzerinde güzel ama belediye bu bütçeyi tüm hak sahiplerine aksatmadan ödeyebilecek mi? Müteahhit batarsa ortada kalma riski var."
 
-        # 3. POLITICS & LEADERSHIP
+        # 4. POLITICS & LEADERSHIP
         elif any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp"]):
             if verdict == "kabul":
                 return f"Etrafımızdaki jeopolitik krizler ve savaş ortamında devleti maceraya atamayız. Geçim zor ama karşımızda tecrübeli ve kriz yönetebilen bir lider var."
@@ -155,13 +181,22 @@ class MunicipalCensusEngine:
             else:
                 return f"Hayat pahalılığı can yakıyor ama muhalefetin de güven veren bir ekonomik programı yok, iki arada bir derede kaldım."
 
-        # 4. TRANSPORT & SCOOTERS
-        elif any(w in q_lower for w in ["scooter", "martı", "yayalaştırma", "kaldırım", "trafik", "otopark"]):
+        # 5. STRAY ANIMALS & DOGS
+        elif any(w in q_lower for w in ["köpek", "kedi", "hayvan", "barınak", "sokak hayvan", "itlaf", "uyutma"]):
+            if verdict == "kabul":
+                return f"Sabah erken saatlerde çocuklar ve yaşlılar sokakta yürümeye korkuyor. Modern ve denetimli barınaklar açılarak sokaklar güvenli hale getirilmeli."
+            elif verdict == "ret":
+                return f"Hayvanları uyutmak veya toplu itlaf etmek vicdana sığmaz. Kısırlaştırma, aşılama ve yerinde rehabilitasyon seferberliği yapılmalıdır."
+            else:
+                return f"Hem sokakların güvenliği sağlanmalı hem de can dostlarımıza zarar verilmemeli; iki tarafın da aşırılıktan kaçınması lazım."
+
+        # 6. TRANSPORT, TRAFFIC & MOBILITY
+        elif any(w in q_lower for w in ["scooter", "martı", "yayalaştırma", "kaldırım", "trafik", "otopark", "ulaşım", "metro", "otobüs"]):
             if verdict == "kabul":
                 if "yasak" in q_lower:
                     return f"Kaldırımlarda çoluk çocuk yürüyemez olduk, her köşeden hızla fırlıyorlar. Yayaların güvenliği için caddelerden ve kaldırımlardan temizlenmeli."
                 else:
-                    return f"{district} trafiğinde araba kullanmak imkansız; toplu taşımaya ve mikro mobiliteye yatırım yapılması şart."
+                    return f"{district} trafiğinde araba kullanmak imkansız; toplu taşımaya ve yaya öncelikli projelere yatırım yapılması şart."
             elif verdict == "ret":
                 if "yasak" in q_lower:
                     return f"Gençler ve çalışanlar için metroya ulaşmanın en hızlı yolu bu. Yasaklamak yerine bisiklet ve scooter yolları yapılsın."
@@ -170,23 +205,24 @@ class MunicipalCensusEngine:
             else:
                 return f"Tamamen yasaklamak çağdışı olur ama hız sınırı ve düzgün park alanları zorunlu tutulmalı."
 
-        # 5. NIGHTLIFE & BEER & CAFES
-        elif any(w in q_lower for w in ["bira", "bar", "pub", "mekan", "kahve"]):
+        # 7. NIGHTLIFE, BEER & CAFES
+        elif any(w in q_lower for w in ["bira", "bar", "pub", "mekan", "kahve", "alkol", "konser", "festival"]):
             if verdict == "kabul":
                 return f"{district}'de dışarıda oturup sosyalleşmek ateş pahası oldu. Uygun fiyatlı ve kaliteli bir alternatif olursa her hafta sonu arkadaşlarla gideriz."
             elif verdict == "ret":
-                return f"Bu devirde o fiyata kaliteli ürün ve nezih ortam sunulamaz; aşırı kalabalık ve gürültü olur."
+                return f"Bu devirde o fiyata kaliteli ürün ve nezih ortam sunulamaz; aşırı kalabalık, gürültü ve çevre rahatsızlığı olur."
             else:
                 return f"Fiyat cazip ama mekanın müzik tarzını, ortamını ve hizmet kalitesini görmeden peşin karar veremem."
 
-        # 6. GENERAL MUNICIPAL / PUBLIC POLICY
+        # 8. GENERAL DYNAMIC FALLBACK
         else:
+            q_clean = q_lower.replace("?", "").replace("mi", "").replace("mı", "").replace("mu", "").replace("mü", "").strip()
             if verdict == "kabul":
-                return f"Mevcut şartlar altında {district} halkı için kamu yararı taşıyan ve yaşam standardını iyileştirecek olumlu bir adım."
+                return f"{district} sakini olarak '{q_clean}' konusundaki adımı destekliyorum; doğru uygulanırsa semtimize olumlu katkı sağlar."
             elif verdict == "ret":
-                return f"{district}'ın öncelikli sorunları dururken bu konuya bütçe ve mesai harcanmasını doğru bulmuyorum."
+                return f"'{q_clean}' teklifi bana gerçekçi gelmiyor; {district}'ın öncelikleriyle uyuşmayan ve sorun çıkarabilecek bir uygulama."
             else:
-                return f"Uygulamanın vatandaşa yansıyacak maliyetleri ve getireceği somut faydalar netleşmeden kesin bir kanaat oluşturmak güç."
+                return f"'{q_clean}' konusunda kafamda soru işaretleri var; detayları ve vatandaşa yansıyacak etkilerini görmeden karar vermek zor."
 
     def run_census_poll(
         self,
@@ -202,10 +238,12 @@ class MunicipalCensusEngine:
         q_lower = question.lower()
         
         # Policy domain tags
-        is_satisfaction = any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"])
+        is_sports = any(w in q_lower for w in ["amed", "taraftar", "tribün", "maç", "futbol", "fenerbahçe", "galatasaray", "trabzonspor", "çarşı", "deplasman", "stadyum", "inönü", "passolig"])
+        is_satisfaction = any(w in q_lower for w in ["memnun", "nasıl", "yaşanır", "hizmetler", "belediye", "yaşam kalitesi", "seviyor musunuz"]) and not is_sports
         is_urban_transform = any(w in q_lower for w in ["kentsel dönüşüm", "deprem", "bina", "imar", "kira yardımı"])
         is_traffic_transport = any(w in q_lower for w in ["ulaşım", "metro", "otobüs", "scooter", "otopark", "yol", "trafik", "taksi", "yayalaştırma"])
         is_politics = any(w in q_lower for w in ["erdoğan", "tayyip", "başkan", "seçim", "hükümet", "akp", "chp", "aday"])
+        is_animals = any(w in q_lower for w in ["köpek", "kedi", "hayvan", "barınak", "sokak hayvan", "itlaf", "uyutma"])
         is_social_aid = any(w in q_lower for w in ["yardım", "kart", "burs", "anne", "kreş", "askıda", "halk ekmek"])
         is_tax_fee = any(w in q_lower for w in ["zam", "su faturası", "ücret", "vergi", "harç", "tarife"])
 
@@ -262,25 +300,31 @@ class MunicipalCensusEngine:
             # Mathematical Decision Engine calibrated to sociological variables with authentic variance
             score = 0.0
             
-            if is_satisfaction:
-                # District / Municipal satisfaction scoring
+            if is_sports:
+                # Away fan / Amedspor / Beşiktaş fan culture dynamics
+                if d_name == "Beşiktaş":
+                    # Beşiktaş Çarşı group has progressive egalitarian roots, but high security concerns
+                    if age <= 35:
+                        score += 15.0 # Youth & Çarşı fan solidarity against bans
+                    else:
+                        score -= 20.0 # Older residents fear street violence in the bazaar
+                if any(w in occupation.lower() for w in ["polis", "güvenlik", "astsubay", "asker"]):
+                    score -= 35.0 # Security personnel strongly fear riots
+                elif any(w in occupation.lower() for w in ["öğrenci", "yazılım", "mimar", "tasarım"]):
+                    score += 20.0
+
+            elif is_satisfaction:
                 if age >= 50:
-                    score += 15.0 # Older residents appreciate quiet routine
+                    score += 15.0
                 elif age <= 28:
-                    score -= 20.0 # Youth crave cultural/social activities
+                    score -= 20.0
                 if housing == "Ev Sahibi":
                     score += 10.0
-                if "sincan" in q_lower or d_name.lower() == "sincan":
-                    # Realistic Sincan satisfaction profile (Suburban conservative-worker demographic)
-                    if income < 35000:
-                        score += 15.0 # Low cost of living appreciation
-                    else:
-                        score -= 10.0 # High income wants more prestige/amenities
 
             elif is_urban_transform:
                 if housing == "Kiracı":
                     score += 25.0 if "kira yardımı" in q_lower else -10.0
-                else: # Ev sahibi
+                else:
                     if income < 35000 or age >= 58:
                         score -= 15.0
                     else:
@@ -293,6 +337,12 @@ class MunicipalCensusEngine:
                     score += 25.0
                 else:
                     score += self.rng.uniform(-20.0, 20.0)
+
+            elif is_animals:
+                if age <= 35 or gender == "Kadın":
+                    score -= 30.0 if any(w in q_lower for w in ["itlaf", "uyutma"]) else 25.0
+                else:
+                    score += 20.0 if any(w in q_lower for w in ["barınak", "toplansın"]) else -15.0
 
             elif is_traffic_transport:
                 if "scooter" in q_lower or "yayalaştırma" in q_lower:
@@ -322,15 +372,15 @@ class MunicipalCensusEngine:
 
             if final_eval > 10.0:
                 verdict = "kabul"
-                karar_str = "Kabul Eder / Memnun" if is_satisfaction else "Kabul Eder / Destekler"
+                karar_str = "Kabul Eder / Hoş Karşılar" if is_sports else ("Kabul Eder / Memnun" if is_satisfaction else "Kabul Eder / Destekler")
                 total_kabul += 1
             elif final_eval < -10.0:
                 verdict = "ret"
-                karar_str = "Kesinlikle Memnun Değil" if is_satisfaction else "Kesinlikle Reddeder"
+                karar_str = "Kesinlikle Karşı Çıkar" if is_sports else ("Kesinlikle Memnun Değil" if is_satisfaction else "Kesinlikle Reddeder")
                 total_ret += 1
             else:
                 verdict = "kararsiz"
-                karar_str = "Kararsız / Kısmen Memnun" if is_satisfaction else "Kararsız / Çekimser"
+                karar_str = "Kararsız / Şartlı Bakar" if is_sports else ("Kararsız / Kısmen Memnun" if is_satisfaction else "Kararsız / Çekimser")
                 total_kararsiz += 1
 
             # Individual citizen rationale in Turkish
@@ -418,7 +468,19 @@ class MunicipalCensusEngine:
 
         # Strategic Action & Barriers
         target_label = district if district and district != "Tümü" else city
-        if is_satisfaction:
+        if is_sports:
+            drivers = [
+                "Sporun Birleştirici Gücü ve Tribün Yasaklarına Karşı Duruş",
+                "Çarşı ve Beşiktaş'ın Hakkaniyetli / Misafirperver Tribün Geleneği",
+                "Futbolda Şiddetsiz ve Medeni Karşılaşma Arzusu"
+            ]
+            barriers = [
+                "Siyasi ve Etnik Provokasyon / Tribün Olayları Endişesi",
+                "Beşiktaş Çarşısı ve Çevresinde Asayiş ve Esnaf Güvenliği Riski",
+                "Geçmiş Maçlardaki Gerginliklerin Yarattığı Güvensizlik"
+            ]
+            action = f"{target_label} Emniyeti ve Kulüp Yönetimi, deplasman tribünü için sıkı Passolig ve kontrollü intikal protokolü uygulamalı; provokatif tezahüratlara karşı sıfır tolerans politikası izlemelidir."
+        elif is_satisfaction:
             drivers = [
                 f"{target_label}'da Yaşam Maliyetlerinin ve Kiraların Uygunluğu",
                 "Temel Belediye Hizmetleri, Parklar ve Aile Huzuru",
