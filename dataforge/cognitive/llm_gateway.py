@@ -24,7 +24,18 @@ class UniversalAIGateway:
 
     def __init__(self):
         self.ollama_endpoint = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        self._load_env()
         self.gemini_key = os.getenv("GEMINI_API_KEY", "")
+
+    def _load_env(self):
+        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ[k.strip()] = v.strip().strip('"').strip("'")
 
     @classmethod
     def get_instance(cls) -> UniversalAIGateway:
@@ -42,8 +53,8 @@ class UniversalAIGateway:
         """
         Attempts seamless generation via available backends without bothering the user.
         """
-        # 1. Try Gemini if valid key exists in environment
-        if self.gemini_key and self.gemini_key.startswith("AIzaSy"):
+        # 1. Try Gemini with all auth modes (Query param or Bearer token)
+        if self.gemini_key:
             try:
                 res = self._call_gemini(system_instruction, user_prompt, temperature)
                 if res:
@@ -62,23 +73,46 @@ class UniversalAIGateway:
         return None
 
     def _call_gemini(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.gemini_key}"
-        payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]}
-            ],
-            "generationConfig": {
-                "temperature": temperature
+        # Try different Gemini model versions
+        for model in ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]:
+            # Strategy A: Query parameter
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.gemini_key}"
+            payload = {
+                "contents": [
+                    {"role": "user", "parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]}
+                ],
+                "generationConfig": {
+                    "temperature": temperature
+                }
             }
-        }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["candidates"][0]["content"]["parts"][0]["text"]
+            try:
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+            except Exception:
+                # Strategy B: Bearer token header
+                url_bearer = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                try:
+                    req_bearer = urllib.request.Request(
+                        url_bearer,
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {self.gemini_key}"
+                        }
+                    )
+                    with urllib.request.urlopen(req_bearer, timeout=12) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        return data["candidates"][0]["content"]["parts"][0]["text"]
+                except Exception:
+                    continue
+
+        return None
 
     def _call_ollama(self, system_instruction: str, user_prompt: str, temperature: float) -> Optional[str]:
         url = f"{self.ollama_endpoint}/api/generate"
