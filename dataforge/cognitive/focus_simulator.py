@@ -66,8 +66,9 @@ class FocusGroupSimulator:
         audits consistency against latent belief vectors,
         and computes an N=1,000 quantitative Monte Carlo census.
         """
-        # 1. Synthesize demographic personas
-        raw_personas = self.prompt_engine.synthesize(target_audience, count=count)
+        # 1. Synthesize demographic qualitative personas (4-8 around the roundtable)
+        qual_count = min(count, 8) if count > 8 else count
+        raw_personas = self.prompt_engine.synthesize(target_audience, count=qual_count)
 
         # 2. Enrich into Deep Cognitive, Social Radar, Latent Belief & Habitus Personas
         cognitive_personas: list[DeepCognitivePersona] = []
@@ -76,14 +77,15 @@ class FocusGroupSimulator:
             cog_p = self.persona_builder.build_from_raw(raw_p, record_id=i + 1)
             cognitive_personas.append(cog_p)
 
-        # 3. Run Quantitative Econometric / Moral Monte Carlo Census (N=1,000)
+        # 3. Run Quantitative Econometric / Moral Monte Carlo Census (N=1,000 to N=10,000)
         extracted_price = self._extract_price_from_pitch(pitch_or_question)
         dict_personas = [p.to_dict() for p in cognitive_personas]
+        mc_n = max(count, monte_carlo_n)
         monte_carlo_res: QuantitativeMarketResult = self.utility_engine.run_monte_carlo_census(
             personas=dict_personas,
             pitch_text=pitch_or_question,
             pitch_price_tl=extracted_price,
-            simulations_count=monte_carlo_n
+            simulations_count=mc_n
         )
 
         # 4. Simulate Multi-Agent Focus Group with LLM

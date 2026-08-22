@@ -926,11 +926,13 @@ def focus_group_cmd(
 
     simulator = FocusGroupSimulator()
 
+    table_count = min(count, 6) if count > 6 else count
     console.print(
         Panel(
             f"🎯 [bold cyan]Hedef Kitle:[/bold cyan] {target}\n"
             f"💡 [bold yellow]Sunulan Teklif/Soru:[/bold yellow] {pitch}\n"
-            f"👥 [bold green]Katılımcı Sayısı:[/bold green] {count} Kişi (Nöro-Sosyolojik Dijital İkiz)",
+            f"👥 [bold green]Odak Grubu Masası:[/bold green] {table_count} Temsili Tartışmacı (Canlı Diyalog)\n"
+            f"🏛️ [bold magenta]Kantitatif Evren:[/bold magenta] N={count:,} Sentetik Nüfus İkizi (Monte Carlo)",
             title="🔬 DataForge Neuro-Cognitive Focus Group Studio",
             border_style="bright_magenta"
         )
@@ -940,7 +942,7 @@ def focus_group_cmd(
         result = simulator.run_simulation(target_audience=target, pitch_or_question=pitch, count=count)
 
     # 1. Odak Grubu Tartışması ve İç Sesler
-    console.print("\n[bold cyan]🗣️ Odak Grubu Masası (İç Ses vs. Dışa Söylenen Söz):[/bold cyan]")
+    console.print(f"\n[bold cyan]🗣️ Odak Grubu Masası ({table_count} Kişilik Canlı Tartışma & İç Sesler):[/bold cyan]")
     
     raw_discussions = result.get("odak_grubu_tartismasi", [])
     if isinstance(raw_discussions, dict):
@@ -1061,6 +1063,86 @@ def focus_group_cmd(
         with open(output, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         _success(f"Tam odak grubu simülasyon raporu kaydedildi → {output}")
+
+
+# ---------------------------------------------------------------------------
+# dataforge census (Büyük Ölçekli Belediye & Nüfus Anketi)
+# ---------------------------------------------------------------------------
+
+@app.command('census')
+def census_cmd(
+    question: str = typer.Argument(..., help='Belediye projesi, kamuoyu araştırması veya politika sorusu'),
+    city: str = typer.Option("İstanbul", "--city", "-c", help='Hedef Şehir (İstanbul, Ankara, İzmir, Bursa, Antalya, vb.)'),
+    district: str = typer.Option("Tümü", "--district", "-d", help='Hedef İlçe (Kadıköy, Beşiktaş, Esenyurt, Çankaya, Tümü)'),
+    sample: int = typer.Option(1000, "--sample", "-s", help='Sentetik Nüfus Örneklemi (100 - 10,000)'),
+    output: Optional[Path] = typer.Option(None, '--output', '-o', help='JSON analiz raporu çıktı dosyası'),
+) -> None:
+    """🏛️ TÜİK & SEGE Ağırlıklı 1.000 - 10.000 Kişilik Büyük Ölçekli Sentetik Şehir ve Belediye Anketi."""
+    from .cognitive.census_engine import MunicipalCensusEngine
+    from rich.table import Table
+    import json
+
+    engine = MunicipalCensusEngine()
+
+    console.print(
+        Panel(
+            f"❓ [bold yellow]Anket Sorusu:[/bold yellow] {question}\n"
+            f"📍 [bold green]Coğrafi Kapsam:[/bold green] {city} ({district})\n"
+            f"👥 [bold cyan]Sentetik Örneklem:[/bold cyan] N = {sample:,} Nüfus İkizi\n"
+            f"⚖️ [bold magenta]Ağırlıklandırma:[/bold magenta] TÜİK NUTS-2 ve SEGE-2022 İlçe Endeksi",
+            title="🏛️ DataForge Municipal Census & Public Opinion Engine",
+            border_style="bright_blue"
+        )
+    )
+
+    with console.status(f"[bold green]📊 {city} ({district}) için N={sample:,} yurttaşın kararları simüle ediliyor...[/bold green]"):
+        report = engine.run_census_poll(question=question, city=city, district=district, sample_size=sample)
+
+    rep_dict = report.to_dict()
+
+    # Grand Result Table
+    kabul_pct = rep_dict.get("genel_kabul_yuzde", 0.0)
+    ret_pct = rep_dict.get("genel_ret_yuzde", 0.0)
+    kararsiz_pct = rep_dict.get("genel_kararsiz_yuzde", 0.0)
+
+    t_res = Table(title="🗳️ Genel Kamuoyu Mutabakat Dağılımı", border_style="green")
+    t_res.add_column("Duruş", style="bold")
+    t_res.add_column("Oran (%)", style="bold")
+    t_res.add_column("Güven Aralığı & Hata Payı", style="dim")
+
+    t_res.add_row("[green]KABUL / DESTEKLER[/green]", f"[green]%{kabul_pct}[/green]", f"{rep_dict.get('guven_araligi_yuzde_95')} (±%{rep_dict.get('hata_payi_yuzde')})")
+    t_res.add_row("[red]RET / KARŞI ÇIKAR[/red]", f"[red]%{ret_pct}[/red]", "")
+    t_res.add_row("[yellow]KARARSIZ / ÇEKİMSER[/yellow]", f"[yellow]%{kararsiz_pct}[/yellow]", "")
+
+    console.print("\n")
+    console.print(t_res)
+
+    # District Cross-tabs
+    dist_tabs = rep_dict.get("ilce_kirilimi", [])
+    if dist_tabs:
+        t_dist = Table(title="📍 İlçe / Bölge Çapraz Dağılımı", border_style="cyan")
+        t_dist.add_column("İlçe / Bölge", style="bold cyan")
+        t_dist.add_column("Örneklem (N)", style="dim")
+        t_dist.add_column("Kabul (%)", style="green")
+        t_dist.add_column("Ret (%)", style="red")
+        t_dist.add_column("Kararsız (%)", style="yellow")
+
+        for d in dist_tabs[:10]:
+            t_dist.add_row(d["segment"], str(d["orneklem_sayisi"]), f"%{d['kabul_yuzde']}", f"%{d['ret_yuzde']}", f"%{d['kararsiz_yuzde']}")
+
+        console.print("\n")
+        console.print(t_dist)
+
+    # Executive Action Plan
+    action = rep_dict.get("belediye_stratejik_aksiyon_plani", "")
+    if action:
+        console.print("\n")
+        console.print(Panel(action, title="📋 Belediye & Kurumsal Stratejik Aksiyon Planı", border_style="yellow"))
+
+    if output:
+        with open(output, 'w', encoding='utf-8') as f:
+            json.dump(rep_dict, f, ensure_ascii=False, indent=2)
+        _success(f"Belediye sayım raporu kaydedildi → {output}")
 
 
 # ---------------------------------------------------------------------------
