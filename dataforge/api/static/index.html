@@ -992,7 +992,9 @@
                             city: window._activeInterrogationPersona.sehir_ilce.split('/')[0].trim(),
                             district: window._activeInterrogationPersona.sehir_ilce.split('/')[1]?.trim() || 'Merkez',
                             monthly_income: window._activeInterrogationPersona.aylik_net_gelir_tl || 35000.0,
-                            housing_status: window._activeInterrogationPersona.barinma_durumu
+                            housing_status: window._activeInterrogationPersona.barinma_durumu,
+                            karar: window._activeInterrogationPersona.karar,
+                            bireysel_dusuncesi_ve_gerekcesi: window._activeInterrogationPersona.bireysel_dusuncesi_ve_gerekcesi
                         },
                         user_question: q,
                         conversation_history: window._interrogationHistory,
