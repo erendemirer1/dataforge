@@ -22,6 +22,7 @@ class TopicSemanticVector:
     raw_prompt: str
     cleaned_topic: str
     target_subject: str
+    is_satisfaction_query: bool
     economic_salience: float      # -1.0 (Heavy Cost/Tax) to +1.0 (Subsidy/Financial Relief)
     care_harm_salience: float     # -1.0 (Harm/Cruelty Risk) to +1.0 (Protection/Compassion)
     fairness_salience: float      # -1.0 (Favoritism/Cheating) to +1.0 (Merit/Fairness/Justice)
@@ -33,7 +34,7 @@ class TopicSemanticVector:
 
 
 class AutonomousSemanticParser:
-    """Extracts semantic and moral salience from arbitrary Turkish prompts without static domain tagging."""
+    """Extracts semantic and moral salience from arbitrary Turkish prompts."""
 
     PROFANITY_OR_BAN_WORDS = ["yasak", "kısıtlama", "engellensin", "kapatılsın", "ceza", "itlaf", "uyutma"]
     LIBERTY_WORDS = ["serbest", "açılsın", "kaldırılsın", "özgürlük", "destek", "izin", "gelsin", "kolaylık"]
@@ -47,7 +48,9 @@ class AutonomousSemanticParser:
         cleaned = re.sub(r'[^\w\sğüşıöçĞÜŞİÖÇ]', ' ', p_lower)
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
 
-        # Extract core subject (strip question particles)
+        is_sat = any(w in p_lower for w in ["memnun", "nasıl buluyorsunuz", "yaşanır mı", "yönetim", "hizmetler", "yaşam kalitesi"])
+
+        # Extract core subject
         tokens = [t for t in cleaned.split() if t not in ["mi", "mı", "mu", "mü", "misiniz", "mısınız", "musunuz", "müsünüz", "olur", "mu", "ne", "nasıl", "neden", "hakkında", "görüşünüz"]]
         target_subj = " ".join(tokens[:5]) if tokens else cleaned
 
@@ -91,6 +94,7 @@ class AutonomousSemanticParser:
             raw_prompt=prompt,
             cleaned_topic=cleaned,
             target_subject=target_subj,
+            is_satisfaction_query=is_sat,
             economic_salience=econ,
             care_harm_salience=care,
             fairness_salience=0.5 if "hak" in p_lower or "adalet" in p_lower else 0.0,
@@ -120,9 +124,9 @@ class AutonomousCognitiveReasoner:
         """
         Calculates mathematical causal utility and determines stance: (verdict, utility_score, dominant_driver).
         """
-        h: HaidtMoralProfile = persona.haidt_morals
-        b: BourdieuCapitalVector = persona.bourdieu_capitals
-        n: NeuroPsychologicalState = persona.neuro_psych
+        h: HaidtMoralProfile = persona.haidt_morals or HaidtMoralProfile(50, 50, 50, 50, 50, 50)
+        b: BourdieuCapitalVector = persona.bourdieu_capitals or BourdieuCapitalVector(50, 50, 50, 50)
+        n: NeuroPsychologicalState = persona.neuro_psych or NeuroPsychologicalState(2.25, 0.88, 0.8, 30, 50, {})
         lb = persona.latent_belief
 
         # 1. Moral & Value Alignment Dot Product
@@ -142,8 +146,8 @@ class AutonomousCognitiveReasoner:
 
         # 3. Security & Institutional Trust Factor
         security_friction = 0.0
-        if topic.authority_salience > 0.3:
-            if lb.national_security_redline > 70:
+        if topic.authority_salience > 0.3 and lb:
+            if getattr(lb, 'national_security_redline', 50) > 70:
                 security_friction -= (lb.national_security_redline - 50.0) * 0.50
 
         # 4. Status Quo Inertia & Age Resistance
@@ -184,57 +188,79 @@ class AutonomousCognitiveReasoner:
         dominant_driver: str
     ) -> str:
         """
-        Synthesizes a deep, authentic subconscious internal monologue grounded in persona DNA via combinatorial clauses.
+        Synthesizes a deep, authentic subconscious internal monologue grounded in persona DNA.
         """
-        age = persona.yas
         age = persona.yas
         occ = persona.meslek
         parts = persona.sehir_ilce.split('/')
         district = parts[-1].strip() if len(parts) > 1 else persona.sehir_ilce
         if district in ["Merkez", "Merkez Mah.", ""]:
-            district = parts[0].strip() if len(parts) > 0 else "Semtimiz"
+            district = parts[0].strip() if len(parts) > 0 else "İlçemiz"
         housing = getattr(persona, 'barinma_durumu', 'Kiracı')
         prompt_clean = topic.target_subject
 
-        # Clause 1: Persona Situational Anchor
+        # Clause 1: Situational First-Person Anchor
         prefixes = [
             f"Ben bir {occ} olarak,",
-            f"{district}'da yaşayan {age} yaşında bir yurttaş olarak,",
-            f"Bu mahallede {housing.lower()} olarak ikamet eden biri olarak,",
+            f"{district}'da ikamet eden {age} yaşında bir yurttaş olarak,",
+            f"Bu semtte {housing.lower()} olarak yaşayan biri olarak,",
             f"Kendi aile bütçemizi ve günlük hayatımızı düşündüğümde,",
-            f"Geleceğe ve toplumun genel gidişatına baktığımda,",
-            f"{district} sokaklarındaki havayı soluyan biri olarak,"
+            f"{district} sokaklarındaki yaşamı her gün birebir tecrübe eden biri olarak,"
         ]
         prefix = self.rng.choice(prefixes)
 
-        # Clause 2 & 3: Causal Core & Dynamic Consequence
+        # BRANCH 1: Satisfaction & Municipal Governance
+        if topic.is_satisfaction_query:
+            if verdict == "KABUL":
+                sat_cores = [
+                    f"{district}'ın temel belediye hizmetlerinden, parklarından ve çevre temizliğinden gayet memnunum.",
+                    f"mahallemizin huzuru, pazar yerleri ve sakin yaşam tarzı ailemiz için oldukça yeterli ve güzel.",
+                    f"ulaşım imkanları ve yerel hizmetler genel olarak düzenli işliyor, semtimizin yönetiminden memnunum."
+                ]
+                sat_conseq = "Bu yüzden yerel yönetimin mevcut çalışmalarını destekliyorum."
+            elif verdict == "RED":
+                sat_cores = [
+                    f"{district}'da sokakların bakımı, çevre kirliliği ve altyapı yetersizliği yaşam kalitemizi düşürüyor.",
+                    f"gençler için sosyal, kültürel ve sanatsal alanlar neredeyse hiç yok; semtimizin gelişimi çok yavaş.",
+                    f"iş çıkışı saatlerindeki trafik keşmekeşi ve toplu taşıma yetersizliği canımıza tak etti; yönetimden memnun değilim."
+                ]
+                sat_conseq = "Bu eksiklikler giderilmediği sürece mevcut yönetimden memnun olmam mümkün değil."
+            else:
+                sat_cores = [
+                    f"{district} sakin bir yer ama sosyal imkanlar ve merkeze ulaşım konusunda hala ciddi sıkıntılar var.",
+                    f"bazı hizmetler güzel yürütülse de altyapı ve çevre düzenlemelerinde eksikler göze çarpıyor."
+                ]
+                sat_conseq = "Bu sebeple ne tamamen memnunum ne de her şeyi kötüleyebilirim; çekimserim."
+
+            core = self.rng.choice(sat_cores)
+            return f"{prefix} {core} {sat_conseq}"
+
+        # BRANCH 2: Proposals, Policies, Social Aid, Sports, Projects
         if verdict == "KABUL":
             if dominant_driver == "Geçim ve Maddi Şartlar":
                 cores = [
-                    f"'{prompt_clean}' adımı mevcut hayat pahalılığında dar gelirli ve çalışan kesime ciddi bir nefes aldırır.",
-                    f"maddi zorlukların arttığı bu süreçte '{prompt_clean}' desteği ekonomik olarak çok isabetli bir adım.",
-                    f"bu uygulamanın getireceği mali kolaylık hane bütçelerine doğrudan can suyu olacaktır."
+                    f"mevcut hayat pahalılığında '{prompt_clean}' adımı dar gelirli ve çalışan kesime ciddi bir nefes aldırır.",
+                    f"maddi zorlukların arttığı bu süreçte '{prompt_clean}' desteği ekonomik açıdan çok isabetli bir karar.",
+                    f"bu uygulamanın getireceği mali kolaylık vatandaşın bütçesine doğrudan can suyu olacaktır."
                 ]
             elif dominant_driver == "Toplumsal Dayanışma ve Şefkat":
                 cores = [
-                    f"'{prompt_clean}' gibi sosyal dayanışmayı ve ihtiyaç sahiplerini gözeten projelere sahip çıkmamız şart.",
-                    f"gençlerin, öğrencilerin ve mağdur kesimlerin elinden tutan bu yaklaşımı son derece insani buluyorum.",
-                    f"toplum olarak birbirimize destek olmamız gereken bu günlerde '{prompt_clean}' vicdani bir sorumluluktur."
+                    f"'{prompt_clean}' gibi sosyal dayanışmayı ve gençleri/ihtiyaç sahiplerini gözeten projelere sahip çıkmamız şart.",
+                    f"öğrencilerin ve mağdur kesimlerin elinden tutan bu yaklaşımı son derece insani ve değerli buluyorum."
                 ]
             elif dominant_driver == "Özgürlük ve Hakkaniyet":
                 cores = [
-                    f"önyargıları bir kenara bırakıp '{prompt_clean}' konusunda hakkaniyetle davranmak en doğrusudur.",
-                    f"yasakçılık ve kısıtlama yerine kurallara uyularak '{prompt_clean}' alanının açılması adaleti sağlar.",
-                    f"kimseyi ötekileştirmeden, eşit şartlarda bu imkanın sunulması toplumsal barışa katkı sunar."
+                    f"önyargıları bir kenara bırakıp '{prompt_clean}' konusunda hakkaniyetli davranmak en doğrusudur.",
+                    f"yasakçılık yerine kurallara uyularak bu imkanın sağlanması toplumsal barışa katkı sunar."
                 ]
             elif dominant_driver == "Milli Güvenlik ve Asayiş":
                 cores = [
-                    f"gerekli emniyet ve denetim tedbirleri alındığı müddetçe '{prompt_clean}' sürecinde hiçbir güvenlik zafiyeti yaşanmaz.",
-                    f"sağduyulu ve kontrollü bir yönetimle '{prompt_clean}' konusu huzur bozulmadan başarıyla yürütülür."
+                    f"gerekli emniyet ve denetim tedbirleri alındığı müddetçe '{prompt_clean}' sürecinde hiçbir asayiş sorunu yaşanmaz.",
+                    f"sağduyulu ve kontrollü bir yönetimle bu konu huzur bozulmadan başarıyla yürütülür."
                 ]
             else:
                 cores = [
-                    f"'{prompt_clean}' adımı {district} halkının yaşam standardını doğrudan yükseltecektir.",
+                    f"'{prompt_clean}' konusu {district} halkının yaşam standardını doğrudan yükseltecektir.",
                     f"bu gelişme semtimiz ve günlük yaşamımız için son derece olumlu sonuçlar doğurur."
                 ]
             
@@ -247,19 +273,17 @@ class AutonomousCognitiveReasoner:
         elif verdict == "RED":
             if dominant_driver == "Geçim ve Maddi Şartlar":
                 cores = [
-                    f"çarşı pazardaki yangın ortadayken '{prompt_clean}' ile bütçeye veya vatandaşa ek yük getirilmesini kabul edemem.",
-                    f"geçim derdi ve enflasyon altında ezilirken böyle bir maliyetin halkın sırtına yüklenmesi haksızlıktır.",
-                    f"öncelikli ekonomik sorunlar dururken kaynakların '{prompt_clean}' için harcanması doğru değil."
+                    f"çarşı pazardaki yangın ortadayken '{prompt_clean}' ile bütçeye veya vatandaşa ek yük getirilmesini doğru bulmuyorum.",
+                    f"geçim derdi ve enflasyon altında ezilirken böyle bir maliyetin halkın sırtına yüklenmesi haksızlıktır."
                 ]
             elif dominant_driver == "Milli Güvenlik ve Asayiş":
                 cores = [
                     f"geçmişte yaşanan gerginlikler ortadayken '{prompt_clean}' adımı sokaklarımızda büyük provokasyon ve güvenlik riski yaratır.",
-                    f"asayişin ve kamu düzeninin bozulma ihtimali çok yüksek; '{prompt_clean}' kararı huzurumuzu tehlikeye atar.",
-                    f"toplumu kutuplaştıracak ve gerilim çıkaracak böyle bir adıma izin verilmesi telafisi zor sonuçlar doğurur."
+                    f"asayişin ve kamu düzeninin bozulma ihtimali çok yüksek; bu karar huzurumuzu tehlikeye atar."
                 ]
             elif dominant_driver == "Geleneksel Değerler ve Huzur":
                 cores = [
-                    f"{district}'ın yerleşik huzurunu ve mahalle dokusunu zedeleyecek '{prompt_clean}' dayatmasına razı olamam.",
+                    f"{district}'ın yerleşik huzurunu ve mahalle dokusunu zedeleyecek bu dayatmaya razı olamam.",
                     f"toplumun hassasiyetlerini ve geleneksel yapısını hiçe sayan bu teklif semtimizde huzursuzluk yaratır."
                 ]
             else:
@@ -277,7 +301,7 @@ class AutonomousCognitiveReasoner:
         else: # CEKIMSER
             if dominant_driver == "Geçim ve Maddi Şartlar":
                 cores = [
-                    f"'{prompt_clean}' teklifi teoride güzel duruyor fakat finansmanının nasıl karşılanacağı kafamı kurcalıyor.",
+                    f"'{prompt_clean}' teklifi teoride güzel duruyor fakat bütçesinin nasıl karşılanacağı kafamı kurcalıyor.",
                     f"maliyetin vatandaşa nasıl yansıyacağı netleşmeden bu konuda peşin bir kanaat oluşturmak güç."
                 ]
             elif dominant_driver == "Milli Güvenlik ve Asayiş":
@@ -316,8 +340,11 @@ class AutonomousCognitiveReasoner:
         """
         Synthesizes live colloquial spoken Turkish dialogue reacting fluidly to the room.
         """
+        parts = persona.sehir_ilce.split('/')
+        district = parts[-1].strip() if len(parts) > 1 else persona.sehir_ilce
+        if district in ["Merkez", "Merkez Mah.", ""]:
+            district = parts[0].strip() if len(parts) > 0 else "İlçemiz"
         occ = persona.meslek
-        district = persona.sehir_ilce.split('/')[-1].strip()
         prompt_clean = topic.target_subject
 
         if is_first_speaker:

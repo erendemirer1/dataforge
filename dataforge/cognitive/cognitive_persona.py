@@ -79,13 +79,17 @@ class CognitivePersonaBuilder:
 
     def build_from_raw(self, raw_person: dict[str, Any], record_id: int = 1) -> DeepCognitivePersona:
         """Transforms a demographic person dict into a deep cognitive agent."""
-        age = int(raw_person.get("yas", 32))
-        income = float(raw_person.get("aylik_net_gelir_tl", raw_person.get("aylik_ortalama_gelir_tl", 38000.0)))
-        city = raw_person.get("sehir", raw_person.get("sehir_ilce", "İstanbul").split("/")[0].strip())
-        district = raw_person.get("ilce", "Merkez")
-        occupation = raw_person.get("meslek_rol", raw_person.get("meslek", "Vatandaş"))
-        education = raw_person.get("egitim_durumu", "Lise")
-        housing_status = raw_person.get("housing_status", "Kiracı")
+        age = int(raw_person.get("age", raw_person.get("yas", 32)))
+        income = float(raw_person.get("monthly_income", raw_person.get("aylik_net_gelir_tl", raw_person.get("aylik_ortalama_gelir_tl", 38000.0))))
+        city = raw_person.get("city", raw_person.get("sehir", raw_person.get("sehir_ilce", "İstanbul").split("/")[0].strip()))
+        district = raw_person.get("district", raw_person.get("ilce", "Merkez"))
+        occupation = raw_person.get("occupation", raw_person.get("meslek_rol", raw_person.get("meslek", "Vatandaş")))
+        education = raw_person.get("education_level", raw_person.get("egitim_durumu", "Lise"))
+        housing_status = raw_person.get("housing_status", raw_person.get("barinma_durumu", "Kiracı"))
+        first_name = raw_person.get("first_name", "")
+        last_name = raw_person.get("last_name", "")
+        full_name = f"{first_name} {last_name}".strip() if first_name else raw_person.get("ad_soyad", "İsimsiz")
+        gender = raw_person.get("gender", raw_person.get("cinsiyet", "Erkek"))
 
         # 1. Financial Cashflow Calculation
         fixed_ratio = self.rng.uniform(0.55, 0.78)
@@ -213,10 +217,10 @@ class CognitivePersonaBuilder:
         return DeepCognitivePersona(
             id=record_id,
             tckn=raw_person.get("tckn", "11111111110"),
-            ad_soyad=raw_person.get("ad_soyad", "İsimsiz"),
-            cinsiyet=raw_person.get("cinsiyet", "Erkek"),
+            ad_soyad=full_name,
+            cinsiyet=gender,
             yas=age,
-            sehir_ilce=raw_person.get("sehir_ilce", f"{city} / {district}"),
+            sehir_ilce=f"{city} / {district}",
             meslek=occupation,
             egitim_durumu=education,
             aylik_net_gelir_tl=income,
