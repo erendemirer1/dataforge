@@ -1,9 +1,8 @@
 """
 DataForge Living Multi-Agent Conversational Discourse & Roundtable Engine.
 Powered by UniversalAIGateway & CognitiveDossier (100% Pure LLM Inhabitation).
-Simulates organic, interruption-rich human debates where living agents
-argue, react, call each other by name, cite their own life backgrounds, and NEVER repeat the same sentence.
-Zero static sentences, zero template strings.
+Simulates organic, interruption-rich human debates with natural perspectival diversity.
+Strictly eradicates repetitive financial whining and robotic salary reciting.
 """
 from __future__ import annotations
 
@@ -39,17 +38,24 @@ class LivingRoundtableEngine:
         dossiers_text = "\n\n".join([f"[KATILIMCI #{d.kisi_id}]\n{d.to_llm_system_context()}" for d in dossiers])
 
         sys_prompt = (
-            "Sen Türkiye sosyolojisini, insanının kalbini, öfkesini, geçim derdini, mizahını ve gururunu "
-            "en derinden bilen dahi bir Sosyolog, Antropolog ve Saha Araştırmacısısın.\n"
-            f"Sana Türkiye gerçekliğinden {len(personas)} adet capcanlı insanın 50+ parametreli TAM BİYOGRAFİK DOSYASI veriliyor.\n\n"
+            "Sen Türkiye toplumunun antropolojik, psikolojik, ahlaki ve sosyolojik çeşitliliğini "
+            "en üst düzeyde modelleyen bir Bilişsel Simülasyon ve Saha Araştırmaları Uzmanısın.\n"
+            f"Sana Türkiye gerçekliğinden {len(personas)} adet insanın 50+ parametreli TAM BİYOGRAFİK DOSYASI veriliyor.\n\n"
             "GÖREVİN:\n"
             f"Bu insanların masaya atılan '{pitch}' konusu karşısındaki "
-            "gerçek tepkilerini ve aralarındaki canlı tartışmayı simüle edeceksin.\n\n"
-            "KESİN KURALLAR:\n"
-            "1. Asla şablon, genel geçer veya statik cümle kurma. Her karakter kendi biyografik dosyasındaki mesleğine, ilçesine, kirasına, net maaşına, Haidt ahlak puanlarına ve korkularına dayanarak konuşsun.\n"
-            "2. Karakterler masada birbirine ismiyle hitap etsin, itiraz etsin, laf atsın veya destek çıksın (Canlı Grup Dinamikleri).\n"
-            "3. Karakterler sorulan konuya ('" + pitch + "') DOĞRUDAN kendi hayatlarından ve somut sahadan örnekler vererek cevap versin.\n"
-            "4. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
+            "gerçekçi, çok boyutlu, zengin ve organik tartışmasını simüle etmektir.\n\n"
+            "ÇOK KRİTİK DOĞALLIK VE ÇEŞİTLİLİK KURALLARI (ROBOTLAŞMAYI VE TEKRARI ÖNLEME):\n"
+            "1. ASLA HERKESİ AYNI ŞEYDEN (MADDİ SIKINTIDAN/KİRADAN) ŞİKAYETÇİ YAPMA. İnsanlar aynı konuya bambaşka pencerelerden bakar:\n"
+            "   - Kimi konuya AHLAKİ, DİNİ ve AİLEVİ değerler açısından yaklaşır (Örn: Helal/haram, bağımlılık tehlikesi, gençlerin kolay para hevesi, manevi yozlaşma).\n"
+            "   - Kimi konuya HOBİ, EĞLENCE ve REKABET açısından yaklaşır (Örn: Maç heyecanı, strateji, arkadaş ortamındaki muhabbet, keyif).\n"
+            "   - Kimi konuya DEVLET DÜZENİ, HUKUK, DENETİM ve VERGİ açısından yaklaşır (Örn: Yasa dışı bahis çeteleri, kara para aklama, kurumsal denetim eksikliği).\n"
+            "   - Kimi konuya MATEMATİK, RİSK ve KÜRESEL STANDARTLAR açısından yaklaşır (Örn: Olasılık hesapları, yurt dışı şirketleriyle rekabet, rasyonellik).\n"
+            "   - Kimi konuya MESLEKİ / TİCARİ açıdan yaklaşır (Örn: Esnafın cirosu, müşteri kaybı, piyasa dinamikleri).\n"
+            "   - Kimi ise konuya tamamen MESAFELİ, ELEŞTİREL veya İLGİSİZDİR (Örn: 'Ben hayatımda oynamadım, siz de oynamayın, boş işlerle uğraşmayın' der).\n"
+            "2. ASLA KİRA VE MAAŞ TUTARLARINI EZBERE SAYDIRMA. Gerçek hayatta kimse her konuda 'Ben 11 bin kira veriyorum, maaşım şu' diye mali döküm yapmaz! Maddi durum sadece karakterin bilinçaltını ve tepkilerini besleyen arka plan olmalı; ağzından çıkan her laf 'kiram şu kadar' olmamalıdır.\n"
+            "3. HER KARAKTERİN ÖZGÜN BİR MİZACI VE TAVRI OLSUN. Biri sakin ve analitik, biri dindar ve muhafazakar, biri öfkeli ve fevri, biri alaycı ve esprili, biri mesafeli olsun.\n"
+            "4. CANLI GRUP DİNAMİĞİ: Karakterler birbirlerinin argümanlarına cevap versin, ismiyle hitap etsin, itiraz etsin, tartışsın.\n"
+            "5. SADECE aşağıdaki JSON formatında yanıt ver, markdown tırnağı koyma:\n"
             "{\n"
             '  "odak_grubu_tartismasi": [\n'
             '    {\n'
@@ -57,21 +63,21 @@ class LivingRoundtableEngine:
             '      "ad_soyad": "Ad Soyad",\n'
             '      "meslek": "Meslek",\n'
             '      "karar": "Kabul Eder / Destekler" | "Kesinlikle Reddeder" | "Kararsız / Çekimser",\n'
-            '      "ic_ses_bilincalti": "Karakterin iç sesi...",\n'
-            '      "disa_soylenen_soz": "Masada yüksek sesle söylediği söz..."\n'
+            '      "ic_ses_bilincalti": "Karakterin kendi mizaç ve inancına uygun sansürsüz iç sesi...",\n'
+            '      "disa_soylenen_soz": "Masada yüksek sesle söylediği özgün söz..."\n'
             '    }\n'
             '  ],\n'
             '  "yonetici_pazar_analiz_raporu": {\n'
             '    "genel_kabul_orani_yuzde": 65.0,\n'
             '    "en_buyuk_3_itiraz_bariyeri": ["Bariyer 1", "Bariyer 2", "Bariyer 3"],\n'
-            '    "fiyat_duyarlilik_analizi": "Fiyat ve maliyet hassasiyeti analizi...",\n'
-            '    "kutuplasma_indeksi_skoru": "0.75 / 1.0 (Orta-Yüksek Kutuplaşma)",\n'
+            '    "fiyat_duyarlilik_analizi": "...",\n'
+            '    "kutuplasma_indeksi_skoru": "0.75 / 1.0",\n'
             '    "what_if_karsi_olgusal_stres_testi": {\n'
-            '      "senaryo_1_guvence": "Kabul oranı artışı...",\n'
-            '      "senaryo_2_fiyat": "Fiyat artarsa ret oranı...",\n'
-            '      "en_hizli_ikna_olacak_segment": "Segment tanımı..."\n'
+            '      "senaryo_1_guvence": "...",\n'
+            '      "senaryo_2_fiyat": "...",\n'
+            '      "en_hizli_ikna_olacak_segment": "..."\n'
             '    },\n'
-            '    "stratejik_urun_tavsiyesi": "Stratejik tavsiye..."\n'
+            '    "stratejik_urun_tavsiyesi": "..."\n'
             '  }\n'
             "}"
         )
@@ -119,6 +125,6 @@ class LivingRoundtableEngine:
                     "senaryo_2_fiyat": "Belirsizlik artarsa ret eğilimi güçlenir.",
                     "en_hizli_ikna_olacak_segment": "Kararsız çalışan kesim"
                 },
-                "stratejik_urun_tavsiyesi": f"'{pitch}' konusunda tek taraflı bir karar almak yerine, paydaşlarla koordineli şeffaf bir süreç yürütülmelidir."
+                "stratejik_urun_tavsiyesi": f"'{pitch}' konusunda tek taraflı bir karar almak yerine, paydaşlarla koordineli şeffaf bir süreç yürütmelidir."
             }
         }
