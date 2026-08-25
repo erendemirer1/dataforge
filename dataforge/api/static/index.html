@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATAFORGE // Sentetik Bilişsel Nüfus & Odak Grubu Laboratuvarı</title>
+    <title>DATAFORGE — Sentetik Toplum & Bilişsel Simülasyon Sistemi</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Editorial Serif + Space Grotesk + Space Mono -->
+    <!-- Google Fonts: Cinzel + Cormorant Garamond + Plus Jakarta Sans + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -19,20 +19,25 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Space Grotesk"', 'sans-serif'],
-                        serif: ['"Instrument Serif"', 'serif'],
-                        mono: ['"Space Mono"', 'monospace'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        display: ['"Cinzel"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     colors: {
-                        ink: {
-                            950: '#070707',
-                            900: '#0d0d0d',
-                            850: '#141414',
-                            800: '#1c1c1c',
-                            muted: '#707070',
-                            bone: '#e8e6e1',
-                            accent: '#ff3e00',
-                            signal: '#00ff66'
+                        dune: {
+                            950: '#09080e',
+                            900: '#120f1a',
+                            850: '#181424',
+                            800: '#221c32',
+                            700: '#342b4b',
+                            sand: '#e2b474',
+                            amber: '#df9452',
+                            terracotta: '#b85428',
+                            parchment: '#f7eedb',
+                            muted: '#8b8296',
+                            border: 'rgba(226, 180, 116, 0.14)',
+                            glow: 'rgba(226, 180, 116, 0.08)'
                         }
                     }
                 }
@@ -41,155 +46,202 @@
     </script>
 
     <style>
+        :root {
+            color-scheme: dark;
+        }
+
         body {
-            background-color: #070707;
-            color: #e8e6e1;
-            font-family: 'Space Grotesk', sans-serif;
+            background-color: #09080e;
+            color: #f7eedb;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
-        .brutalist-border {
-            border: 1px solid #222222;
-        }
-        .brutalist-border-b {
-            border-bottom: 1px solid #222222;
-        }
-        .brutalist-border-r {
-            border-right: 1px solid #222222;
-        }
-        .brutalist-border-l {
-            border-left: 1px solid #222222;
-        }
-        .brutalist-border-t {
-            border-top: 1px solid #222222;
+        /* Journey Ethereal Ambient Canvas */
+        #sand-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.75;
         }
 
-        .noise-bg {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
-            background-size: 24px 24px;
+        .journey-glass {
+            background: rgba(18, 15, 26, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 180, 116, 0.14);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
         }
 
+        .journey-glass-hover {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .journey-glass-hover:hover {
+            border-color: rgba(226, 180, 116, 0.35);
+            background: rgba(24, 20, 36, 0.82);
+            box-shadow: 0 12px 40px -10px rgba(223, 148, 82, 0.15);
+        }
+
+        .journey-border-b {
+            border-bottom: 1px solid rgba(226, 180, 116, 0.12);
+        }
+        .journey-border-t {
+            border-top: 1px solid rgba(226, 180, 116, 0.12);
+        }
+        .journey-border-r {
+            border-right: 1px solid rgba(226, 180, 116, 0.12);
+        }
+        .journey-border-l {
+            border-left: 1px solid rgba(226, 180, 116, 0.12);
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
-            background: #070707;
+            background: #09080e;
         }
         ::-webkit-scrollbar-thumb {
-            background: #262626;
+            background: rgba(226, 180, 116, 0.2);
+            border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #ff3e00;
+            background: rgba(226, 180, 116, 0.45);
         }
 
-        .cursor-blink {
-            display: inline-block;
-            width: 6px;
-            height: 14px;
-            background-color: #ff3e00;
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 4px;
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            height: 4px;
         }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #e2b474;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(226, 180, 116, 0.6);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        .rune-glow {
+            text-shadow: 0 0 12px rgba(226, 180, 116, 0.4);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col noise-bg">
+<body class="min-h-screen flex flex-col relative selection:bg-dune-sand/20 selection:text-dune-sand">
 
-    <!-- 1. TOP ARCHITECTURAL STATUS BAR -->
-    <header class="h-16 brutalist-border-b bg-ink-950 px-6 xl:px-10 flex items-center justify-between shrink-0 sticky top-0 z-50">
-        <div class="flex items-center space-x-6">
-            <a href="/" class="flex items-baseline space-x-2">
-                <span class="font-mono text-xl font-bold tracking-tighter text-white">DATAFORGE</span>
-                <span class="font-serif italic text-ink-muted text-base">/ lab</span>
+    <!-- Interactive Sand Drift Engine -->
+    <canvas id="sand-canvas"></canvas>
+
+    <!-- 1. SACRED TOP NAVIGATION BAR -->
+    <header class="h-16 journey-border-b bg-dune-950/80 backdrop-blur-md px-6 lg:px-12 flex items-center justify-between shrink-0 sticky top-0 z-40">
+        <div class="flex items-center space-x-8">
+            <a href="/" class="flex items-center space-x-3 group">
+                <span class="text-dune-sand text-lg font-display tracking-widest rune-glow">◈</span>
+                <span class="font-display font-semibold text-lg tracking-[0.25em] text-dune-parchment group-hover:text-dune-sand transition-colors">
+                    DATAFORGE
+                </span>
+                <span class="hidden sm:inline font-serif italic text-xs text-dune-muted/80 tracking-widest pl-1">
+                    — sentetik toplum enstitüsü
+                </span>
             </a>
-            <div class="hidden md:flex items-center space-x-3 text-[11px] font-mono text-ink-muted pl-6 brutalist-border-l">
-                <span class="text-white">SYS_ENGINE:</span>
-                <span class="text-emerald-400">TÜİK_SEGE_NUTS2_V4.5</span>
-                <span class="text-neutral-700">//</span>
-                <span class="text-amber-400 flex items-center space-x-1">
+
+            <div class="hidden md:flex items-center space-x-3 text-[11px] font-mono text-dune-muted pl-6 journey-border-l">
+                <span class="text-dune-sand/80">MODEL:</span>
+                <span class="text-dune-parchment/90 tracking-wide">TÜİK · SEGE-2022 · NUTS-2</span>
+                <span class="text-dune-sand/30">|</span>
+                <span class="text-emerald-400/90 flex items-center space-x-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>BAYESIAN_ÖĞRENME: %99.8 DOĞRULUK (KL=0.012)</span>
+                    <span>BAYESIAN_UYUM: %99.8</span>
                 </span>
             </div>
         </div>
 
         <!-- Mode Switcher Tabs -->
-        <div class="flex items-center bg-ink-900 brutalist-border p-1 space-x-1 font-mono text-xs">
-            <button id="tab-focus" onclick="switchMode('focus')" class="px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition">
-                [01] YAŞAYAN YUVARLAK MASA
+        <div class="flex items-center bg-dune-900/90 rounded-full p-1 border border-dune-border">
+            <button id="tab-focus" onclick="switchMode('focus')" class="px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm">
+                Odak Grubu Masası
             </button>
-            <button id="tab-census" onclick="switchMode('census')" class="px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition">
-                [02] BELEDİYE & ŞEHİR ANKETİ (1,000+ KİŞİ)
+            <button id="tab-census" onclick="switchMode('census')" class="px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300">
+                1.000+ Yurttaş Sandığı
             </button>
         </div>
 
         <div class="flex items-center space-x-4">
-            <div class="hidden lg:flex items-center space-x-2 text-[11px] font-mono text-ink-muted">
-                <span class="w-1.5 h-1.5 bg-emerald-400"></span>
-                <span class="text-neutral-400" id="top-pulse">RADAR: AKTİF</span>
-            </div>
-            <a href="/docs" target="_blank" class="text-[11px] font-mono tracking-wider uppercase px-3 py-1.5 bg-white text-black font-bold hover:bg-neutral-200 transition">
-                API_DOCS →
+            <a href="/docs" target="_blank" class="text-xs font-mono text-dune-sand/80 hover:text-dune-sand px-3 py-1.5 rounded-md border border-dune-border hover:border-dune-sand/40 transition-all flex items-center space-x-1.5">
+                <span>API Dokümantasyonu</span>
+                <span class="text-[10px]">↗</span>
             </a>
         </div>
     </header>
 
-    <!-- 2. MAIN DOSSIER & SIMULATION WORKSPACE -->
-    <div class="flex-1 flex flex-col xl:flex-row min-h-0">
+    <!-- 2. MAIN RESEARCH WORKSPACE -->
+    <div class="flex-1 flex flex-col xl:flex-row min-h-0 relative z-10">
         
-        <!-- LEFT DOSSIER PARAMETERS (CONTROL DECK) -->
-        <aside class="w-full xl:w-[460px] brutalist-border-r bg-ink-950 flex flex-col shrink-0">
+        <!-- LEFT CONTROL PANEL (DOSSIER CONFIGURATOR) -->
+        <aside class="w-full xl:w-[440px] journey-border-r bg-dune-950/60 backdrop-blur-lg flex flex-col shrink-0">
             
-            <!-- Section Header -->
-            <div class="p-6 brutalist-border-b">
-                <div class="flex items-baseline justify-between mb-1">
-                    <span id="panel-step-tag" class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[MOD 01 // DERİN NİTELİKSEL MASA]</span>
-                    <span class="font-mono text-[10px] text-ink-accent">TURKISH_TWIN_V2</span>
+            <!-- Panel Header -->
+            <div class="p-6 lg:p-8 journey-border-b">
+                <div class="flex items-baseline justify-between mb-2">
+                    <span id="panel-step-tag" class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase">MOD 01 // NİTELİKSEL DİYALOG</span>
+                    <span class="font-mono text-[10px] text-dune-muted">v2.4.0</span>
                 </div>
-                <h2 id="panel-title" class="text-2xl font-serif text-white">Yuvarlak Masa Simülatörü</h2>
-                <p id="panel-desc" class="text-xs text-ink-muted font-mono mt-1">Canlı tartışan, birbirine laf atan gerçekçi insan grupları</p>
+                <h2 id="panel-title" class="text-2xl lg:text-3xl font-serif text-dune-parchment leading-tight">Masa Simülatörü</h2>
+                <p id="panel-desc" class="text-xs text-dune-muted/90 font-sans mt-1.5 leading-relaxed">
+                    Farklı toplumsal habitus ve ahlaki koordinatlara sahip insanların canlı grup diyaloğu
+                </p>
             </div>
 
-            <div class="p-6 space-y-6 flex-1 overflow-y-auto">
+            <div class="p-6 lg:p-8 space-y-6 flex-1 overflow-y-auto">
                 
                 <!-- MODE 1: FOCUS GROUP CONTROLS -->
                 <div id="controls-focus" class="space-y-6">
                     <!-- Target Audience -->
                     <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // HEDEF KİTLE KÜMESİ (AUDIENCE)
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
+                            Hedef Toplumsal Kesit (Audience)
                         </label>
-                        <input id="target-input" type="text" placeholder="Örn: 18-30 Yaş Gençler, Çarşı Esnafı, Kiracılar, Memurlar..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition">
+                        <input id="target-input" type="text" placeholder="Örn: 18-30 Yaş Gençler, Çarşı Esnafı, Kiracılar, Memurlar..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all placeholder:text-dune-muted/40">
                     </div>
 
                     <!-- Question / Pitch -->
                     <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // MASAYA ATILACAK SORU / POLİTİKA
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
+                            Masaya Atılacak Soru / Politika
                         </label>
-                        <textarea id="pitch-input" rows="3" placeholder="Masaya yatırmak istediğiniz konuyu, politika teklifini veya soruyu buraya yazın..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed"></textarea>
+                        <textarea id="pitch-input" rows="3" placeholder="Tartışılmasını istediğiniz konuyu, yasa teklifini veya soruyu buraya yazın..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all resize-none leading-relaxed placeholder:text-dune-muted/40"></textarea>
                     </div>
 
                     <!-- Gemini Key Optional -->
                     <div>
-                        <label class="block font-mono text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
-                            // GEMINI API KEY (OPSİYONEL - CANLI LLM)
+                        <label class="block font-mono text-[10px] uppercase tracking-wider text-dune-muted mb-1.5">
+                            Gemini API Key (Opsiyonel — Canlı LLM)
                         </label>
-                        <input id="key-input" type="password" placeholder="AIzaSy... (Boşsa yerel Causal Engine devrededir)" class="w-full bg-ink-900 text-xs font-mono text-white p-2 brutalist-border focus:outline-none focus:border-white transition">
+                        <input id="key-input" type="password" placeholder="Boş bırakılırsa yerleşik Causal Engine devrededir" class="w-full bg-dune-900/80 text-xs font-mono text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all placeholder:text-dune-muted/40">
                     </div>
 
                     <!-- Participant count -->
-                    <div class="pt-2 brutalist-border-t space-y-3 font-mono text-xs">
+                    <div class="pt-4 journey-border-t space-y-3 font-mono text-xs">
                         <div class="flex items-center justify-between">
-                            <span class="text-ink-muted">MASA KATILIMCI SAYISI:</span>
-                            <span id="count-label" class="text-white font-bold">6 KİŞİ</span>
+                            <span class="text-dune-muted">MASA KATILIMCI SAYISI:</span>
+                            <span id="count-label" class="text-dune-sand font-bold">6 KİŞİ</span>
                         </div>
-                        <input id="count-slider" type="range" min="3" max="10" value="6" oninput="document.getElementById('count-label').innerText = this.value + ' KİŞİ'" class="w-full accent-white bg-ink-800 cursor-pointer">
+                        <input id="count-slider" type="range" min="3" max="10" value="6" oninput="document.getElementById('count-label').innerText = this.value + ' KİŞİ'" class="w-full cursor-pointer">
                     </div>
                 </div>
 
@@ -197,10 +249,10 @@
                 <div id="controls-census" class="space-y-6 hidden">
                     <!-- City Selector -->
                     <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // HEDEF ŞEHİR (CITY FILTER)
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
+                            Hedef Coğrafya (City Filter)
                         </label>
-                        <select id="census-city" onchange="updateDistrictOptions()" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
+                        <select id="census-city" onchange="updateDistrictOptions()" class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
                             <option value="Tüm Türkiye" selected>Tüm Türkiye (81 İl / NUTS-2 Ağırlıklı)</option>
                             <option value="İstanbul">İstanbul (TÜİK TR10)</option>
                             <option value="Ankara">Ankara (TÜİK TR51)</option>
@@ -212,10 +264,10 @@
 
                     <!-- District Selector -->
                     <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // İLÇE / BÖLGE DARALTMA (DISTRICT)
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
+                            İlçe / Bölge Daraltma (District)
                         </label>
-                        <select id="census-district" class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
+                        <select id="census-district" class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
                             <option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus Dağılımı)</option>
                             <option value="Kadıköy">Kadıköy</option>
                             <option value="Beşiktaş">Beşiktaş</option>
@@ -233,111 +285,219 @@
 
                     <!-- Policy Question -->
                     <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-ink-muted mb-2">
-                            // ANKET SORUSU / POLİTİKA PROJESİ
+                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
+                            Anket Sorusu / Politika Projesi
                         </label>
-                        <textarea id="census-question" rows="3" placeholder="Halka sormak istediğiniz anket sorusunu veya politika teklifini buraya yazın..." class="w-full bg-ink-900 text-sm font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white transition resize-none leading-relaxed"></textarea>
+                        <textarea id="census-question" rows="3" placeholder="Halka sormak istediğiniz anket sorusunu veya politika teklifini buraya yazın..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all resize-none leading-relaxed placeholder:text-dune-muted/40"></textarea>
                     </div>
 
                     <!-- Sample Size -->
                     <div>
                         <div class="flex items-center justify-between font-mono text-xs mb-2">
-                            <span class="text-ink-muted">SENTETİK ÖRNEKLEM (N):</span>
-                            <span id="sample-label" class="text-white font-bold">1,000 NÜFUS İKİZİ</span>
+                            <span class="text-dune-muted">SENTETİK ÖRNEKLEM (N):</span>
+                            <span id="sample-label" class="text-dune-sand font-bold">1,000 NÜFUS İKİZİ</span>
                         </div>
-                        <select id="census-sample-size" onchange="document.getElementById('sample-label').innerText = this.value + ' NÜFUS İKİZİ'" class="w-full bg-ink-900 text-xs font-mono text-white p-3 brutalist-border focus:outline-none focus:border-white">
-                            <option value="500">N = 500 Nüfus İkizi (Hızlı Hata Payı ±%4.3)</option>
-                            <option value="1000" selected>N = 1,000 Nüfus İkizi (Standart Hata Payı ±%2.4)</option>
-                            <option value="2500">N = 2,500 Nüfus İkizi (Hassas Hata Payı ±%1.8)</option>
-                            <option value="5000">N = 5,000 Nüfus İkizi (Büyükşehir Ölçeği ±%1.3)</option>
-                            <option value="10000">N = 10,000 Nüfus İkizi (Ulusal Sayım Ölçeği ±%0.9)</option>
+                        <select id="census-sample-size" onchange="document.getElementById('sample-label').innerText = this.value + ' NÜFUS İKİZİ'" class="w-full bg-dune-900/80 text-xs font-mono text-dune-parchment p-3 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
+                            <option value="100">100 Kişi (Hızlı Test)</option>
+                            <option value="500">500 Kişi (Standart Yerel)</option>
+                            <option value="1000" selected>1,000 Kişi (TÜİK Temsiliyeti - Hata Payı ±%3.1)</option>
+                            <option value="2500">2,500 Kişi (Akademik Hassasiyet - Hata Payı ±%1.9)</option>
                         </select>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Execute Button -->
-            <div class="p-6 brutalist-border-t bg-ink-950">
-                <button id="run-trigger" onclick="handleExecute()" class="w-full py-4 bg-ink-bone hover:bg-white text-black font-mono font-bold text-xs tracking-widest uppercase transition flex items-center justify-center space-x-2">
-                    <span id="btn-text">SİMÜLASYONU ÇALIŞTIR [EXECUTE]</span>
+            <!-- Action Bar -->
+            <div class="p-6 lg:p-8 journey-border-t bg-dune-950/90 space-y-3">
+                <button id="run-trigger" onclick="handleExecute()" class="w-full py-4 px-6 rounded-lg bg-gradient-to-r from-dune-sand via-dune-amber to-dune-terracotta text-dune-950 font-display font-bold text-sm tracking-wider uppercase transition-all duration-300 hover:brightness-110 shadow-lg shadow-dune-amber/20 flex items-center justify-center space-x-2">
+                    <span>Simülasyonu Başlat</span>
                     <span class="font-sans">→</span>
                 </button>
+                <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span id="exec-status" class="text-dune-muted">DURUM: BEKLEMEDE</span>
+                    <span class="text-dune-sand/60">SEGE-NUTS2 ENGINE</span>
+                </div>
             </div>
         </aside>
 
-        <!-- CENTER TRANSCRIPTS & CENSUS ANALYTICS CANVAS -->
-        <main class="flex-1 flex flex-col bg-ink-950 min-w-0">
+        <!-- CENTER & RIGHT OBSERVATION CANVAS -->
+        <main class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-y-auto">
             
-            <!-- Canvas Breadcrumb Header -->
-            <div class="h-16 brutalist-border-b px-6 xl:px-10 flex items-center justify-between shrink-0 bg-ink-950">
-                <div class="flex items-center space-x-3">
-                    <span id="canvas-tag" class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 02 // DELIBERATION RECORD]</span>
-                    <span class="text-neutral-700">//</span>
-                    <span id="exec-status" class="font-mono text-xs text-neutral-400">DURUM: BEKLEMEDE</span>
-                </div>
-                <div id="canvas-title-right" class="font-mono text-[11px] text-ink-muted hidden sm:block">
-                    CANLI OTURUM TUTANAĞI
-                </div>
-            </div>
-
-            <!-- Content Deck -->
-            <div id="main-content-deck" class="flex-1 p-6 xl:p-10 space-y-6 overflow-y-auto">
+            <!-- MAIN SIMULATION STREAM -->
+            <div class="flex-1 p-6 lg:p-10 space-y-8 min-h-0">
                 
-                <!-- Initial Empty State -->
-                <div id="idle-placeholder" class="py-24 text-center space-y-4 max-w-lg mx-auto">
-                    <div class="font-mono text-[11px] tracking-widest text-ink-muted uppercase">[LAB_READY]</div>
-                    <h3 class="text-4xl font-serif text-white">Deneyi Başlatın.</h3>
-                    <p class="text-xs font-mono text-neutral-500 leading-relaxed">
-                        Sol panelden istediğiniz modu (Odak Grubu veya Belediye Anketi) seçin. TÜİK ve SEGE nedensel profilleri, seçtiğiniz hedef kitle ve coğrafi daraltma doğrultusunda anında hesaplanacaktır.
-                    </p>
+                <!-- Atmospheric Canvas Banner -->
+                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 journey-border-b pb-4">
+                    <div class="space-y-1">
+                        <span id="canvas-tag" class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase">GÖZLEM MASASI</span>
+                        <h3 class="text-xl font-serif text-dune-parchment">Simülasyon Sonuçları & Analiz</h3>
+                    </div>
+                    <span id="canvas-title-right" class="font-mono text-xs text-dune-muted">CANLI OTURUM TUTANAĞI</span>
+                </div>
+
+                <!-- Simulation Output Deck -->
+                <div id="main-content-deck" class="space-y-6">
+                    
+                    <!-- Atmospheric Initial State -->
+                    <div class="py-28 text-center space-y-4">
+                        <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
+                        <h4 class="text-2xl font-serif text-dune-parchment">Sessizliği Bozmak İçin Bir Soru Sorun</h4>
+                        <p class="text-xs text-dune-muted font-sans max-w-md mx-auto leading-relaxed">
+                            Soldaki panelden hedef kitleyi ve tartışma konusunu belirleyin. 
+                            1.000 kişilik yapay nüfus, Türkiye'nin gerçek sosyolojik dinamikleriyle sandık başında buluşsun.
+                        </p>
+                    </div>
+
                 </div>
 
             </div>
-        </main>
 
-        <!-- RIGHT STRATEGIC DOSSIER -->
-        <aside class="w-full xl:w-[380px] brutalist-border-l bg-ink-950 flex flex-col shrink-0">
-            <div class="p-6 brutalist-border-b">
-                <span class="font-mono text-[10px] tracking-widest text-ink-muted uppercase">[SECTION 03 // EXECUTIVE BRIEF]</span>
-                <h3 class="text-xl font-serif text-white mt-1">Yönetici Strateji Raporu</h3>
-            </div>
-
-            <div id="sidebar-report-deck" class="p-6 space-y-5 flex-1 overflow-y-auto">
+            <!-- RIGHT EXECUTIVE STRATEGY DECK (SIDEBAR) -->
+            <aside class="w-full lg:w-80 journey-border-l bg-dune-950/40 backdrop-blur-md p-6 lg:p-8 flex flex-col shrink-0 space-y-8">
                 
-                <!-- Metric Block 01 -->
-                <div class="p-5 brutalist-border bg-ink-900">
-                    <span class="text-[10px] font-mono text-neutral-500 uppercase block mb-1">// GENEL KABUL / MUTABAKAT</span>
-                    <div class="flex items-baseline space-x-3">
-                        <span id="res-rate" class="text-4xl font-serif text-white tracking-tight">--%</span>
-                        <span id="res-conf" class="text-[11px] font-mono text-neutral-400">%95 Güven Aralığı</span>
+                <div>
+                    <span class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase block mb-1">
+                        STRATEJİK SENTEZ
+                    </span>
+                    <h4 class="text-lg font-serif text-dune-parchment">Kamuoyu Eğilimi</h4>
+                </div>
+
+                <!-- Strategic KPI Card -->
+                <div class="journey-glass p-5 rounded-xl space-y-3">
+                    <span class="font-mono text-[10px] text-dune-muted uppercase tracking-wider block">
+                        GENEL MUTABAKAT ORANI
+                    </span>
+                    <div id="res-rate" class="text-4xl font-serif font-bold text-dune-sand">
+                        --%
+                    </div>
+                    <div id="res-conf" class="text-xs font-mono text-dune-muted">
+                        %95 Güven Aralığı
                     </div>
                 </div>
 
-                <!-- Metric Block 02: Barriers -->
-                <div class="p-5 brutalist-border bg-ink-900 space-y-2">
-                    <span class="text-[10px] font-mono text-neutral-500 uppercase block">// EN BÜYÜK DİRENÇ NOKTALARI</span>
-                    <ul id="res-barriers" class="space-y-1.5 font-mono text-xs text-neutral-300">
-                        <li class="text-neutral-600 font-mono text-[11px]">Henüz simülasyon yürütülmedi.</li>
+                <!-- Top Opposition Barriers -->
+                <div class="space-y-3">
+                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-wider block">
+                        EN BÜYÜK DİRENÇ NOKTALARI
+                    </span>
+                    <ul id="res-barriers" class="space-y-2 text-xs font-sans text-dune-parchment/80 leading-relaxed">
+                        <li class="text-dune-muted/60 font-serif italic">Simülasyon çalıştırıldığında direnç dinamikleri burada listelenecektir.</li>
                     </ul>
                 </div>
 
-                <!-- Metric Block 03: Strategic Action -->
-                <div class="p-5 brutalist-border bg-ink-850">
-                    <span class="text-[11px] text-ink-accent uppercase block mb-2 font-mono">// STRATEJİK EYLEM PLANI</span>
-                    <p id="res-strategic" class="text-xs text-neutral-300 font-serif italic text-base leading-relaxed">
-                        Deney sonuçlandığında sosyolojik ve yönetsel sentez buraya yazılacaktır.
+                <!-- Executive Strategic Action -->
+                <div class="journey-glass p-5 rounded-xl space-y-2 border-l-2 border-l-dune-sand">
+                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-wider block">
+                        YÖNETİCİ EYLEM PLANI
+                    </span>
+                    <p id="res-strategic" class="text-xs font-sans text-dune-parchment/90 leading-relaxed">
+                        Toplumsal mutabakatı artırmak ve direnci kırmak için önerilen politika adımı sentezlenecektir.
                     </p>
                 </div>
 
-            </div>
-        </aside>
+            </aside>
+
+        </main>
 
     </div>
 
-    <!-- Scripts -->
+    <!-- ========================================== -->
+    <!-- MODAL: 1-ON-1 DEEP SOCRATIC INTERROGATION  -->
+    <!-- ========================================== -->
+    <div id="interrogation-modal" class="fixed inset-0 z-50 bg-dune-950/85 backdrop-blur-xl flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-2xl journey-glass p-6 lg:p-8 rounded-2xl space-y-5 max-h-[90vh] flex flex-col shadow-2xl border border-dune-sand/30">
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between journey-border-b pb-4 shrink-0">
+                <div>
+                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">BİREBİR DERİN MÜLAKAT</span>
+                    <h3 id="modal-persona-name" class="text-2xl font-serif text-dune-parchment mt-0.5">Yurttaş İsmi</h3>
+                    <div id="modal-persona-bio" class="font-mono text-xs text-dune-muted mt-0.5">35 Yaş, Mühendis // İstanbul / Kadıköy</div>
+                </div>
+                <button onclick="closeInterrogationModal()" class="text-dune-muted hover:text-dune-sand font-mono text-xs px-3 py-1.5 rounded-lg border border-dune-border transition-all">
+                    ✕ Kapat
+                </button>
+            </div>
+
+            <!-- Initial Stance Quote -->
+            <div class="p-4 rounded-xl bg-dune-900/60 border border-dune-border shrink-0">
+                <span class="font-mono text-[10px] text-dune-sand uppercase block mb-1">İLK ANKETTEKİ GEREKÇESİ:</span>
+                <p id="modal-persona-initial" class="font-serif italic text-sm text-dune-parchment/90 leading-relaxed">"..."</p>
+            </div>
+
+            <!-- Conversation Stream -->
+            <div id="modal-chat-history" class="flex-1 overflow-y-auto space-y-4 p-4 rounded-xl bg-dune-950/70 border border-dune-border min-h-[220px]">
+                <!-- Chat Bubbles Render Here -->
+            </div>
+
+            <!-- Question Input -->
+            <div class="flex items-center space-x-2 shrink-0 pt-2">
+                <input id="modal-question-input" type="text" onkeydown="if(event.key==='Enter') sendInterrogationQuestion()" placeholder="Bu yurttaşa derinlemesine bir soru sorun (ör: 'Kiran ne kadar?', 'Şu şartla onaylar mısın?')..." class="flex-1 bg-dune-900/80 text-dune-parchment font-sans text-sm p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 placeholder:text-dune-muted/40">
+                <button id="modal-send-btn" onclick="sendInterrogationQuestion()" class="px-6 py-3.5 bg-dune-sand hover:bg-dune-amber text-dune-950 font-display font-semibold text-xs uppercase tracking-wider rounded-lg transition-all shadow-md">
+                    Sor →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- INTERACTIVE JAVASCRIPT LOGIC               -->
+    <!-- ========================================== -->
     <script>
-        let currentMode = 'focus'; // 'focus' or 'census'
+        // 1. Ambient Sand / Ember Dust Particle Engine
+        (function initSandCanvas() {
+            const canvas = document.getElementById('sand-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            const count = 45;
+
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 1.8 + 0.4,
+                    speedX: Math.random() * 0.4 - 0.2,
+                    speedY: -(Math.random() * 0.3 + 0.1),
+                    alpha: Math.random() * 0.5 + 0.1,
+                    hue: Math.random() > 0.6 ? 35 : 25 // Golden Amber
+                });
+            }
+
+            function render() {
+                ctx.clearRect(0, 0, width, height);
+                for (let p of particles) {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+
+                    if (p.y < 0) {
+                        p.y = height;
+                        p.x = Math.random() * width;
+                    }
+                    if (p.x < 0) p.x = width;
+                    if (p.x > width) p.x = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha})`;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = `hsla(${p.hue}, 80%, 60%, 0.4)`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // 2. Mode Switching Logic
+        let currentMode = 'focus';
 
         function switchMode(mode) {
             currentMode = mode;
@@ -352,32 +512,32 @@
             const canvasRight = document.getElementById('canvas-title-right');
 
             if (mode === 'focus') {
-                btnFocus.className = "px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition";
-                btnCensus.className = "px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition";
+                btnFocus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm";
+                btnCensus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300";
                 ctrlFocus.classList.remove('hidden');
                 ctrlCensus.classList.add('hidden');
-                pTitle.innerText = "Yuvarlak Masa Simülatörü";
-                pDesc.innerText = "Canlı tartışan, birbirine laf atan gerçekçi insan grupları";
-                pStepTag.innerText = "[MOD 01 // DERİN NİTELİKSEL MASA]";
-                canvasTag.innerText = "[SECTION 02 // DELIBERATION RECORD]";
+                pTitle.innerText = "Masa Simülatörü";
+                pDesc.innerText = "Farklı toplumsal habitus ve ahlaki koordinatlara sahip insanların canlı grup diyaloğu";
+                pStepTag.innerText = "MOD 01 // NİTELİKSEL DİYALOG";
+                canvasTag.innerText = "GÖZLEM MASASI";
                 canvasRight.innerText = "CANLI OTURUM TUTANAĞI";
             } else {
-                btnCensus.className = "px-4 py-1.5 bg-ink-bone text-black font-bold tracking-wider uppercase transition";
-                btnFocus.className = "px-4 py-1.5 text-neutral-400 hover:text-white tracking-wider uppercase transition";
+                btnCensus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm";
+                btnFocus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300";
                 ctrlCensus.classList.remove('hidden');
                 ctrlFocus.classList.add('hidden');
-                pTitle.innerText = "Belediye & Şehir Anketi";
+                pTitle.innerText = "Yurttaş Sandığı";
                 pDesc.innerText = "TÜİK ve SEGE ağırlıklı 1.000+ kişilik sentetik kamuoyu araştırması";
-                pStepTag.innerText = "[MOD 02 // KANTİTATİF NÜFUS SAYIMI]";
-                canvasTag.innerText = "[SECTION 02 // CENSUS & POLL REPORT]";
-                canvasRight.innerText = "BELEDİYE KAMUOYU RAPORU";
+                pStepTag.innerText = "MOD 02 // KANTİTATİF NÜFUS SAYIMI";
+                canvasTag.innerText = "KANTİTATİF RAPOR";
+                canvasRight.innerText = "KAMUOYU RAPORU";
             }
         }
 
         function updateDistrictOptions() {
             const city = document.getElementById('census-city').value;
             const distSelect = document.getElementById('census-district');
-            distSelect.innerHTML = '<option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus)</option>';
+            distSelect.innerHTML = '<option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus Dağılımı)</option>';
 
             const distMap = {
                 "İstanbul": ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Fatih", "Esenyurt", "Bağcılar", "Ümraniye", "Pendik", "Bakırköy", "Sarıyer", "Kartal", "Başakşehir", "Beylikdüzü"],
@@ -416,14 +576,15 @@
             const deck = document.getElementById('main-content-deck');
 
             btn.disabled = true;
-            btn.innerHTML = '<span>İŞLENİYOR [COMPUTING...]</span><span class="cursor-blink"></span>';
+            btn.innerHTML = '<span>Simülasyon Çözümleniyor...</span>';
             statusLabel.innerText = 'DURUM: NEDENSEL VEKTÖRLER VE MASA DİYALOĞU HESAPLANIYOR';
-            statusLabel.className = 'font-mono text-xs text-amber-400 animate-pulse';
+            statusLabel.className = 'font-mono text-xs text-dune-sand animate-pulse';
 
             deck.innerHTML = `
-                <div class="py-20 text-center font-mono text-xs space-y-3">
-                    <div class="text-neutral-400">[EXECUTING_MAP_REDUCE_AGENTIC_SIMULATION]</div>
-                    <div class="text-ink-muted">TÜİK, NUTS-2 ve Bourdieu Habitus matrisi çözümleniyor...</div>
+                <div class="py-24 text-center font-sans space-y-4">
+                    <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
+                    <div class="text-lg font-serif text-dune-parchment">Düşünceler Birbirine Dokunuyor...</div>
+                    <div class="text-xs text-dune-muted font-mono max-w-sm mx-auto">TÜİK, NUTS-2 ve Bourdieu Habitus matrisi çözümleniyor</div>
                 </div>
             `;
 
@@ -445,10 +606,10 @@
                 const data = await resp.json();
                 renderFocusOutput(data);
             } catch (e) {
-                deck.innerHTML = `<div class="p-6 bg-red-950/30 text-red-400 brutalist-border font-mono text-xs">Simülasyon Hatası: ${e.message}</div>`;
+                deck.innerHTML = `<div class="p-6 bg-rose-950/30 text-rose-300 rounded-xl border border-rose-900 font-mono text-xs">Simülasyon Hatası: ${e.message}</div>`;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>SİMÜLASYONU ÇALIŞTIR [EXECUTE]</span><span class="font-sans">→</span>';
+                btn.innerHTML = '<span>Simülasyonu Başlat</span><span class="font-sans">→</span>';
                 statusLabel.innerText = 'DURUM: TAMAMLANDI';
                 statusLabel.className = 'font-mono text-xs text-emerald-400';
             }
@@ -461,43 +622,41 @@
             const discussions = data.odak_grubu_tartismasi || [];
             discussions.forEach((item, idx) => {
                 const card = document.createElement('div');
-                card.className = 'p-6 brutalist-border bg-ink-900 space-y-4';
+                card.className = 'journey-glass journey-glass-hover p-6 lg:p-8 rounded-2xl space-y-5';
 
-                let badgeColor = 'text-neutral-400 border-neutral-700';
+                let badgeColor = 'text-dune-sand border-dune-sand/30 bg-dune-sand/10';
                 if (item.karar && item.karar.includes('Kabul')) {
-                    badgeColor = 'text-emerald-400 border-emerald-900 bg-emerald-950/30';
+                    badgeColor = 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20';
                 } else if (item.karar && item.karar.includes('Red')) {
-                    badgeColor = 'text-rose-500 border-rose-900 bg-rose-950/30';
-                } else {
-                    badgeColor = 'text-amber-400 border-amber-900 bg-amber-950/30';
+                    badgeColor = 'text-rose-400 border-rose-500/30 bg-rose-950/20';
                 }
 
                 card.innerHTML = `
-                    <div class="flex items-baseline justify-between border-b border-neutral-800 pb-3">
+                    <div class="flex items-baseline justify-between journey-border-b pb-4">
                         <div class="flex items-center space-x-3">
-                            <span class="font-mono text-xs text-neutral-500">[REF_0${idx+1}]</span>
-                            <span class="font-mono text-sm font-bold text-white tracking-wide">${item.ad_soyad}</span>
-                            <span class="font-mono text-xs text-neutral-500">// ${item.meslek}</span>
+                            <span class="font-mono text-xs text-dune-sand/60">◈ 0${idx+1}</span>
+                            <span class="font-serif text-lg font-semibold text-dune-parchment tracking-wide">${item.ad_soyad}</span>
+                            <span class="font-mono text-xs text-dune-muted">— ${item.meslek}</span>
                         </div>
-                        <span class="px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider border ${badgeColor}">
+                        <span class="px-3 py-1 font-mono text-[10px] uppercase tracking-wider rounded-full border ${badgeColor}">
                             ${item.karar}
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        <div class="space-y-1.5">
-                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-wider block">
-                                // BİLİNÇALTI İÇ SES & VİCDANİ SIZI:
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+                        <div class="space-y-2">
+                            <span class="font-mono text-[10px] text-dune-sand/70 uppercase tracking-widest block">
+                                DERİN İÇ SES & BİLİNÇALTI:
                             </span>
-                            <p class="font-serif italic text-base text-neutral-300 leading-relaxed">
+                            <p class="font-serif italic text-base text-dune-parchment/85 leading-relaxed">
                                 "${item.ic_ses_bilincalti}"
                             </p>
                         </div>
-                        <div class="space-y-1.5 md:border-l md:border-neutral-800 md:pl-6">
-                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-wider block">
-                                // MASADAKİ SÖZLÜ İFADESİ:
+                        <div class="space-y-2 md:border-l md:border-dune-border md:pl-6">
+                            <span class="font-mono text-[10px] text-dune-muted uppercase tracking-widest block">
+                                MASADAKİ SÖZLÜ İFADESİ:
                             </span>
-                            <p class="font-mono text-xs text-white leading-relaxed">
+                            <p class="font-sans text-sm text-dune-parchment leading-relaxed">
                                 "${item.disa_soylenen_soz}"
                             </p>
                         </div>
@@ -515,7 +674,7 @@
             barriersList.innerHTML = '';
             (rep.en_buyuk_3_itiraz_bariyeri || []).forEach(b => {
                 const li = document.createElement('li');
-                li.innerText = `• ${b}`;
+                li.innerText = `◈ ${b}`;
                 barriersList.appendChild(li);
             });
 
@@ -533,14 +692,15 @@
             const deck = document.getElementById('main-content-deck');
 
             btn.disabled = true;
-            btn.innerHTML = '<span>ANKET YÜRÜTÜLÜYOR [POLLING...]</span><span class="cursor-blink"></span>';
+            btn.innerHTML = '<span>Sandıklar Sayılıyor...</span>';
             statusLabel.innerText = `DURUM: ${city.toUpperCase()} (${district}) İÇİN N=${sampleSize} NÜFUS İKİZİ SAYILIYOR`;
-            statusLabel.className = 'font-mono text-xs text-amber-400 animate-pulse';
+            statusLabel.className = 'font-mono text-xs text-dune-sand animate-pulse';
 
             deck.innerHTML = `
-                <div class="py-20 text-center font-mono text-xs space-y-3">
-                    <div class="text-neutral-400">[EXECUTING_MUNICIPAL_CENSUS_MONTE_CARLO]</div>
-                    <div class="text-ink-muted">TÜİK NUTS-2 ve SEGE Sosyoekonomik İlçe Ağırlıkları Yükleniyor...</div>
+                <div class="py-24 text-center font-sans space-y-4">
+                    <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
+                    <div class="text-lg font-serif text-dune-parchment">1.000 Yurttaşın Sesi Dinleniyor...</div>
+                    <div class="text-xs text-dune-muted font-mono max-w-sm mx-auto">TÜİK NUTS-2 ve SEGE Sosyoekonomik İlçe Ağırlıkları Yükleniyor</div>
                 </div>
             `;
 
@@ -560,10 +720,10 @@
                 window._lastCensusReport = data;
                 renderCensusOutput(data);
             } catch (e) {
-                deck.innerHTML = `<div class="p-6 bg-red-950/30 text-red-400 brutalist-border font-mono text-xs">Anket Hatası: ${e.message}</div>`;
+                deck.innerHTML = `<div class="p-6 bg-rose-950/30 text-rose-300 rounded-xl border border-rose-900 font-mono text-xs">Anket Hatası: ${e.message}</div>`;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>ANKETİ ÇALIŞTIR [EXECUTE POLL]</span><span class="font-sans">→</span>';
+                btn.innerHTML = '<span>Simülasyonu Başlat</span><span class="font-sans">→</span>';
                 statusLabel.innerText = 'DURUM: ANKET TAMAMLANDI';
                 statusLabel.className = 'font-mono text-xs text-emerald-400';
             }
@@ -573,80 +733,80 @@
             const deck = document.getElementById('main-content-deck');
             deck.innerHTML = `
                 <!-- 0. REAL-TIME WHAT-IF COUNTERFACTUAL STRESS TEST BAR -->
-                <div class="p-6 brutalist-border bg-ink-900 border-amber-900/40 space-y-4">
-                    <div class="flex items-center justify-between border-b border-neutral-800 pb-3">
-                        <div class="flex items-center space-x-2 font-mono text-xs text-amber-400">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-                            <span class="font-bold uppercase tracking-wider">[CANLI WHAT-IF MAKROEKONOMİK STRES TESTİ]</span>
+                <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5 border border-dune-sand/25">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 journey-border-b pb-3">
+                        <div class="flex items-center space-x-2 font-mono text-xs text-dune-sand">
+                            <span class="text-base rune-glow">◈</span>
+                            <span class="font-semibold uppercase tracking-wider">CANLI WHAT-IF MAKROEKONOMİK STRES TESTİ</span>
                         </div>
-                        <span class="font-mono text-[10px] text-neutral-500">// 1.000 NÜFUS İKİZİNİN KARARLARINI ANINDA YENİDEN HESAPLA</span>
+                        <span class="font-mono text-[10px] text-dune-muted">1.000 Yurttaşın Kararını Anında Yeniden Hesapla</span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                        <div class="space-y-1.5 bg-ink-950 p-3 brutalist-border">
-                            <div class="flex justify-between text-[11px] text-neutral-400">
+                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
+                            <div class="flex justify-between text-[11px] text-dune-muted">
                                 <span>ASGARİ ÜCRET ŞOKU:</span>
-                                <span id="val-wage" class="text-white font-bold">%0</span>
+                                <span id="val-wage" class="text-dune-sand font-bold">%0</span>
                             </div>
-                            <input id="slider-wage" type="range" min="-20" max="50" step="5" value="0" oninput="document.getElementById('val-wage').innerText = (this.value >= 0 ? '+%' : '%') + this.value" class="w-full accent-amber-400 bg-neutral-800 h-1">
+                            <input id="slider-wage" type="range" min="-20" max="50" step="5" value="0" oninput="document.getElementById('val-wage').innerText = (this.value >= 0 ? '+%' : '%') + this.value" class="w-full">
                         </div>
 
-                        <div class="space-y-1.5 bg-ink-950 p-3 brutalist-border">
-                            <div class="flex justify-between text-[11px] text-neutral-400">
-                                <span>ENFLASYON / SEPET:</span>
-                                <span id="val-inf" class="text-white font-bold">%0</span>
+                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
+                            <div class="flex justify-between text-[11px] text-dune-muted">
+                                <span>ENFLASYON ŞOKU:</span>
+                                <span id="val-inf" class="text-rose-400 font-bold">%0</span>
                             </div>
-                            <input id="slider-inf" type="range" min="0" max="60" step="5" value="0" oninput="document.getElementById('val-inf').innerText = '+%' + this.value" class="w-full accent-rose-500 bg-neutral-800 h-1">
+                            <input id="slider-inf" type="range" min="0" max="60" step="5" value="0" oninput="document.getElementById('val-inf').innerText = '+%' + this.value" class="w-full">
                         </div>
 
-                        <div class="space-y-1.5 bg-ink-950 p-3 brutalist-border">
-                            <div class="flex justify-between text-[11px] text-neutral-400">
+                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
+                            <div class="flex justify-between text-[11px] text-dune-muted">
                                 <span>KİRA ARTIŞ ŞOKU:</span>
-                                <span id="val-rent" class="text-white font-bold">%0</span>
+                                <span id="val-rent" class="text-dune-amber font-bold">%0</span>
                             </div>
-                            <input id="slider-rent" type="range" min="0" max="80" step="10" value="0" oninput="document.getElementById('val-rent').innerText = '+%' + this.value" class="w-full accent-rose-400 bg-neutral-800 h-1">
+                            <input id="slider-rent" type="range" min="0" max="80" step="10" value="0" oninput="document.getElementById('val-rent').innerText = '+%' + this.value" class="w-full">
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-1">
-                        <span id="shock-status" class="font-mono text-[11px] text-neutral-400">Slider değerlerini ayarlayıp şoku 1.000 kişiye uygulayın.</span>
-                        <button onclick="applyCounterfactualShock()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-mono font-bold text-xs uppercase tracking-wider transition">
-                            ⚡ ŞOKU SİMÜLE ET [RECALCULATE]
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                        <span id="shock-status" class="font-sans text-xs text-dune-muted">Slider değerlerini değiştirip ekonomik dalgalanmayı test edin.</span>
+                        <button onclick="applyCounterfactualShock()" class="px-5 py-2.5 rounded-lg bg-dune-sand hover:bg-dune-amber text-dune-950 font-display font-semibold text-xs uppercase tracking-wider transition-all shadow-md">
+                            Şoku Uygula →
                         </button>
                     </div>
                 </div>
 
                 <!-- Grand Metric Showcase -->
-                <div class="p-8 brutalist-border bg-ink-900 space-y-6">
-                    <div class="flex items-baseline justify-between border-b border-neutral-800 pb-4">
-                        <div>
-                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">[CENSUS_REPORT // ${d.hedef_bolge}]</span>
-                            <h2 class="text-2xl font-serif text-white mt-1">"${d.soru_veya_politika}"</h2>
+                <div class="journey-glass p-8 rounded-2xl space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 journey-border-b pb-5">
+                        <div class="space-y-1">
+                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">SANDIK BİLANÇOSU // ${d.hedef_bolge}</span>
+                            <h2 class="text-2xl lg:text-3xl font-serif text-dune-parchment leading-tight">"${d.soru_veya_politika}"</h2>
                         </div>
-                        <div class="text-right font-mono flex items-center space-x-3">
+                        <div class="text-right font-mono flex items-center space-x-3 shrink-0">
                             <div>
-                                <span class="text-xs text-neutral-400">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
+                                <span class="text-xs text-dune-muted">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
                                 <div class="text-[10px] text-emerald-400 font-bold">${d.hata_payi_yuzde} Hata Payı (${d.guven_araligi_yuzde_95})</div>
                             </div>
-                            <button onclick="exportExecutiveReport()" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white font-mono text-[10px] uppercase tracking-wider brutalist-border transition">
-                                📄 RESMİ BRİFİ AÇ [PRINT/PDF]
+                            <button onclick="exportExecutiveReport()" class="px-3.5 py-2 rounded-lg bg-dune-900/90 hover:bg-dune-850 text-dune-parchment font-mono text-[11px] uppercase tracking-wider border border-dune-border transition-all">
+                                📄 Resmi Brif [PDF]
                             </button>
                         </div>
                     </div>
 
                     <!-- 3-Way Vote Split -->
-                    <div class="grid grid-cols-3 gap-4 font-mono">
-                        <div class="p-4 bg-emerald-950/20 border border-emerald-900/60">
-                            <span class="text-[10px] text-emerald-500 uppercase block mb-1">KABUL / DESTEKLER</span>
-                            <span id="metric-kabul" class="text-4xl font-serif font-bold text-emerald-400">%${d.genel_kabul_yuzde}</span>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/20">
+                            <span class="font-mono text-[10px] text-emerald-400 uppercase tracking-widest block mb-1">KABUL</span>
+                            <span id="metric-kabul" class="text-3xl lg:text-4xl font-serif font-bold text-emerald-300">%${d.genel_kabul_yuzde}</span>
                         </div>
-                        <div class="p-4 bg-rose-950/20 border border-rose-900/60">
-                            <span class="text-[10px] text-rose-500 uppercase block mb-1">RET / KARŞI ÇIKAR</span>
-                            <span id="metric-ret" class="text-4xl font-serif font-bold text-rose-400">%${d.genel_ret_yuzde}</span>
+                        <div class="p-5 rounded-xl bg-rose-950/20 border border-rose-500/20">
+                            <span class="font-mono text-[10px] text-rose-400 uppercase tracking-widest block mb-1">RET</span>
+                            <span id="metric-ret" class="text-3xl lg:text-4xl font-serif font-bold text-rose-300">%${d.genel_ret_yuzde}</span>
                         </div>
-                        <div class="p-4 bg-amber-950/20 border border-amber-900/60">
-                            <span class="text-[10px] text-amber-500 uppercase block mb-1">KARARSIZ / ÇEKİMSER</span>
-                            <span id="metric-kararsiz" class="text-4xl font-serif font-bold text-amber-400">%${d.genel_kararsiz_yuzde}</span>
+                        <div class="p-5 rounded-xl bg-dune-sand/10 border border-dune-sand/20">
+                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-widest block mb-1">KARARSIZ</span>
+                            <span id="metric-kararsiz" class="text-3xl lg:text-4xl font-serif font-bold text-dune-sand">%${d.genel_kararsiz_yuzde}</span>
                         </div>
                     </div>
                 </div>
@@ -655,21 +815,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <!-- District Breakdown -->
-                    <div class="p-6 brutalist-border bg-ink-900 space-y-4">
-                        <span class="font-mono text-[11px] text-neutral-400 uppercase tracking-wider block border-b border-neutral-800 pb-2">
-                            // İLÇE / BÖLGE BAZINDA KABUL DAĞILIMI
+                    <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-4">
+                        <span class="font-mono text-[11px] text-dune-sand uppercase tracking-wider block journey-border-b pb-3">
+                            BÖLGESEL KABUL DAĞILIMI
                         </span>
-                        <div class="space-y-2.5 font-mono text-xs max-h-64 overflow-y-auto pr-2">
+                        <div class="space-y-3 font-mono text-xs max-h-64 overflow-y-auto pr-2">
                             ${d.ilce_kirilimi.map(x => `
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-neutral-300 text-[11px]">
-                                        <span>${x.segment} (N=${x.orneklem_sayisi})</span>
-                                        <span class="font-bold text-white">%${x.kabul_yuzde} Kabul</span>
+                                <div class="space-y-1.5">
+                                    <div class="flex justify-between text-dune-parchment/90 text-[11px]">
+                                        <span>${x.segment} <span class="text-dune-muted">(N=${x.orneklem_sayisi})</span></span>
+                                        <span class="font-bold text-dune-sand">%${x.kabul_yuzde} Kabul</span>
                                     </div>
-                                    <div class="w-full h-1.5 bg-neutral-800 flex overflow-hidden">
+                                    <div class="w-full h-1.5 bg-dune-950 rounded-full flex overflow-hidden">
                                         <div style="width: ${x.kabul_yuzde}%" class="bg-emerald-400"></div>
                                         <div style="width: ${x.ret_yuzde}%" class="bg-rose-500"></div>
-                                        <div style="width: ${x.kararsiz_yuzde}%" class="bg-amber-400"></div>
+                                        <div style="width: ${x.kararsiz_yuzde}%" class="bg-dune-sand"></div>
                                     </div>
                                 </div>
                             `).join('')}
@@ -677,18 +837,18 @@
                     </div>
 
                     <!-- Age & Housing Breakdown -->
-                    <div class="p-6 brutalist-border bg-ink-900 space-y-4">
-                        <span class="font-mono text-[11px] text-neutral-400 uppercase tracking-wider block border-b border-neutral-800 pb-2">
-                            // SOSYO-DEMOGRAFİK ÇAPRAZ KIRILIMLAR
+                    <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5">
+                        <span class="font-mono text-[11px] text-dune-sand uppercase tracking-wider block journey-border-b pb-3">
+                            SOSYO-DEMOGRAFİK KIRILIMLAR
                         </span>
                         
                         <div class="space-y-4 font-mono text-xs">
                             <div>
-                                <span class="text-[10px] text-neutral-500 uppercase block mb-1.5">MÜLKİYET DURUMU</span>
+                                <span class="text-[10px] text-dune-muted uppercase block mb-2">MÜLKİYET DURUMU</span>
                                 <div class="space-y-2">
                                     ${d.barinma_durumu_kirilimi.map(x => `
-                                        <div class="flex items-center justify-between text-[11px] bg-ink-950 p-2 brutalist-border">
-                                            <span class="text-neutral-300 font-bold">${x.segment}</span>
+                                        <div class="flex items-center justify-between text-[11px] bg-dune-950/70 p-2.5 rounded-lg border border-dune-border">
+                                            <span class="text-dune-parchment font-medium">${x.segment}</span>
                                             <span class="text-emerald-400">%${x.kabul_yuzde} Kabul</span>
                                             <span class="text-rose-400">%${x.ret_yuzde} Ret</span>
                                         </div>
@@ -697,11 +857,11 @@
                             </div>
 
                             <div>
-                                <span class="text-[10px] text-neutral-500 uppercase block mb-1.5">YAŞ GRUPLARI</span>
+                                <span class="text-[10px] text-dune-muted uppercase block mb-2">YAŞ GRUPLARI</span>
                                 <div class="space-y-2">
                                     ${d.yas_grubu_kirilimi.map(x => `
-                                        <div class="flex items-center justify-between text-[11px] bg-ink-950 p-2 brutalist-border">
-                                            <span class="text-neutral-300">${x.segment}</span>
+                                        <div class="flex items-center justify-between text-[11px] bg-dune-950/70 p-2.5 rounded-lg border border-dune-border">
+                                            <span class="text-dune-parchment">${x.segment}</span>
                                             <span class="text-emerald-400">%${x.kabul_yuzde} Evet</span>
                                             <span class="text-rose-400">%${x.ret_yuzde} Hayır</span>
                                         </div>
@@ -713,18 +873,18 @@
 
                 </div>
 
-                <!-- 3. INDIVIDUAL CITIZEN BALLOTS & UNIQUE THOUGHTS (1.000+ KİŞİLİK TEK TEK DÜŞÜNCE VE OY DEFTERİ) -->
-                <div class="p-6 brutalist-border bg-ink-900 space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-4">
+                <!-- 3. INDIVIDUAL CITIZEN BALLOTS -->
+                <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 journey-border-b pb-4">
                         <div>
-                            <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">[INDIVIDUAL_BALLOTS // N=${d.orneklem_buyuklugu}]</span>
-                            <h3 class="text-xl font-serif text-white mt-0.5">Bireysel Yurttaş Sandık ve Düşünce Kayıtları</h3>
+                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">BİREYSEL SANDIK KAYITLARI // N=${d.orneklem_buyuklugu}</span>
+                            <h3 class="text-xl font-serif text-dune-parchment mt-0.5">Yurttaş Sandık ve Düşünce Kayıtları</h3>
                         </div>
                         
                         <!-- Search & Filter Controls -->
                         <div class="flex items-center space-x-2 font-mono text-xs">
-                            <input id="ballot-search" type="text" oninput="filterBallots()" placeholder="İsim, meslek, ilçe ara..." class="bg-ink-950 text-white p-2 brutalist-border focus:outline-none focus:border-white text-xs w-48">
-                            <select id="ballot-filter" onchange="filterBallots()" class="bg-ink-950 text-white p-2 brutalist-border focus:outline-none text-xs">
+                            <input id="ballot-search" type="text" oninput="filterBallots()" placeholder="İsim, meslek, ilçe ara..." class="bg-dune-950/80 text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 text-xs w-48 placeholder:text-dune-muted/40">
+                            <select id="ballot-filter" onchange="filterBallots()" class="bg-dune-950/80 text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none text-xs">
                                 <option value="ALL" selected>Tümü (${d.orneklem_buyuklugu})</option>
                                 <option value="KABUL">Sadece Kabul Edenler</option>
                                 <option value="RET">Sadece Reddedenler</option>
@@ -736,7 +896,7 @@
                     </div>
 
                     <!-- Scrollable Ballots List -->
-                    <div id="ballots-container" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    <div id="ballots-container" class="space-y-3.5 max-h-[520px] overflow-y-auto pr-2">
                         <!-- Filled by JS -->
                     </div>
                 </div>
@@ -754,7 +914,7 @@
             barriersList.innerHTML = '';
             (d.en_buyuk_toplumsal_direnc_noktalari || []).forEach(b => {
                 const li = document.createElement('li');
-                li.innerText = `• ${b}`;
+                li.innerText = `◈ ${b}`;
                 barriersList.appendChild(li);
             });
 
@@ -791,37 +951,37 @@
             if (!container) return;
 
             if (list.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center font-mono text-xs text-neutral-500">Aramanıza uygun kayıt bulunamadı.</div>';
+                container.innerHTML = '<div class="p-8 text-center font-mono text-xs text-dune-muted">Aramanıza uygun kayıt bulunamadı.</div>';
                 return;
             }
 
             container.innerHTML = list.slice(0, 100).map((b, idx) => {
-                let badgeClass = 'text-amber-400 border-amber-800 bg-amber-950/20';
+                let badgeClass = 'text-dune-sand border-dune-sand/30 bg-dune-sand/10';
                 if (b.karar.includes('Kabul')) {
-                    badgeClass = 'text-emerald-400 border-emerald-800 bg-emerald-950/20';
+                    badgeClass = 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20';
                 } else if (b.karar.includes('Red')) {
-                    badgeClass = 'text-rose-400 border-rose-800 bg-rose-950/20';
+                    badgeClass = 'text-rose-400 border-rose-500/30 bg-rose-950/20';
                 }
 
                 return `
-                    <div class="p-4 brutalist-border bg-ink-950 space-y-2">
-                        <div class="flex items-baseline justify-between border-b border-neutral-800 pb-2">
-                            <div class="flex items-center space-x-3 font-mono text-xs">
-                                <span class="text-neutral-500">[#${b.citizen_id || idx+1}]</span>
-                                <span class="font-bold text-white">${b.ad_soyad}</span>
-                                <span class="text-neutral-400">// ${b.yas} Yaş, ${b.meslek}</span>
-                                <span class="text-neutral-500">// 📍 ${b.sehir_ilce} (${b.barinma_durumu})</span>
+                    <div class="journey-glass journey-glass-hover p-5 rounded-xl space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 journey-border-b pb-2.5">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs">
+                                <span class="text-dune-sand/60">◈ #${b.citizen_id || idx+1}</span>
+                                <span class="font-serif text-base font-semibold text-dune-parchment">${b.ad_soyad}</span>
+                                <span class="text-dune-muted">— ${b.yas} Yaş, ${b.meslek}</span>
+                                <span class="text-dune-muted/80">(${b.sehir_ilce} · ${b.barinma_durumu})</span>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="openInterrogationModal(${b.citizen_id || idx+1})" class="px-2 py-0.5 bg-neutral-800 hover:bg-neutral-700 text-amber-300 font-mono text-[10px] uppercase border border-neutral-700 transition">
-                                    💬 BİREBİR MÜLAKAT YAP
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <button onclick="openInterrogationModal(${b.citizen_id || idx+1})" class="px-2.5 py-1 rounded-md bg-dune-900/90 hover:bg-dune-850 text-dune-sand font-mono text-[10px] uppercase border border-dune-border transition-all">
+                                    Birebir Mülakat
                                 </button>
-                                <span class="px-2 py-0.5 font-mono text-[10px] uppercase border ${badgeClass}">
+                                <span class="px-2.5 py-0.5 font-mono text-[10px] uppercase rounded-full border ${badgeClass}">
                                     ${b.karar}
                                 </span>
                             </div>
                         </div>
-                        <p class="font-serif italic text-sm text-neutral-200 leading-relaxed pt-1">
+                        <p class="font-serif italic text-sm text-dune-parchment/90 leading-relaxed pt-0.5">
                             "${b.bireysel_dusuncesi_ve_gerekcesi}"
                         </p>
                     </div>
@@ -829,7 +989,7 @@
             }).join('');
 
             if (list.length > 100) {
-                container.innerHTML += `<div class="p-3 text-center font-mono text-xs text-neutral-500 border-t border-neutral-800">... ve ${list.length - 100} bireysel oy kaydı daha mevcut. Arama yaparak filtreleyebilirsiniz.</div>`;
+                container.innerHTML += `<div class="p-4 text-center font-mono text-xs text-dune-muted journey-border-t">... ve ${list.length - 100} bireysel oy kaydı daha mevcut. Arama yaparak filtreleyebilirsiniz.</div>`;
             }
         }
 
@@ -840,7 +1000,7 @@
             const status = document.getElementById('shock-status');
 
             status.innerText = "Şok uygulanıyor, 1.000 kişilik bütçe ve kararlar güncelleniyor...";
-            status.className = "font-mono text-[11px] text-amber-400 animate-pulse";
+            status.className = "font-mono text-[11px] text-dune-sand animate-pulse";
 
             try {
                 const resp = await fetch('/api/v1/counterfactual/simulate-shock', {
@@ -888,7 +1048,7 @@
             window._interrogationHistory = [];
 
             document.getElementById('modal-persona-name').innerText = persona.ad_soyad;
-            document.getElementById('modal-persona-bio').innerText = `${persona.yas} Yaş, ${persona.meslek} // 📍 ${persona.sehir_ilce} (${persona.barinma_durumu})`;
+            document.getElementById('modal-persona-bio').innerText = `${persona.yas} Yaş, ${persona.meslek} // ${persona.sehir_ilce} (${persona.barinma_durumu})`;
             document.getElementById('modal-persona-initial').innerText = `"${persona.bireysel_dusuncesi_ve_gerekcesi}"`;
             document.getElementById('modal-chat-history').innerHTML = '';
             document.getElementById('modal-question-input').value = '';
@@ -911,15 +1071,15 @@
 
             // Append User Question
             chat.innerHTML += `
-                <div class="p-3 bg-neutral-900 border border-neutral-800 text-right space-y-1 font-mono text-xs">
-                    <span class="text-[10px] text-amber-400 uppercase tracking-widest font-bold">SİZ (ARAŞTIRMACI):</span>
-                    <p class="text-white text-sm font-sans">${q}</p>
+                <div class="p-3.5 bg-dune-900/90 rounded-xl border border-dune-border text-right space-y-1 font-mono text-xs">
+                    <span class="text-[10px] text-dune-sand uppercase tracking-widest font-semibold">SİZ (ARAŞTIRMACI):</span>
+                    <p class="text-dune-parchment text-sm font-sans">${q}</p>
                 </div>
             `;
             chat.scrollTop = chat.scrollHeight;
             input.value = '';
             btn.disabled = true;
-            btn.innerText = 'DÜŞÜNÜYOR...';
+            btn.innerText = 'Düşünüyor...';
 
             window._interrogationHistory.push({ role: 'user', content: q });
 
@@ -953,25 +1113,25 @@
 
                 // Append Persona Answer + Subconscious Voice
                 chat.innerHTML += `
-                    <div class="p-4 bg-ink-950 border border-neutral-800 space-y-2.5 font-mono text-xs">
-                        <div class="flex items-center justify-between border-b border-neutral-900 pb-1.5">
-                            <span class="text-[10px] text-emerald-400 font-bold uppercase">${data.persona_ad_soyad} (${data.persona_meslek}):</span>
-                            <span class="text-[9px] text-neutral-500 uppercase border border-neutral-800 px-1.5 py-0.5">${data.kullanilan_arguman_tipi}</span>
+                    <div class="p-4 bg-dune-950/90 rounded-xl border border-dune-border space-y-3 font-mono text-xs">
+                        <div class="flex items-center justify-between journey-border-b pb-2">
+                            <span class="text-[11px] text-emerald-400 font-semibold uppercase">${data.persona_ad_soyad} (${data.persona_meslek}):</span>
+                            <span class="text-[9px] text-dune-muted uppercase border border-dune-border px-2 py-0.5 rounded">${data.kullanilan_arguman_tipi}</span>
                         </div>
-                        <div class="p-2.5 bg-amber-950/20 border-l-2 border-amber-500 font-mono text-[11px] text-amber-200/90 italic">
-                            🧠 BİLİNÇALTI İÇ SES: "${data.bilincalti_refleksi}"
+                        <div class="p-3 bg-dune-sand/10 rounded-lg border-l-2 border-dune-sand font-serif text-xs text-dune-parchment/90 italic">
+                            ◈ BİLİNÇALTI İÇ SES: "${data.bilincalti_refleksi}"
                         </div>
-                        <p class="font-sans text-sm text-neutral-100 leading-relaxed pt-1">
+                        <p class="font-sans text-sm text-dune-parchment leading-relaxed pt-1">
                             "${data.cevap_metni}"
                         </p>
                     </div>
                 `;
                 chat.scrollTop = chat.scrollHeight;
             } catch (e) {
-                chat.innerHTML += `<div class="p-3 bg-red-950/40 text-red-400 text-xs font-mono">Hata: ${e.message}</div>`;
+                chat.innerHTML += `<div class="p-3 bg-rose-950/40 text-rose-300 text-xs font-mono rounded-lg">Hata: ${e.message}</div>`;
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'GÖNDER [ASK] →';
+                btn.innerText = 'Sor →';
             }
         }
 
@@ -988,43 +1148,5 @@
             win.document.close();
         }
     </script>
-
-    <!-- ========================================== -->
-    <!-- MODAL: 1-ON-1 DEEP SOCRATIC INTERROGATION  -->
-    <!-- ========================================== -->
-    <div id="interrogation-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-2xl bg-ink-950 brutalist-border p-6 space-y-4 max-h-[90vh] flex flex-col shadow-2xl">
-            <!-- Modal Header -->
-            <div class="flex items-start justify-between border-b border-neutral-800 pb-3 shrink-0">
-                <div>
-                    <span class="font-mono text-[10px] text-amber-400 uppercase tracking-widest">[BİREBİR DERİN SOKRATİK MÜLAKAT]</span>
-                    <h3 id="modal-persona-name" class="text-2xl font-serif text-white mt-0.5">Yurttaş İsmi</h3>
-                    <div id="modal-persona-bio" class="font-mono text-xs text-neutral-400">35 Yaş, Mühendis // İstanbul / Kadıköy</div>
-                </div>
-                <button onclick="closeInterrogationModal()" class="text-neutral-400 hover:text-white font-mono text-sm px-2 py-1 brutalist-border">
-                    ✕ KAPAT
-                </button>
-            </div>
-
-            <!-- Initial Stance Quote -->
-            <div class="p-3 bg-ink-900 brutalist-border shrink-0">
-                <span class="font-mono text-[10px] text-neutral-500 uppercase block mb-1">İLK ANKET VERDİĞİ GEREKÇE:</span>
-                <p id="modal-persona-initial" class="font-serif italic text-xs text-neutral-300">"..."</p>
-            </div>
-
-            <!-- Conversation Stream -->
-            <div id="modal-chat-history" class="flex-1 overflow-y-auto space-y-3 p-3 bg-ink-900 brutalist-border min-h-[220px]">
-                <!-- Chat Bubbles Render Here -->
-            </div>
-
-            <!-- Question Input -->
-            <div class="flex items-center space-x-2 shrink-0 pt-2">
-                <input id="modal-question-input" type="text" onkeydown="if(event.key==='Enter') sendInterrogationQuestion()" placeholder="Bu yurttaşa derinlemesine bir soru sorun (ör: 'Kiran ne kadar?', 'Belediye şunu yaparsa onaylar mısın?')..." class="flex-1 bg-ink-900 text-white font-mono text-xs p-3 brutalist-border focus:outline-none focus:border-amber-400">
-                <button id="modal-send-btn" onclick="sendInterrogationQuestion()" class="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-black font-mono font-bold text-xs uppercase tracking-wider transition">
-                    GÖNDER [ASK] →
-                </button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

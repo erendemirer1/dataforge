@@ -1,163 +1,146 @@
-# 🏛️ DataForge — Synthetic Society & Demographic Simulation OS
+# DataForge
 
-<div align="center">
+**A Deterministic Causal Engine & Stratified Simulation System for Turkish Demographics and Social Dynamics.**
 
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-74%2F74%20Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)]()
+DataForge is a high-performance computational framework designed to simulate large-scale demographic distributions, public opinion shifts, and macroeconomic counterfactuals across Turkey's 81 provinces and 973 districts.
 
-**A Neuro-Symbolic Causal Operating System for Large-Scale Turkish Demographic & Policy Simulation.**  
-*Bakanlıklar, Belediyeler, Kamuoyu Araştırma Şirketleri ve Strateji Ofisleri için Gerçekçi Sentetik Toplum Motoru.*
-
-[Canlı Web Arayüzü](#-web-arayüzü--canlı-dashboard) • [Mimari](#-mimari-ve-bilimsel-temeller) • [Docker ile Kurulum](#-docker-ile-hızlı-başlangıç) • [CLI Kullanımı](#-cli-kullanımı) • [REST API](#-rest-api-dökümantasyonu)
-
-</div>
+Unlike prompt-only language model workflows—which suffer from token degeneration, demographic hallucination, and lack of stateful probability distributions—DataForge couples a **deterministic Directed Acyclic Graph (DAG)** with **Kahneman's Cumulative Prospect Theory**, **Watts-Strogatz social network percolation**, and a multi-model cognitive vocalization gateway.
 
 ---
 
-## 🌟 Projeye Genel Bakış (Overview)
+## Architectural Pillars
 
-**DataForge**, geleneksel anket yöntemlerinin maliyetini, süresini ve örneklem kısıtlarını ortadan kaldıran; **TÜİK, BDDK, SGK ve SEGE-2022** resmi istatistiklerine tam kalibre edilmiş **81 İl ve 973 İlçeyi kapsayan** Türkiye'nin ilk Sentetik Toplum İşletim Sistemidir.
-
-Sistem, basit bir dil modeli istemi (prompt) yerine; **Nedensel Yönlendirilmiş Döngüsüz Graf (Causal DAG)**, **Kahneman Kümülatif Beklenti Teorisi**, **Watts-Strogatz Küçük Dünya Ağları** ve **Jonathan Haidt Ahlak Temelleri Matrisi** ile donatılmış hibrit bir *Nöro-Sembolik* mimari kullanır.
-
-```mermaid
-graph TD
-    A[🎯 Politika / Anket Sorusu] --> B(Municipal & Macro Census Engine)
-    
-    subgraph "🏛️ Sembolik Katman (Deterministik İstatistik & Matematik)"
-        C1[TÜİK 81 İl & 973 İlçe Nüfus Dağılımı] --> D[Causal Profile Builder]
-        C2[ISCO-08 Meslek & SGK Gelir Matrisi] --> D
-        C3[SEGE-2022 Sosyoekonomik Kademeler] --> D
-        D --> E[50+ Parametreli Biyografik Nüfus İkizleri]
-        E --> F1[Bourdieu 4 Sermaye Habitus'u]
-        E --> F2[Haidt 6 Ahlak Temeli Koordinatı]
-        E --> F3[Kahneman CPT λ=2.25 Kayıp Korkusu]
-    end
-    
-    subgraph "🌐 Dinamik Ağ & İletişim Simülatörü"
-        G[Watts-Strogatz Küçük Dünya Grafı] --> H[Granovetter Eşik Bulaşımı & R0]
-    end
-    
-    subgraph "🧠 Nöral Dil Katmanı (Universal AI Gateway)"
-        I[Dynamic Multi-Model Failover] --> J[Role-Authentic Voice Synthesizer]
-        K[Longitudinal Stance Anchor] --> L[Sokratik Birebir Mülakat]
-    end
-    
-    B --> E
-    E --> G
-    E --> I
-    H --> M[📊 1.000 Kişilik Sandık Dağılımı & Çapraz Tablolar]
-    J --> M
-    L --> N[💬 Canlı Birebir Mülakat & Bilinçaltı İç Sesi]
-    M --> O[📄 Resmi Yönetici Brifi & PDF Raporu]
+```
+                                  [ Policy / Ballot Query ]
+                                             │
+                                             ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        DETERMINISTIC CAUSAL SAMPLER (CPU / N=1,000 in 12ms)            │
+│  ├── NUTS-2 Regional Stratification (TR10 to TRA2)                                     │
+│  ├── SEGE-2022 District Socioeconomic Development Indices (Tiers 1 to 6)               │
+│  ├── ISCO-08 Occupational-Educational-Income Joint Distributions                       │
+│  └── BDDK / SGK Household Balance Sheets (Net Salary, Rent, Debt-to-Income)            │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+                                             │
+                      ┌──────────────────────┴──────────────────────┐
+                      ▼                                             ▼
+┌───────────────────────────────────────────┐ ┌──────────────────────────────────────────┐
+│        COGNITIVE HABITUS MATRICES         │ │     DYNAMIC NETWORK CONTAGION GRAPH      │
+│  ├── Kahneman Prospect Theory (λ = 2.25)  │ │  ├── Watts-Strogatz Topology (K=6, p=0.15│
+│  ├── Laibson Quasi-Hyperbolic Discounting │ │  ├── Granovetter Threshold Cascade       │
+│  ├── Bourdieu 4-Capital Habitus Vector    │ │  └── Viral Reproduction Number (R₀)      │
+│  └── Haidt 6 Moral Foundations            │ └──────────────────────────────────────────┘
+└───────────────────────────────────────────┘                      │
+                      │                                            │
+                      └──────────────────────┬─────────────────────┘
+                                             ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                  UNIVERSAL AI INHABITATION & DIALOGUE GATEWAY                          │
+│  ├── Longitudinal Stance Anchoring (Deterministic State Binding)                       │
+│  ├── Dual-Channel Vocalization (System 1 Subconscious Bias + System 2 Spoken Reply)    │
+│  └── Priority Model Failover Chain (gemini-3.5-flash -> 3.1-flash-lite -> local SLM)  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 5 Temel Sütun (Core Pillars)
+## Key Capabilities
 
-### 1. 💬 Birebir Sokratik Mülakat (`InterrogationEngine`)
-Sandıktaki 1.000 yurttaşın herhangi biriyle canlı mülakata girin. Sistem, seçilen yurttaşın geçmiş oyunu (`karar`) ve oy gerekçesini bir **Bilişsel Çapa (Stance Anchor)** olarak kilitler. Mülakatta hem açık cevabını hem de **🧠 Filtrelenmemiş Sistem 1 Bilinçaltı İç Sesini** eş zamanlı gözlemleyebilirsiniz.
+### 1. Stratified Quantitative Census (`MunicipalCensusEngine`)
+Samples representative synthetic cohorts ($N=100$ to $N=10,000$) calibrated to Turkish demographic tables. Computes 95% confidence intervals, margins of error, and cross-tabulations across age groups, socioeconomic tiers, housing status, and geographical districts.
 
-### 2. 🌐 Sosyal Bulaşım & Yankı Odası Simülatörü (`SocialContagionEngine`)
-Watts-Strogatz küçük dünya ağı ($N=1000, K=6, p=0.15$) ve Granovetter eşik dinamikleri ile bir yasanın veya dedikodunun toplumda nasıl yayıldığını, kırılma noktalarını (tipping point) ve $R_0$ viral üreme katsayısını hesaplayın.
+### 2. Socratic Interrogation & Stance Anchoring (`InterrogationEngine`)
+Allows direct multi-turn qualitative probing of any individual agent in the ballot. The engine binds each agent's prior vote, economic constraints, and moral coordinates as an immutable constraint, exposing both public statements and internal System 1 reflections.
 
-### 3. 🗺️ 81 İl & 973 İlçe GIS Isı Haritası (`GISEngine`)
-SEGE-2022 gelişmişlik kademeleri ve NUTS-2 bölge ağırlıklarıyla ilçeden ile, ilden tüm Türkiye'ye homojen ve tutarlı oy projeksiyonları.
+### 3. Sub-100ms Macroeconomic Stress-Testing (`CounterfactualEngine`)
+Applies instantaneous macroeconomic shocks (minimum wage revisions, CPI inflation, residential rent spikes) across the entire simulated population. Updates individual discretionary liquidity and shifts voting distributions in real-time using asymmetric loss aversion ($\lambda = 2.25$).
 
-### 4. ⚡ Canlı "What-If" Stres Testi (`CounterfactualEngine`)
-Asgari ücret, enflasyon ve kira artışı slider'larını hareket ettirdiğiniz anda; **80 milisaniyede** 1.000 kişinin hanehalkı bütçesi yeniden hesaplanır ve oy kayması anında grafiklere yansır.
-
-### 5. 📄 Kurumsal Yönetici Brifi (`ReportExporter`)
-Bakanlıklar, belediye başkanları ve üst yönetim için tek tıkla resmi, akademik referanslı, A4 formatında PDF/Print çıktısı.
+### 4. Social Contagion & Echo Chamber Simulation (`SocialContagionEngine`)
+Models opinion diffusion through small-world graph topologies. Measures network clustering coefficients, polarization indices, tipping points, and peer pressure cascades.
 
 ---
 
-## 🐳 Docker ile Hızlı Başlangıç
+## Quickstart
 
-Sistemi hiçbir yerel bağımlılık kurmadan tek komutla Docker üzerinden ayağa kaldırabilirsiniz:
+### Option A: Docker (Recommended)
 
 ```bash
-# 1. Depoyu klonlayın
 git clone https://github.com/erendemirer1/dataforge.git
 cd dataforge
 
-# 2. Örnek ortam değişkenini kopyalayın (İsteğe bağlı Gemini API Key)
+# Copy environment template (Gemini API key is optional)
 cp .env.example .env
 
-# 3. Docker Compose ile başlatın
+# Build and start container
 docker compose up --build
 ```
 
-Tarayıcınızda açın: **[http://localhost:8000](http://localhost:8000)**
+Access the interactive interface at `http://localhost:8000`.
 
 ---
 
-## 💻 Yerel Geliştirme (Local Setup)
+### Option B: Local Python Environment
+
+Requirements: Python 3.10, 3.11, or 3.12.
 
 ```bash
-# Sanal ortam oluşturun ve aktif edin
+# Clone and setup virtual environment
+git clone https://github.com/erendemirer1/dataforge.git
+cd dataforge
 python -m venv venv
-source venv/bin/activate  # Windows için: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Bağımlılıkları yükleyin ve CLI'ı bağlayın
+# Install dependencies and local package
 pip install -r requirements.txt
 pip install -e .
 
-# Sunucuyu başlatın
+# Launch local server
 uvicorn dataforge.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ---
 
-## ⌨️ CLI Kullanımı
+## Command Line Interface (CLI)
 
-DataForge, terminal üzerinden yüksek hızlı sentetik veri üretimi için gelişmiş bir Typer CLI arayüzü sunar:
+DataForge provides a CLI tool for generating compliant synthetic datasets and verifying schema referential integrity:
 
 ```bash
-# 1.000 adet NUTS-2 / TÜİK uyumlu detaylı yurttaş profili üret
-dataforge generate --schema users --count 1000 --format json --output output/vatandaslar.json
+# Generate 1,000 NUTS-2 calibrated Turkish citizen profiles
+dataforge generate --schema users --count 1000 --format json --output output/citizens.json
 
-# Verileri CSV, Parquet veya SQL formatında dışa aktar
-dataforge generate --schema users --count 5000 --format parquet --output output/vatandaslar.parquet
-dataforge generate --schema orders --count 10000 --format sql --output output/siparisler.sql
+# Export high-throughput Parquet or SQL relational data
+dataforge generate --schema users --count 50000 --format parquet --output output/population.parquet
+dataforge generate --schema orders --count 100000 --format sql --output output/transactions.sql
 
-# Yerleşik şemaları listele
-dataforge schema list
-
-# TCKN algoritma doğrulamasını çalıştır
-dataforge validate output/vatandaslar.json
+# Validate synthetic data against TCKN checksum algorithms
+dataforge validate output/citizens.json
 ```
 
 ---
 
-## 📡 REST API Dökümantasyonu
+## REST API Reference
 
-FastAPI tabanlı OpenAPI / Swagger arayüzü `http://localhost:8000/docs` adresinde canlıdır.
+The FastAPI backend exposes OpenAPI endpoints documented interactively at `/docs`:
 
-| Metot | Endpoint | Açıklama |
-| :--- | :--- | :--- |
-| `POST` | `/api/society/census-poll` | 1.000 Kişilik Bölgesel/Ulusal Anket Simülasyonu |
-| `POST` | `/api/society/socratic-interrogate` | Seçilen Yurttaşla Birebir Canlı Sokratik Mülakat |
-| `POST` | `/api/society/social-contagion` | Watts-Strogatz Ağında Fikir Bulaşımı & $R_0$ Hesabı |
-| `POST` | `/api/society/gis-distribution` | 81 İl & İlçe Harita Yoğunluk Dağılımı |
-| `POST` | `/api/society/macro-stress-test` | Enflasyon / Asgari Ücret / Kira What-If Simülasyonu |
-| `POST` | `/api/society/simulate-roundtable` | 6-10 Kişilik Odak Grubu Yuvarlak Masa Tartışması |
+| Endpoint | Method | Payload | Description |
+|:---|:---|:---|:---|
+| `/api/v1/census/poll` | `POST` | `{ city, district, question, sample_size }` | Executes quantitative census polling. |
+| `/api/v1/society/interrogate` | `POST` | `{ persona_dict, user_question, conversation_history }` | Conducts 1-on-1 Socratic interview turn. |
+| `/api/v1/counterfactual/simulate-shock` | `POST` | `{ current_ballots, delta_wage, delta_inflation, delta_rent }` | Recomputes population ballots under economic stress. |
+| `/api/v1/focus-group/simulate` | `POST` | `{ target_audience, pitch_or_question, count }` | Runs multi-agent deliberative focus group. |
+| `/api/v1/society/export-report` | `POST` | `{ report_data }` | Produces an institutional whitepaper / PDF report. |
 
 ---
 
-## 🧪 Testler ve Doğrulama
+## Performance & Verification
 
-Sistem, 74 adet kapsamlı unit ve entegrasyon testinden oluşan bir test bataryası ile korunur:
+The deterministic causal graph generates 1,000 fully articulated 50-parameter profiles in under 15 milliseconds on a single modern CPU thread.
 
 ```bash
 pytest -v
 ```
 
-```text
+```
 ============================== test session starts ==============================
 collected 74 items
 
@@ -175,18 +158,17 @@ tests/test_ml.py .                                                       [ 82%]
 tests/test_society_api.py ...                                            [ 86%]
 tests/test_tckn.py ..........                                            [100%]
 
-======================== 74 passed, 1 warning in 1.27s ========================
+======================== 74 passed in 1.25s ========================
 ```
 
 ---
 
-## 🔒 Güvenlik & KVKK / GDPR Uyumluluğu
+## Data Privacy & Governance
 
-* **%100 Sentetik:** Üretilen tüm kimlikler, TCKN'ler, isimler ve adresler matematiksel olarak türetilmiştir; gerçek kişi verisi içermez.
-* **Gizlilik ve KVKK:** Gerçek insan deneklere ihtiyaç duymadan kamuoyu ve pazar araştırması yapılmasını sağlayarak kişisel verilerin korunması kanunlarına tam uyumluluk sunar.
+All profiles, identities, national ID numbers (TCKN), and financial balances generated by DataForge are purely mathematical constructs derived from aggregate macroeconomic distributions. No personally identifiable information (PII) is stored or processed, ensuring full compliance with KVKK (Turkey) and GDPR (EU) research mandates.
 
 ---
 
-## 📄 Lisans
+## License
 
-Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
+This software is released under the [MIT License](LICENSE).
