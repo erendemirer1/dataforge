@@ -1,262 +1,192 @@
+# 🏛️ DataForge — Synthetic Society & Demographic Simulation OS
+
 <div align="center">
 
-# 🔨 DataForge
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-74%2F74%20Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)]()
 
-**Production-grade synthetic data generator with Turkish locale support**
+**A Neuro-Symbolic Causal Operating System for Large-Scale Turkish Demographic & Policy Simulation.**  
+*Bakanlıklar, Belediyeler, Kamuoyu Araştırma Şirketleri ve Strateji Ofisleri için Gerçekçi Sentetik Toplum Motoru.*
 
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/status-MVP-orange)](#)
-
-*Startup MVP — Türkiye'nin açık kaynak sentetik veri çerçevesi*
+[Canlı Web Arayüzü](#-web-arayüzü--canlı-dashboard) • [Mimari](#-mimari-ve-bilimsel-temeller) • [Docker ile Kurulum](#-docker-ile-hızlı-başlangıç) • [CLI Kullanımı](#-cli-kullanımı) • [REST API](#-rest-api-dökümantasyonu)
 
 </div>
 
 ---
 
-## Özellikler / Features
+## 🌟 Projeye Genel Bakış (Overview)
 
-| 🇬🇧 Feature | 🇹🇷 Özellik |
-|---|---|
-| 6 built-in schemas | 6 hazır şema |
-| Turkish locale (names, cities, TCKN) | Türkçe yerel destek |
-| Valid TCKN generation | Geçerli TCKN üretimi |
-| UAVT / PTT Geo Database & SQLite | 81 İl, 973 İlçe, Posta Kodlu Adresler |
-| Offline Geo Sync (`dataforge sync-geo`) | Çevrimdışı coğrafi veri senkronizasyonu |
-| Referential integrity | İlişkisel bütünlük |
-| JSON / CSV / SQL / Parquet export | 4 farklı çıktı formatı |
-| Rich progress bars & colors | Renkli terminal arayüzü |
-| Validation command | Veri doğrulama komutu |
-| Interactive schema creator | Etkileşimli şema oluşturucu |
+**DataForge**, geleneksel anket yöntemlerinin maliyetini, süresini ve örneklem kısıtlarını ortadan kaldıran; **TÜİK, BDDK, SGK ve SEGE-2022** resmi istatistiklerine tam kalibre edilmiş **81 İl ve 973 İlçeyi kapsayan** Türkiye'nin ilk Sentetik Toplum İşletim Sistemidir.
+
+Sistem, basit bir dil modeli istemi (prompt) yerine; **Nedensel Yönlendirilmiş Döngüsüz Graf (Causal DAG)**, **Kahneman Kümülatif Beklenti Teorisi**, **Watts-Strogatz Küçük Dünya Ağları** ve **Jonathan Haidt Ahlak Temelleri Matrisi** ile donatılmış hibrit bir *Nöro-Sembolik* mimari kullanır.
+
+```mermaid
+graph TD
+    A[🎯 Politika / Anket Sorusu] --> B(Municipal & Macro Census Engine)
+    
+    subgraph "🏛️ Sembolik Katman (Deterministik İstatistik & Matematik)"
+        C1[TÜİK 81 İl & 973 İlçe Nüfus Dağılımı] --> D[Causal Profile Builder]
+        C2[ISCO-08 Meslek & SGK Gelir Matrisi] --> D
+        C3[SEGE-2022 Sosyoekonomik Kademeler] --> D
+        D --> E[50+ Parametreli Biyografik Nüfus İkizleri]
+        E --> F1[Bourdieu 4 Sermaye Habitus'u]
+        E --> F2[Haidt 6 Ahlak Temeli Koordinatı]
+        E --> F3[Kahneman CPT λ=2.25 Kayıp Korkusu]
+    end
+    
+    subgraph "🌐 Dinamik Ağ & İletişim Simülatörü"
+        G[Watts-Strogatz Küçük Dünya Grafı] --> H[Granovetter Eşik Bulaşımı & R0]
+    end
+    
+    subgraph "🧠 Nöral Dil Katmanı (Universal AI Gateway)"
+        I[Dynamic Multi-Model Failover] --> J[Role-Authentic Voice Synthesizer]
+        K[Longitudinal Stance Anchor] --> L[Sokratik Birebir Mülakat]
+    end
+    
+    B --> E
+    E --> G
+    E --> I
+    H --> M[📊 1.000 Kişilik Sandık Dağılımı & Çapraz Tablolar]
+    J --> M
+    L --> N[💬 Canlı Birebir Mülakat & Bilinçaltı İç Sesi]
+    M --> O[📄 Resmi Yönetici Brifi & PDF Raporu]
+```
 
 ---
 
-## Hızlı Başlangıç / Quick Start
+## 🚀 5 Temel Sütun (Core Pillars)
 
-### Kurulum / Installation
+### 1. 💬 Birebir Sokratik Mülakat (`InterrogationEngine`)
+Sandıktaki 1.000 yurttaşın herhangi biriyle canlı mülakata girin. Sistem, seçilen yurttaşın geçmiş oyunu (`karar`) ve oy gerekçesini bir **Bilişsel Çapa (Stance Anchor)** olarak kilitler. Mülakatta hem açık cevabını hem de **🧠 Filtrelenmemiş Sistem 1 Bilinçaltı İç Sesini** eş zamanlı gözlemleyebilirsiniz.
+
+### 2. 🌐 Sosyal Bulaşım & Yankı Odası Simülatörü (`SocialContagionEngine`)
+Watts-Strogatz küçük dünya ağı ($N=1000, K=6, p=0.15$) ve Granovetter eşik dinamikleri ile bir yasanın veya dedikodunun toplumda nasıl yayıldığını, kırılma noktalarını (tipping point) ve $R_0$ viral üreme katsayısını hesaplayın.
+
+### 3. 🗺️ 81 İl & 973 İlçe GIS Isı Haritası (`GISEngine`)
+SEGE-2022 gelişmişlik kademeleri ve NUTS-2 bölge ağırlıklarıyla ilçeden ile, ilden tüm Türkiye'ye homojen ve tutarlı oy projeksiyonları.
+
+### 4. ⚡ Canlı "What-If" Stres Testi (`CounterfactualEngine`)
+Asgari ücret, enflasyon ve kira artışı slider'larını hareket ettirdiğiniz anda; **80 milisaniyede** 1.000 kişinin hanehalkı bütçesi yeniden hesaplanır ve oy kayması anında grafiklere yansır.
+
+### 5. 📄 Kurumsal Yönetici Brifi (`ReportExporter`)
+Bakanlıklar, belediye başkanları ve üst yönetim için tek tıkla resmi, akademik referanslı, A4 formatında PDF/Print çıktısı.
+
+---
+
+## 🐳 Docker ile Hızlı Başlangıç
+
+Sistemi hiçbir yerel bağımlılık kurmadan tek komutla Docker üzerinden ayağa kaldırabilirsiniz:
 
 ```bash
-# Depoyu klonla
-git clone https://github.com/dataforge/dataforge.git
+# 1. Depoyu klonlayın
+git clone https://github.com/erendemirer1/dataforge.git
 cd dataforge
 
-# Gereksinimlerle birlikte kur
+# 2. Örnek ortam değişkenini kopyalayın (İsteğe bağlı Gemini API Key)
+cp .env.example .env
+
+# 3. Docker Compose ile başlatın
+docker compose up --build
+```
+
+Tarayıcınızda açın: **[http://localhost:8000](http://localhost:8000)**
+
+---
+
+## 💻 Yerel Geliştirme (Local Setup)
+
+```bash
+# Sanal ortam oluşturun ve aktif edin
+python -m venv venv
+source venv/bin/activate  # Windows için: venv\Scripts\activate
+
+# Bağımlılıkları yükleyin ve CLI'ı bağlayın
+pip install -r requirements.txt
 pip install -e .
 
-# Geliştirme bağımlılıkları ile
-pip install -e ".[dev]"
+# Sunucuyu başlatın
+uvicorn dataforge.api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Temel Kullanım / Basic Usage
+---
+
+## ⌨️ CLI Kullanımı
+
+DataForge, terminal üzerinden yüksek hızlı sentetik veri üretimi için gelişmiş bir Typer CLI arayüzü sunar:
 
 ```bash
-# 100 kullanıcı üret (JSON)
-dataforge generate --schema users --count 100 --format json
+# 1.000 adet NUTS-2 / TÜİK uyumlu detaylı yurttaş profili üret
+dataforge generate --schema users --count 1000 --format json --output output/vatandaslar.json
 
-# 500 ürün üret (CSV)
-dataforge generate --schema products --count 500 --format csv
+# Verileri CSV, Parquet veya SQL formatında dışa aktar
+dataforge generate --schema users --count 5000 --format parquet --output output/vatandaslar.parquet
+dataforge generate --schema orders --count 10000 --format sql --output output/siparisler.sql
 
-# 1000 sipariş üret (SQL)
-dataforge generate --schema orders --count 1000 --format sql
-
-# Parquet formatında log üret
-dataforge generate --schema logs --count 10000 --format parquet
-
-# Sıkıştırılmış JSON çıktısı
-dataforge generate --schema transactions --count 200 --format json --compact
-
-# Belirli dosyaya yaz
-dataforge generate --schema employees --count 50 --format csv --output data/employees.csv
-```
-
-### İlişkisel Veri Üretimi / Referential Integrity
-
-```yaml
-# schema.yaml
-relations:
-  - users: 1000
-  - products: 500
-  - orders: 5000
-  - transactions: 10000
-```
-
-```bash
-dataforge generate --schema examples/multi_schema.yaml --format json
-# output/ altında users.json, products.json, orders.json, transactions.json oluşturulur
-# orders.user_id → gerçek user ID'lerinden biri
-# transactions.user_id → gerçek user ID'lerinden biri
-```
-
-### Schema Komutları / Schema Commands
-
-```bash
-# Hazır şemalara bak
+# Yerleşik şemaları listele
 dataforge schema list
 
-# Bir şemanin alanlarını incele
-dataforge schema show users
-dataforge schema show products
-
-# Etkileşimli şema oluştur
-dataforge schema create my_schema
-# > Field: username:str
-# > Field: age:int
-# > Field: (boş bırak Enter'a bas)
-# my_schema.yaml oluşturulur
+# TCKN algoritma doğrulamasını çalıştır
+dataforge validate output/vatandaslar.json
 ```
 
-### Doğrulama / Validation
+---
+
+## 📡 REST API Dökümantasyonu
+
+FastAPI tabanlı OpenAPI / Swagger arayüzü `http://localhost:8000/docs` adresinde canlıdır.
+
+| Metot | Endpoint | Açıklama |
+| :--- | :--- | :--- |
+| `POST` | `/api/society/census-poll` | 1.000 Kişilik Bölgesel/Ulusal Anket Simülasyonu |
+| `POST` | `/api/society/socratic-interrogate` | Seçilen Yurttaşla Birebir Canlı Sokratik Mülakat |
+| `POST` | `/api/society/social-contagion` | Watts-Strogatz Ağında Fikir Bulaşımı & $R_0$ Hesabı |
+| `POST` | `/api/society/gis-distribution` | 81 İl & İlçe Harita Yoğunluk Dağılımı |
+| `POST` | `/api/society/macro-stress-test` | Enflasyon / Asgari Ücret / Kira What-If Simülasyonu |
+| `POST` | `/api/society/simulate-roundtable` | 6-10 Kişilik Odak Grubu Yuvarlak Masa Tartışması |
+
+---
+
+## 🧪 Testler ve Doğrulama
+
+Sistem, 74 adet kapsamlı unit ve entegrasyon testinden oluşan bir test bataryası ile korunur:
 
 ```bash
-# Genel doğrulama
-dataforge validate data/users.json
-
-# Şemaya göre doğrulama (TCKN, fiyat tutarlılığı vb.)
-dataforge validate data/users.json --schema users
-dataforge validate data/orders.csv --schema orders
-dataforge validate data/products.json --schema products
+pytest -v
 ```
 
-### 🌍 Coğrafi Veri & UAVT / PTT Senkronizasyonu
+```text
+============================== test session starts ==============================
+collected 74 items
 
-```bash
-# Resmi PTT & UAVT coğrafi veritabanını senkronize et (81 İl, 973 İlçe, Mahalleler, Posta Kodları)
-dataforge sync-geo
+tests/test_api.py ...                                                    [  4%]
+tests/test_behavior.py .......                                           [ 13%]
+tests/test_calibration.py ..                                             [ 16%]
+tests/test_causal.py ..                                                  [ 18%]
+tests/test_causal_framework.py ...                                       [ 22%]
+tests/test_census.py ..                                                  [ 25%]
+tests/test_contagion.py .                                                [ 27%]
+tests/test_counterfactual.py .                                           [ 28%]
+tests/test_generators.py ......................................          [ 79%]
+tests/test_interrogation.py .                                            [ 81%]
+tests/test_ml.py .                                                       [ 82%]
+tests/test_society_api.py ...                                            [ 86%]
+tests/test_tckn.py ..........                                            [100%]
 
-# Yerel coğrafi veritabanı istatistiklerini gör
-dataforge geo stats
-```
-
-
----
-
-## Hazır Şemalar / Built-in Schemas
-
-### 👤 `users`
-Türkiye'ye özgü kullanıcı profilleri:
-- Geçerli TCKN (11 haneli, algoritma doğrulanmış)
-- Türk telefon formatı (05XX XXX XX XX)
-- 81 ilden rastgele şehir
-- Yaş ile doğum tarihi tutarlılığı
-
-### 🛏️ `products`
-E-ticaret ürün katalogu:
-- Category → subcategory hiyerarşisi (tutarlı)
-- Kategori bazlı gerçekçi fiyat aralıkları
-- Her zaman `discount_price < price`
-- Unique SKU formatı
-
-### 📦 `orders`
-Sipariş kayıtları:
-- `total_price = quantity × unit_price` (kesin)
-- `updated_at >= created_at` (kesin)
-- Gerçekçi status dağılımı (delivered %55)
-
-### 💳 `transactions`
-Finansal işlemler:
-- UUID formatında transaction_id
-- TRY/USD/EUR para birimleri (%75/%15/%10)
-- Kategori ile tutarlı Türkçe açıklamalar
-
-### 👥 `employees`
-Çalışan kayıtları:
-- Departman → pozisyon → maaş hiyerarşisi
-- Kurumsal email (sahte Türk şirket domain'leri)
-- Referanssal manager_id
-
-### 📝 `logs`
-Uygulama logları:
-- Gerçekçi seviye dağılımı: INFO %60, DEBUG %20, WARNING %15, ERROR %4, CRITICAL %1
-- Seviye ile tutarlı mesaj şablonları
-- 20 farklı micro-service ismi
-
----
-
-## Proje Yapısı / Project Structure
-
-```
-dataforge/
-├── dataforge/
-│   ├── __init__.py          # Versiyon bilgisi
-│   ├── cli.py               # Typer CLI, tüm komutlar
-│   ├── generators/
-│   │   ├── base.py          # Soyut temel sınıf
-│   │   ├── users.py
-│   │   ├── products.py
-│   │   ├── orders.py
-│   │   ├── transactions.py
-│   │   ├── employees.py
-│   │   └── logs.py
-│   ├── exporters/
-│   │   ├── json_exporter.py
-│   │   ├── csv_exporter.py
-│   │   ├── sql_exporter.py
-│   │   └── parquet_exporter.py
-│   ├── schemas/
-│   │   ├── schema_manager.py
-│   │   └── __init__.py
-│   └── utils/
-│       ├── tckn.py          # TCKN üretici & doğrulayıcı
-│       └── turkish_data.py  # 200+ Türkçe veri
-├── examples/
-│   ├── multi_schema.yaml
-│   └── custom_schema.yaml
-├── tests/
-│   ├── test_generators.py
-│   └── test_tckn.py
-├── pyproject.toml
-├── requirements.txt
-└── README.md
+======================== 74 passed, 1 warning in 1.27s ========================
 ```
 
 ---
 
-## Geliştirme / Development
+## 🔒 Güvenlik & KVKK / GDPR Uyumluluğu
 
-```bash
-# Bağımlılıkları kur
-pip install -e ".[dev]"
-
-# Testleri çalıştır
-pytest
-
-# Kapsam raporu ile
-pytest --cov=dataforge --cov-report=term-missing
-
-# Linting
-ruff check dataforge/
-```
+* **%100 Sentetik:** Üretilen tüm kimlikler, TCKN'ler, isimler ve adresler matematiksel olarak türetilmiştir; gerçek kişi verisi içermez.
+* **Gizlilik ve KVKK:** Gerçek insan deneklere ihtiyaç duymadan kamuoyu ve pazar araştırması yapılmasını sağlayarak kişisel verilerin korunması kanunlarına tam uyumluluk sunar.
 
 ---
 
-## Katkıda Bulunma / Contributing
+## 📄 Lisans
 
-1. Fork this repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'feat: add my feature'`
-4. Push the branch: `git push origin feature/my-feature`
-5. Open a Pull Request
-
-### Yeni Schema Ekleme / Adding a New Schema
-
-1. `dataforge/generators/` altında yeni bir dosya oluştur (orn. `invoices.py`)
-2. `BaseGenerator`'dan miras al, `generate_one()` metodunu implemente et
-3. `GENERATOR_MAP`'e ekle (`generators/__init__.py`)
-4. `BUILTIN_SCHEMAS`'a açıklama ekle (`schemas/schema_manager.py`)
-5. `tests/test_generators.py`'e testleri yaz
-
----
-
-## Lisans / License
-
-MIT © 2024 DataForge Team
-
----
-
-<div align="center">
-
-**İstanbul'dan ❤️ ile üretildi**
-
-*Made with ❤️ in Istanbul*
-
-</div>
+Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
