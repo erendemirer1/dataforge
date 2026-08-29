@@ -27,7 +27,7 @@ Traditional survey polling is slow, expensive, and quickly invalidated by rapid 
 │ 2. DETERMINISTIC STRATIFIED COHORT SAMPLING (N=1,000 in <15ms) (copula_engine.py)      │
 │    ├── NUTS-2 Regional & SEGE-2022 District Stratification (Tiers 1 to 6)              │
 │    ├── High-Dimensional Gaussian Copula (Age, Income, Housing, Debt Covariance)        │
-│    └── 81-Province Empirical Ideological Weight Distribution (ideology_matrix.py)      │
+│    └── 81-Province Empirical Demographic Weight Distribution (ideology_matrix.py)      │
 └────────────────────────────────────────────────────────────────────────────────────────┘
                                                │
                       ┌────────────────────────┴────────────────────────┐
@@ -43,8 +43,8 @@ Traditional survey polling is slow, expensive, and quickly invalidated by rapid 
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │ 5. MULTINOMIAL DISCRETE CHOICE & VOCALIZATION (census_engine.py)                       │
 │    ├── McFadden Logit Utility Calculation: P(Accept), P(Reject), P(Undecided)          │
-│    ├── Domain-Specific Argumentation (Fiscal, Political, Ecological, Urban)            │
-│    └── Cross-Tabulation Generation across 5 Regional Ideological Camps                 │
+│    ├── Domain-Specific Argumentation (Fiscal, Governance, Ecological, Urban)           │
+│    └── Cross-Tabulation Generation across Regional Demographic Cohorts                 │
 └────────────────────────────────────────────────────────────────────────────────────────┘
                                                │
                       ┌────────────────────────┴────────────────────────┐
@@ -66,7 +66,7 @@ Demographic attributes cannot be generated independently. DataForge models joint
 
 $$C_R(u_1, u_2, \dots, u_d) = \Phi_R\left(\Phi^{-1}(u_1), \Phi^{-1}(u_2), \dots, \Phi^{-1}(u_d)\right)$$
 
-This guarantees that an 18-year-old barista in Diyarbakır and a 55-year-old executive in Kadıköy reflect strictly accurate, correlated socioeconomic parameters without demographic drift.
+This guarantees that every sampled profile reflects strictly accurate, correlated socioeconomic parameters calibrated to official census tables without demographic drift.
 
 ### 2. Structural Causal Models & do-calculus
 The decision pipeline enforces invariant causal graphs based on Judea Pearl's Structural Equation Modeling (SEM):
@@ -80,22 +80,22 @@ Citizen decisions are calculated using Random Utility Maximization (McFadden Mul
 
 $$P(y_i = k) = \frac{\exp(V_{ik})}{\sum_{j \in \{Accept, Reject, Undecided\}} \exp(V_{ij})}$$
 
-Where $V_{ik}$ integrates fiscal utility, ideological alignment, and moral foundation weights.
+Where $V_{ik}$ integrates fiscal utility, value alignment, and moral foundation weights.
 
 ---
 
 ## Core Capabilities
 
-### 81-Province Ideological Distribution Matrix
-DataForge calibrates regional voting blocs against historical electoral records, modeling 5 distinct ideological cohorts across every province:
+### Stratified Sociodemographic & Regional Segmentation
+DataForge models regional public opinion across 81 provinces by mapping population cohorts to empirical demographic profiles:
 
-| Ideological Cohort | Regional Strongholds | Core Discourse & Priority Drivers |
+| Demographic Cohort | Regional Focus | Core Concerns & Primary Decision Drivers |
 | :--- | :--- | :--- |
-| **Pro-Kurdish / DEM Base** | Diyarbakır, Hakkari, Şırnak, Van | Democratic resolution, anti-trusteeship, minority rights, localized governance |
-| **Nationalist / Ülkücü Base** | Central Anatolia, Black Sea | National sovereignty, uncompromising counter-terrorism, border security |
-| **Secular / Kemalist Base** | Aegean Coast, Thrace, Urban Centers | Constitutional integrity, secularism, meritocracy, institutional transparency |
-| **Conservative / Incumbent Base** | Inner Anatolia, Black Sea | State continuity, leadership trust, economic stability, traditional values |
-| **Pragmatist Youth / Apolitical** | Metropolitan Universitarian Hubs | Housing affordability, youth unemployment, purchasing power, meritocracy |
+| **Metropolitan Working-Class & Tenants** | Urban Centers (Istanbul, Ankara, Izmir) | Housing affordability, public transport, inflation resilience |
+| **Agrarian & Rural Producers** | Inner & Eastern Anatolia | Agricultural subsidies, input costs, local infrastructure |
+| **Industrial & Small Business Operators** | Marmara, Central Anatolia | Commercial credit access, tax policies, supply chain stability |
+| **Young Professionals & Students** | Major Metropolitan & University Hubs | Youth employment, meritocracy, digital freedom, purchasing power |
+| **Public Sector & Fixed Income Retirees** | Nationwide Suburban & Provincial Centers | Pension indexing, healthcare access, social stability |
 
 ### Live Environmental Stream (`LivingStreamEngine`)
 The platform continuously ingests external signals to reflect active societal pressure:
@@ -123,7 +123,7 @@ The FastAPI backend exposes endpoints for polling, persona interrogation, networ
 curl -X POST "http://localhost:8000/api/v1/census/poll" \
      -H "Content-Type: application/json" \
      -d '{
-       "question": "Should municipal rent control subsidies be expanded?",
+       "question": "Should municipal public transit fare subsidies be expanded?",
        "city": "Diyarbakır",
        "sample_size": 1000
      }'
@@ -132,7 +132,7 @@ curl -X POST "http://localhost:8000/api/v1/census/poll" \
 **Response Preview:**
 ```json
 {
-  "soru_veya_politika": "Should municipal rent control subsidies be expanded?",
+  "soru_veya_politika": "Should municipal public transit fare subsidies be expanded?",
   "hedef_bolge": "Diyarbakır",
   "orneklem_buyuklugu": 1000,
   "genel_kabul_yuzde": 68.4,
@@ -140,11 +140,11 @@ curl -X POST "http://localhost:8000/api/v1/census/poll" \
   "genel_kararsiz_yuzde": 10.4,
   "siyasi_taban_kirilimi": [
     {
-      "segment": "Kürt Siyasi Hareketi / DEM Tabanı",
-      "orneklem_sayisi": 650,
-      "kabul_yuzde": 74.2,
-      "ret_yuzde": 15.1,
-      "kararsiz_yuzde": 10.7
+      "segment": "Metropolitan Working-Class & Tenants",
+      "orneklem_sayisi": 420,
+      "kabul_yuzde": 78.5,
+      "ret_yuzde": 12.1,
+      "kararsiz_yuzde": 9.4
     }
   ]
 }
@@ -166,7 +166,7 @@ curl -X POST "http://localhost:8000/api/v1/society/interrogate" \
          "housing_status": "Kiracı",
          "monthly_income": 32000.0
        },
-       "user_question": "What is your primary concern regarding local tax increases?",
+       "user_question": "What is your primary concern regarding local commercial tax increases?",
        "survey_context": "Municipal budget expansion"
      }'
 ```
@@ -273,7 +273,7 @@ dataforge/
 │   │       └── assets/tr-cities.json  # 81-Province spatial vector geometry
 │   ├── cognitive/
 │   │   ├── census_engine.py           # McFadden Logit & stratified polling engine
-│   │   ├── ideology_matrix.py         # 81-Province empirical ideology cohorts
+│   │   ├── ideology_matrix.py         # Regional sociodemographic cohort matrices
 │   │   ├── living_stream_engine.py    # Live FX and RSS news pulse ingestion
 │   │   ├── micro_biography_matrix.py  # 100+ parameter human biographical tensor
 │   │   ├── causal_dag_engine.py       # Judea Pearl Structural Causal DAG
