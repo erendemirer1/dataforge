@@ -4,7 +4,7 @@ A deterministic demographic simulation and opinion dynamics engine for Turkey.
 
 DataForge models large-scale public opinion shifts, policy responses, and macroeconomic counterfactuals across Turkey's 81 provinces and 973 districts.
 
-Traditional survey polling is slow, expensive, and quickly invalidated by rapid news cycles. Conversely, prompting generic large language models produces demographically ungrounded, sycophantic responses. DataForge addresses this by coupling empirical micro-data (TÜİK income distributions, BDDK debt ratios, SEGE socioeconomic development indices) with discrete choice econometrics, Gaussian copulas, and structural causal graphs.
+Traditional survey polling is slow, expensive, and quickly invalidated by rapid market and policy shifts. Conversely, prompting generic large language models produces demographically ungrounded, sycophantic responses. DataForge addresses this by coupling empirical micro-data (TÜİK income distributions, BDDK debt ratios, SEGE socioeconomic development indices) with discrete choice econometrics, Gaussian copulas, and structural causal graphs.
 
 ---
 
@@ -89,13 +89,13 @@ Where $V_{ik}$ integrates fiscal utility, value alignment, and moral foundation 
 ### Stratified Sociodemographic & Regional Segmentation
 DataForge models regional public opinion across 81 provinces by mapping population cohorts to empirical demographic profiles:
 
-| Demographic Cohort | Regional Focus | Core Concerns & Primary Decision Drivers |
+| Demographic Cohort | Geographic Focus | Core Concerns & Primary Decision Drivers |
 | :--- | :--- | :--- |
-| **Metropolitan Working-Class & Tenants** | Urban Centers (Istanbul, Ankara, Izmir) | Housing affordability, public transport, inflation resilience |
-| **Agrarian & Rural Producers** | Inner & Eastern Anatolia | Agricultural subsidies, input costs, local infrastructure |
-| **Industrial & Small Business Operators** | Marmara, Central Anatolia | Commercial credit access, tax policies, supply chain stability |
-| **Young Professionals & Students** | Major Metropolitan & University Hubs | Youth employment, meritocracy, digital freedom, purchasing power |
-| **Public Sector & Fixed Income Retirees** | Nationwide Suburban & Provincial Centers | Pension indexing, healthcare access, social stability |
+| **Metropolitan Working-Class & Tenants** | High-Density Urban Centers | Housing affordability, public transport, inflation resilience |
+| **Agrarian & Rural Producers** | Agricultural Provinces | Agricultural subsidies, input costs, local infrastructure |
+| **Industrial & Small Business Operators** | Manufacturing & Trade Corridors | Commercial credit access, tax policies, supply chain stability |
+| **Young Professionals & Students** | Major Metropolitan & University Hubs | Youth employment, meritocracy, digital infrastructure, purchasing power |
+| **Public Sector & Fixed Income Retirees** | Nationwide Provincial Centers | Pension indexing, healthcare access, social stability |
 
 ### Live Environmental Stream (`LivingStreamEngine`)
 The platform continuously ingests external signals to reflect active societal pressure:
@@ -124,7 +124,7 @@ curl -X POST "http://localhost:8000/api/v1/census/poll" \
      -H "Content-Type: application/json" \
      -d '{
        "question": "Should municipal public transit fare subsidies be expanded?",
-       "city": "Diyarbakır",
+       "city": "İstanbul",
        "sample_size": 1000
      }'
 ```
@@ -133,7 +133,7 @@ curl -X POST "http://localhost:8000/api/v1/census/poll" \
 ```json
 {
   "soru_veya_politika": "Should municipal public transit fare subsidies be expanded?",
-  "hedef_bolge": "Diyarbakır",
+  "hedef_bolge": "İstanbul",
   "orneklem_buyuklugu": 1000,
   "genel_kabul_yuzde": 68.4,
   "genel_ret_yuzde": 21.2,
@@ -158,16 +158,16 @@ curl -X POST "http://localhost:8000/api/v1/society/interrogate" \
      -H "Content-Type: application/json" \
      -d '{
        "persona_dict": {
-         "first_name": "Serkan",
+         "first_name": "Ahmet",
          "last_name": "Yılmaz",
          "age": 34,
-         "occupation": "Esnaf",
-         "city": "Diyarbakır",
-         "housing_status": "Kiracı",
-         "monthly_income": 32000.0
+         "occupation": "Mühendis",
+         "city": "Ankara",
+         "housing_status": "Ev Sahibi",
+         "monthly_income": 65000.0
        },
-       "user_question": "What is your primary concern regarding local commercial tax increases?",
-       "survey_context": "Municipal budget expansion"
+       "user_question": "What is your primary concern regarding local commercial tax adjustments?",
+       "survey_context": "Municipal infrastructure development"
      }'
 ```
 
