@@ -49,6 +49,9 @@ Thumbs.db
 # Generated data outputs & temp db caches if desired
 *.parquet
 geo_data.db
+episodic_memory.db
+*.db
+!dataforge/data/geo_turkey.db
 output/
 users_*.json
 debug_*.py

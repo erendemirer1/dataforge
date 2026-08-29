@@ -1,1152 +1,718 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DATAFORGE — Sentetik Toplum & Bilişsel Simülasyon Sistemi</title>
+    <title>Türkiye Vicdan Atlası — Toplumsal Sesler & Bilişsel Yankı</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Cinzel + Cormorant Garamond + Plus Jakarta Sans + JetBrains Mono -->
+
+    <!-- D3.js for Real GeoJSON Map Rendering -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Google Fonts: Newsreader (Editorial Serif) & Inter (Sans) & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        serif: ['"Cormorant Garamond"', 'serif'],
-                        display: ['"Cinzel"', 'serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        dune: {
-                            950: '#09080e',
-                            900: '#120f1a',
-                            850: '#181424',
-                            800: '#221c32',
-                            700: '#342b4b',
-                            sand: '#e2b474',
-                            amber: '#df9452',
-                            terracotta: '#b85428',
-                            parchment: '#f7eedb',
-                            muted: '#8b8296',
-                            border: 'rgba(226, 180, 116, 0.14)',
-                            glow: 'rgba(226, 180, 116, 0.08)'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            color-scheme: dark;
+            --bg-canvas: #09080c;
+            --paper-text: #f5f2eb;
+            --muted-text: #8e889b;
+            --border-line: rgba(245, 242, 235, 0.08);
+            --accent-terracotta: #d97746;
+            --accent-sage: #52b788;
+            --accent-sand: #d4a373;
         }
 
         body {
-            background-color: #09080e;
-            color: #f7eedb;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--paper-text);
+            font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        /* Journey Ethereal Ambient Canvas */
-        #sand-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+        .font-serif-editorial {
+            font-family: 'Newsreader', Georgia, serif;
+        }
+
+        /* Real D3 Map Province Styling */
+        .map-province {
+            fill: #14131a;
+            stroke: #2a2836;
+            stroke-width: 0.75;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .map-province:hover {
+            fill: #2f2b3d;
+            stroke: #d4a373;
+            stroke-width: 1.5;
+            filter: drop-shadow(0 0 6px rgba(212, 163, 115, 0.35));
+        }
+
+        .map-province.selected {
+            fill: #3e3752 !important;
+            stroke: #d4a373 !important;
+            stroke-width: 2 !important;
+        }
+
+        .map-province.pass {
+            fill: rgba(82, 183, 136, 0.35);
+            stroke: #52b788;
+        }
+
+        .map-province.reject {
+            fill: rgba(217, 119, 70, 0.35);
+            stroke: #d97746;
+        }
+
+        .clean-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(245, 242, 235, 0.2);
+            color: var(--paper-text);
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .clean-input:focus {
+            border-bottom-color: #d4a373;
+        }
+
+        /* Tooltip */
+        #map-tooltip {
+            position: absolute;
             pointer-events: none;
-            z-index: 0;
-            opacity: 0.75;
-        }
-
-        .journey-glass {
-            background: rgba(18, 15, 26, 0.72);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(226, 180, 116, 0.14);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
-        }
-
-        .journey-glass-hover {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .journey-glass-hover:hover {
-            border-color: rgba(226, 180, 116, 0.35);
-            background: rgba(24, 20, 36, 0.82);
-            box-shadow: 0 12px 40px -10px rgba(223, 148, 82, 0.15);
-        }
-
-        .journey-border-b {
-            border-bottom: 1px solid rgba(226, 180, 116, 0.12);
-        }
-        .journey-border-t {
-            border-top: 1px solid rgba(226, 180, 116, 0.12);
-        }
-        .journey-border-r {
-            border-right: 1px solid rgba(226, 180, 116, 0.12);
-        }
-        .journey-border-l {
-            border-left: 1px solid rgba(226, 180, 116, 0.12);
+            background: rgba(14, 13, 18, 0.95);
+            border: 1px solid rgba(212, 163, 115, 0.4);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #f5f2eb;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: none;
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+            width: 3px;
         }
         ::-webkit-scrollbar-track {
-            background: #09080e;
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(226, 180, 116, 0.2);
+            background: rgba(245, 242, 235, 0.15);
             border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(226, 180, 116, 0.45);
-        }
-
-        /* Custom Range Slider */
-        input[type=range] {
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 9999px;
-            height: 4px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 14px;
-            width: 14px;
-            border-radius: 50%;
-            background: #e2b474;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(226, 180, 116, 0.6);
-            transition: transform 0.15s ease;
-        }
-        input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.25);
-        }
-
-        .rune-glow {
-            text-shadow: 0 0 12px rgba(226, 180, 116, 0.4);
+            background: #d4a373;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative selection:bg-dune-sand/20 selection:text-dune-sand">
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-900/40 selection:text-amber-200">
 
-    <!-- Interactive Sand Drift Engine -->
-    <canvas id="sand-canvas"></canvas>
+    <!-- Floating Map Tooltip -->
+    <div id="map-tooltip"></div>
 
-    <!-- 1. SACRED TOP NAVIGATION BAR -->
-    <header class="h-16 journey-border-b bg-dune-950/80 backdrop-blur-md px-6 lg:px-12 flex items-center justify-between shrink-0 sticky top-0 z-40">
-        <div class="flex items-center space-x-8">
-            <a href="/" class="flex items-center space-x-3 group">
-                <span class="text-dune-sand text-lg font-display tracking-widest rune-glow">◈</span>
-                <span class="font-display font-semibold text-lg tracking-[0.25em] text-dune-parchment group-hover:text-dune-sand transition-colors">
-                    DATAFORGE
-                </span>
-                <span class="hidden sm:inline font-serif italic text-xs text-dune-muted/80 tracking-widest pl-1">
-                    — sentetik toplum enstitüsü
-                </span>
-            </a>
+    <!-- 1. DIGNIFIED EDITORIAL HEADER -->
+    <header class="w-full max-w-5xl mx-auto pt-8 pb-4 px-6 flex flex-col items-center text-center space-y-2 border-b border-white/5">
+        <div class="flex items-center gap-3 text-[10px] tracking-[0.2em] text-[#d4a373] uppercase font-mono">
+            <span>TÜRKİYE BİLİŞSEL VE SOSYOLOJİK HARİTASI</span>
+            <span>•</span>
+            <span class="text-emerald-400">CANLI VERİ AKIŞI AKTİF</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif-editorial font-normal tracking-tight text-[#f5f2eb]">
+            Toplumsal Vicdan Atlası
+        </h1>
+        
+        <!-- Live Societal Pulse Bar -->
+        <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-neutral-400 pt-2 pb-1 border-t border-b border-white/5 w-full max-w-2xl">
+            <span class="text-amber-300">USD/TRY: <strong id="live-usd-val">Yükleniyor...</strong></span>
+            <span class="text-neutral-600">|</span>
+            <span class="text-rose-400">Yıllık TÜFE: <strong id="live-tufe-val">%42.8</strong></span>
+            <span class="text-neutral-600">|</span>
+            <span class="text-sky-300">Gündem: <strong id="live-headline-val" class="max-w-[240px] truncate inline-block align-bottom">Haberler taranıyor...</strong></span>
+            <span class="text-neutral-600">|</span>
+            <span class="text-[#d4a373]">Ajitasyon: <strong id="live-agitation-val">Hesaplanıyor...</strong></span>
+        </div>
 
-            <div class="hidden md:flex items-center space-x-3 text-[11px] font-mono text-dune-muted pl-6 journey-border-l">
-                <span class="text-dune-sand/80">MODEL:</span>
-                <span class="text-dune-parchment/90 tracking-wide">TÜİK · SEGE-2022 · NUTS-2</span>
-                <span class="text-dune-sand/30">|</span>
-                <span class="text-emerald-400/90 flex items-center space-x-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>BAYESIAN_UYUM: %99.8</span>
+        <p class="text-xs sm:text-sm text-[#8e889b] max-w-lg font-serif-editorial italic pt-1">
+            Harita üzerindeki bir şehre dokunun ya da Türkiye geneline bir soru sorarak 81 ilin yankısını dinleyin.
+        </p>
+    </header>
+
+    <!-- 2. CENTRAL QUESTION BAR -->
+    <div class="w-full max-w-3xl mx-auto px-6 pt-6 pb-2">
+        <div class="flex flex-col sm:flex-row items-baseline gap-4">
+            <input 
+                id="main-question" 
+                type="text" 
+                placeholder="Topluma ne sormak istersiniz? (Örn: Sahil dolgu alanına kruvaziyer limanı yapılmalı mı?)" 
+                class="clean-input flex-1 py-3 text-lg sm:text-xl font-serif-editorial italic placeholder:text-[#8e889b]/40"
+                onkeydown="if(event.key==='Enter') simulateNationwide()"
+            />
+            <button 
+                id="ask-btn"
+                onclick="simulateNationwide()" 
+                class="text-xs tracking-widest font-mono text-[#d4a373] hover:text-white uppercase pb-1 border-b border-[#d4a373] transition-colors shrink-0 cursor-pointer"
+            >
+                <span id="ask-btn-text">Soruyu Sor →</span>
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs font-mono text-[#8e889b] pt-3">
+            <span id="active-region-label">Seçili Coğrafya: Tüm Türkiye (81 İl)</span>
+            <span id="survey-status-text">Durum: Hazır</span>
+        </div>
+    </div>
+
+    <!-- 3. INTERACTIVE TURKEY VECTOR MAP (REAL GEOJSON RENDERED VIA D3) -->
+    <main class="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col items-center justify-center">
+        
+        <div class="w-full relative flex flex-col items-center">
+            
+            <!-- Dynamic Result Summary (Shown when simulation runs) -->
+            <div id="results-headline-bar" class="w-full flex items-center justify-between py-3 border-b border-white/5 text-sm font-serif-editorial mb-2 hidden">
+                <span id="res-question-title" class="italic text-[#f5f2eb]">"..."</span>
+                <div class="flex items-center space-x-6 font-mono text-xs">
+                    <span class="text-[#52b788]">Kabul: <strong id="res-kabul-pct" class="font-normal">%0</strong></span>
+                    <span class="text-[#d97746]">Ret: <strong id="res-ret-pct" class="font-normal">%0</strong></span>
+                    <span class="text-[#d4a373]">Kararsız: <strong id="res-kararsiz-pct" class="font-normal">%0</strong></span>
+                </div>
+            </div>
+
+            <!-- Real Turkey Map SVG Container -->
+            <div id="map-container" class="w-full relative py-2 flex items-center justify-center min-h-[380px]">
+                <svg id="turkey-svg" viewBox="0 0 960 440" class="w-full h-auto max-h-[460px] mx-auto select-none"></svg>
+            </div>
+
+            <!-- Map City Names Fast Ribbon -->
+            <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[#8e889b] font-serif-editorial pt-3">
+                <button onclick="selectProvinceByName('İstanbul')" class="hover:text-white transition-colors">İstanbul</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Ankara')" class="hover:text-white transition-colors">Ankara</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('İzmir')" class="hover:text-white transition-colors">İzmir</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Antalya')" class="hover:text-white transition-colors">Antalya</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Bursa')" class="hover:text-white transition-colors">Bursa</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Diyarbakır')" class="hover:text-white transition-colors">Diyarbakır</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Trabzon')" class="hover:text-white transition-colors">Trabzon</button>
+                <span>·</span>
+                <button onclick="selectProvinceByName('Tüm Türkiye')" class="text-[#d4a373] hover:underline">Tüm 81 İl</button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 4. LIVING GAZETTE RIVER (PEOPLE'S VOICES ON PAPER) -->
+    <section id="gazette-section" class="w-full max-w-4xl mx-auto px-6 py-12 border-t border-white/5 space-y-10">
+        
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-white/5 pb-4">
+            <div>
+                <span class="text-[10px] font-mono tracking-widest text-[#d4a373] uppercase block">
+                    BİREYSEL TUTANAKLAR VE İÇ SESLER
                 </span>
+                <h2 id="gazette-header-title" class="text-2xl sm:text-3xl font-serif-editorial font-normal text-[#f5f2eb]">
+                    Halkın Ses Kayıtları
+                </h2>
+            </div>
+            <span id="gazette-count-info" class="text-xs font-mono text-[#8e889b]">1.000 Yurttaş Örneklemi</span>
+        </div>
+
+        <!-- Gazette Articles List -->
+        <div id="gazette-stream" class="space-y-8 divide-y divide-white/5 font-serif-editorial">
+            <div class="py-6 text-center italic text-[#8e889b]">
+                Yukarıdaki haritadan bir şehir seçin veya soru sorarak toplumun sesini buraya çağırın.
             </div>
         </div>
 
-        <!-- Mode Switcher Tabs -->
-        <div class="flex items-center bg-dune-900/90 rounded-full p-1 border border-dune-border">
-            <button id="tab-focus" onclick="switchMode('focus')" class="px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm">
-                Odak Grubu Masası
-            </button>
-            <button id="tab-census" onclick="switchMode('census')" class="px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300">
-                1.000+ Yurttaş Sandığı
-            </button>
-        </div>
+    </section>
 
-        <div class="flex items-center space-x-4">
-            <a href="/docs" target="_blank" class="text-xs font-mono text-dune-sand/80 hover:text-dune-sand px-3 py-1.5 rounded-md border border-dune-border hover:border-dune-sand/40 transition-all flex items-center space-x-1.5">
-                <span>API Dokümantasyonu</span>
-                <span class="text-[10px]">↗</span>
-            </a>
-        </div>
-    </header>
-
-    <!-- 2. MAIN RESEARCH WORKSPACE -->
-    <div class="flex-1 flex flex-col xl:flex-row min-h-0 relative z-10">
-        
-        <!-- LEFT CONTROL PANEL (DOSSIER CONFIGURATOR) -->
-        <aside class="w-full xl:w-[440px] journey-border-r bg-dune-950/60 backdrop-blur-lg flex flex-col shrink-0">
+    <!-- 5. DIALOGUE MODAL (1-ON-1 INTERVIEW WITH CITIZEN) -->
+    <div id="interview-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 hidden">
+        <div class="bg-[#121118] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col p-6 sm:p-8 space-y-6 shadow-2xl">
             
-            <!-- Panel Header -->
-            <div class="p-6 lg:p-8 journey-border-b">
-                <div class="flex items-baseline justify-between mb-2">
-                    <span id="panel-step-tag" class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase">MOD 01 // NİTELİKSEL DİYALOG</span>
-                    <span class="font-mono text-[10px] text-dune-muted">v2.4.0</span>
+            <div class="flex items-start justify-between border-b border-white/10 pb-4 shrink-0">
+                <div class="space-y-0.5">
+                    <span class="text-[10px] font-mono tracking-widest text-[#d4a373] uppercase">BİREBİR MÜLAKAT</span>
+                    <h3 id="modal-name" class="text-2xl font-serif-editorial text-[#f5f2eb]">Yurttaş</h3>
+                    <div id="modal-meta" class="text-xs font-mono text-[#8e889b]">35 Yaş, Öğretmen · Kadıköy</div>
                 </div>
-                <h2 id="panel-title" class="text-2xl lg:text-3xl font-serif text-dune-parchment leading-tight">Masa Simülatörü</h2>
-                <p id="panel-desc" class="text-xs text-dune-muted/90 font-sans mt-1.5 leading-relaxed">
-                    Farklı toplumsal habitus ve ahlaki koordinatlara sahip insanların canlı grup diyaloğu
+                <button onclick="closeInterviewModal()" class="text-[#8e889b] hover:text-white text-xs font-mono p-1">
+                    Kapat ✕
+                </button>
+            </div>
+
+            <div class="p-4 bg-white/[0.02] border-l-2 border-[#d4a373] shrink-0 space-y-1">
+                <span class="text-[10px] font-mono text-[#d4a373] uppercase block">ANKET GEREKÇESİ / İÇ SES:</span>
+                <p id="modal-thought" class="text-sm font-serif-editorial italic text-[#f5f2eb]/90 leading-relaxed">
+                    "..."
                 </p>
             </div>
 
-            <div class="p-6 lg:p-8 space-y-6 flex-1 overflow-y-auto">
-                
-                <!-- MODE 1: FOCUS GROUP CONTROLS -->
-                <div id="controls-focus" class="space-y-6">
-                    <!-- Target Audience -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
-                            Hedef Toplumsal Kesit (Audience)
-                        </label>
-                        <input id="target-input" type="text" placeholder="Örn: 18-30 Yaş Gençler, Çarşı Esnafı, Kiracılar, Memurlar..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all placeholder:text-dune-muted/40">
-                    </div>
-
-                    <!-- Question / Pitch -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
-                            Masaya Atılacak Soru / Politika
-                        </label>
-                        <textarea id="pitch-input" rows="3" placeholder="Tartışılmasını istediğiniz konuyu, yasa teklifini veya soruyu buraya yazın..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all resize-none leading-relaxed placeholder:text-dune-muted/40"></textarea>
-                    </div>
-
-                    <!-- Gemini Key Optional -->
-                    <div>
-                        <label class="block font-mono text-[10px] uppercase tracking-wider text-dune-muted mb-1.5">
-                            Gemini API Key (Opsiyonel — Canlı LLM)
-                        </label>
-                        <input id="key-input" type="password" placeholder="Boş bırakılırsa yerleşik Causal Engine devrededir" class="w-full bg-dune-900/80 text-xs font-mono text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all placeholder:text-dune-muted/40">
-                    </div>
-
-                    <!-- Participant count -->
-                    <div class="pt-4 journey-border-t space-y-3 font-mono text-xs">
-                        <div class="flex items-center justify-between">
-                            <span class="text-dune-muted">MASA KATILIMCI SAYISI:</span>
-                            <span id="count-label" class="text-dune-sand font-bold">6 KİŞİ</span>
-                        </div>
-                        <input id="count-slider" type="range" min="3" max="10" value="6" oninput="document.getElementById('count-label').innerText = this.value + ' KİŞİ'" class="w-full cursor-pointer">
-                    </div>
-                </div>
-
-                <!-- MODE 2: CENSUS & MUNICIPAL SURVEY CONTROLS -->
-                <div id="controls-census" class="space-y-6 hidden">
-                    <!-- City Selector -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
-                            Hedef Coğrafya (City Filter)
-                        </label>
-                        <select id="census-city" onchange="updateDistrictOptions()" class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
-                            <option value="Tüm Türkiye" selected>Tüm Türkiye (81 İl / NUTS-2 Ağırlıklı)</option>
-                            <option value="İstanbul">İstanbul (TÜİK TR10)</option>
-                            <option value="Ankara">Ankara (TÜİK TR51)</option>
-                            <option value="İzmir">İzmir (TÜİK TR31)</option>
-                            <option value="Bursa">Bursa (TÜİK TR41)</option>
-                            <option value="Antalya">Antalya (TÜİK TR61)</option>
-                        </select>
-                    </div>
-
-                    <!-- District Selector -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
-                            İlçe / Bölge Daraltma (District)
-                        </label>
-                        <select id="census-district" class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
-                            <option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus Dağılımı)</option>
-                            <option value="Kadıköy">Kadıköy</option>
-                            <option value="Beşiktaş">Beşiktaş</option>
-                            <option value="Şişli">Şişli</option>
-                            <option value="Üsküdar">Üsküdar</option>
-                            <option value="Fatih">Fatih</option>
-                            <option value="Esenyurt">Esenyurt</option>
-                            <option value="Bağcılar">Bağcılar</option>
-                            <option value="Ümraniye">Ümraniye</option>
-                            <option value="Pendik">Pendik</option>
-                            <option value="Bakırköy">Bakırköy</option>
-                            <option value="Sarıyer">Sarıyer</option>
-                        </select>
-                    </div>
-
-                    <!-- Policy Question -->
-                    <div>
-                        <label class="block font-mono text-[11px] uppercase tracking-wider text-dune-sand/90 mb-2">
-                            Anket Sorusu / Politika Projesi
-                        </label>
-                        <textarea id="census-question" rows="3" placeholder="Halka sormak istediğiniz anket sorusunu veya politika teklifini buraya yazın..." class="w-full bg-dune-900/80 text-sm font-sans text-dune-parchment p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 transition-all resize-none leading-relaxed placeholder:text-dune-muted/40"></textarea>
-                    </div>
-
-                    <!-- Sample Size -->
-                    <div>
-                        <div class="flex items-center justify-between font-mono text-xs mb-2">
-                            <span class="text-dune-muted">SENTETİK ÖRNEKLEM (N):</span>
-                            <span id="sample-label" class="text-dune-sand font-bold">1,000 NÜFUS İKİZİ</span>
-                        </div>
-                        <select id="census-sample-size" onchange="document.getElementById('sample-label').innerText = this.value + ' NÜFUS İKİZİ'" class="w-full bg-dune-900/80 text-xs font-mono text-dune-parchment p-3 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60">
-                            <option value="100">100 Kişi (Hızlı Test)</option>
-                            <option value="500">500 Kişi (Standart Yerel)</option>
-                            <option value="1000" selected>1,000 Kişi (TÜİK Temsiliyeti - Hata Payı ±%3.1)</option>
-                            <option value="2500">2,500 Kişi (Akademik Hassasiyet - Hata Payı ±%1.9)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Bar -->
-            <div class="p-6 lg:p-8 journey-border-t bg-dune-950/90 space-y-3">
-                <button id="run-trigger" onclick="handleExecute()" class="w-full py-4 px-6 rounded-lg bg-gradient-to-r from-dune-sand via-dune-amber to-dune-terracotta text-dune-950 font-display font-bold text-sm tracking-wider uppercase transition-all duration-300 hover:brightness-110 shadow-lg shadow-dune-amber/20 flex items-center justify-center space-x-2">
-                    <span>Simülasyonu Başlat</span>
-                    <span class="font-sans">→</span>
-                </button>
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                    <span id="exec-status" class="text-dune-muted">DURUM: BEKLEMEDE</span>
-                    <span class="text-dune-sand/60">SEGE-NUTS2 ENGINE</span>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CENTER & RIGHT OBSERVATION CANVAS -->
-        <main class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-y-auto">
-            
-            <!-- MAIN SIMULATION STREAM -->
-            <div class="flex-1 p-6 lg:p-10 space-y-8 min-h-0">
-                
-                <!-- Atmospheric Canvas Banner -->
-                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 journey-border-b pb-4">
-                    <div class="space-y-1">
-                        <span id="canvas-tag" class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase">GÖZLEM MASASI</span>
-                        <h3 class="text-xl font-serif text-dune-parchment">Simülasyon Sonuçları & Analiz</h3>
-                    </div>
-                    <span id="canvas-title-right" class="font-mono text-xs text-dune-muted">CANLI OTURUM TUTANAĞI</span>
-                </div>
-
-                <!-- Simulation Output Deck -->
-                <div id="main-content-deck" class="space-y-6">
-                    
-                    <!-- Atmospheric Initial State -->
-                    <div class="py-28 text-center space-y-4">
-                        <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
-                        <h4 class="text-2xl font-serif text-dune-parchment">Sessizliği Bozmak İçin Bir Soru Sorun</h4>
-                        <p class="text-xs text-dune-muted font-sans max-w-md mx-auto leading-relaxed">
-                            Soldaki panelden hedef kitleyi ve tartışma konusunu belirleyin. 
-                            1.000 kişilik yapay nüfus, Türkiye'nin gerçek sosyolojik dinamikleriyle sandık başında buluşsun.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- RIGHT EXECUTIVE STRATEGY DECK (SIDEBAR) -->
-            <aside class="w-full lg:w-80 journey-border-l bg-dune-950/40 backdrop-blur-md p-6 lg:p-8 flex flex-col shrink-0 space-y-8">
-                
-                <div>
-                    <span class="font-mono text-[10px] tracking-[0.2em] text-dune-sand uppercase block mb-1">
-                        STRATEJİK SENTEZ
-                    </span>
-                    <h4 class="text-lg font-serif text-dune-parchment">Kamuoyu Eğilimi</h4>
-                </div>
-
-                <!-- Strategic KPI Card -->
-                <div class="journey-glass p-5 rounded-xl space-y-3">
-                    <span class="font-mono text-[10px] text-dune-muted uppercase tracking-wider block">
-                        GENEL MUTABAKAT ORANI
-                    </span>
-                    <div id="res-rate" class="text-4xl font-serif font-bold text-dune-sand">
-                        --%
-                    </div>
-                    <div id="res-conf" class="text-xs font-mono text-dune-muted">
-                        %95 Güven Aralığı
-                    </div>
-                </div>
-
-                <!-- Top Opposition Barriers -->
-                <div class="space-y-3">
-                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-wider block">
-                        EN BÜYÜK DİRENÇ NOKTALARI
-                    </span>
-                    <ul id="res-barriers" class="space-y-2 text-xs font-sans text-dune-parchment/80 leading-relaxed">
-                        <li class="text-dune-muted/60 font-serif italic">Simülasyon çalıştırıldığında direnç dinamikleri burada listelenecektir.</li>
-                    </ul>
-                </div>
-
-                <!-- Executive Strategic Action -->
-                <div class="journey-glass p-5 rounded-xl space-y-2 border-l-2 border-l-dune-sand">
-                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-wider block">
-                        YÖNETİCİ EYLEM PLANI
-                    </span>
-                    <p id="res-strategic" class="text-xs font-sans text-dune-parchment/90 leading-relaxed">
-                        Toplumsal mutabakatı artırmak ve direnci kırmak için önerilen politika adımı sentezlenecektir.
-                    </p>
-                </div>
-
-            </aside>
-
-        </main>
-
-    </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL: 1-ON-1 DEEP SOCRATIC INTERROGATION  -->
-    <!-- ========================================== -->
-    <div id="interrogation-modal" class="fixed inset-0 z-50 bg-dune-950/85 backdrop-blur-xl flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-2xl journey-glass p-6 lg:p-8 rounded-2xl space-y-5 max-h-[90vh] flex flex-col shadow-2xl border border-dune-sand/30">
-            <!-- Modal Header -->
-            <div class="flex items-start justify-between journey-border-b pb-4 shrink-0">
-                <div>
-                    <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">BİREBİR DERİN MÜLAKAT</span>
-                    <h3 id="modal-persona-name" class="text-2xl font-serif text-dune-parchment mt-0.5">Yurttaş İsmi</h3>
-                    <div id="modal-persona-bio" class="font-mono text-xs text-dune-muted mt-0.5">35 Yaş, Mühendis // İstanbul / Kadıköy</div>
-                </div>
-                <button onclick="closeInterrogationModal()" class="text-dune-muted hover:text-dune-sand font-mono text-xs px-3 py-1.5 rounded-lg border border-dune-border transition-all">
-                    ✕ Kapat
-                </button>
-            </div>
-
-            <!-- Initial Stance Quote -->
-            <div class="p-4 rounded-xl bg-dune-900/60 border border-dune-border shrink-0">
-                <span class="font-mono text-[10px] text-dune-sand uppercase block mb-1">İLK ANKETTEKİ GEREKÇESİ:</span>
-                <p id="modal-persona-initial" class="font-serif italic text-sm text-dune-parchment/90 leading-relaxed">"..."</p>
-            </div>
-
-            <!-- Conversation Stream -->
-            <div id="modal-chat-history" class="flex-1 overflow-y-auto space-y-4 p-4 rounded-xl bg-dune-950/70 border border-dune-border min-h-[220px]">
-                <!-- Chat Bubbles Render Here -->
+            <!-- Dialogue Stream -->
+            <div id="modal-chat-stream" class="flex-1 overflow-y-auto space-y-4 py-2 min-h-[220px]">
+                <!-- Chat Messages -->
             </div>
 
             <!-- Question Input -->
-            <div class="flex items-center space-x-2 shrink-0 pt-2">
-                <input id="modal-question-input" type="text" onkeydown="if(event.key==='Enter') sendInterrogationQuestion()" placeholder="Bu yurttaşa derinlemesine bir soru sorun (ör: 'Kiran ne kadar?', 'Şu şartla onaylar mısın?')..." class="flex-1 bg-dune-900/80 text-dune-parchment font-sans text-sm p-3.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 placeholder:text-dune-muted/40">
-                <button id="modal-send-btn" onclick="sendInterrogationQuestion()" class="px-6 py-3.5 bg-dune-sand hover:bg-dune-amber text-dune-950 font-display font-semibold text-xs uppercase tracking-wider rounded-lg transition-all shadow-md">
-                    Sor →
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10 shrink-0">
+                <input 
+                    id="modal-chat-input" 
+                    type="text" 
+                    placeholder="Bu yurttaşa derinlemesine bir soru sorun..." 
+                    class="clean-input flex-1 py-2.5 text-base font-serif-editorial italic placeholder:text-[#8e889b]/40"
+                    onkeydown="if(event.key==='Enter') sendInterviewQuestion()"
+                />
+                <button 
+                    id="modal-send-btn"
+                    onclick="sendInterviewQuestion()" 
+                    class="text-xs font-mono text-[#d4a373] hover:text-white uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                    Konuş →
                 </button>
             </div>
+
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- INTERACTIVE JAVASCRIPT LOGIC               -->
-    <!-- ========================================== -->
+    <!-- ============================================================== -->
+    <!-- JAVASCRIPT REAL GEOJSON CARTOGRAPHY ENGINE                     -->
+    <!-- ============================================================== -->
     <script>
-        // 1. Ambient Sand / Ember Dust Particle Engine
-        (function initSandCanvas() {
-            const canvas = document.getElementById('sand-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
+        let currentSelectedProvince = 'Tüm Türkiye';
+        let activeQuestion = '';
+        let allBallots = [];
+        let activeCitizen = null;
+        let interviewHistory = [];
+        let geoData = null;
 
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-
-            const particles = [];
-            const count = 45;
-
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    size: Math.random() * 1.8 + 0.4,
-                    speedX: Math.random() * 0.4 - 0.2,
-                    speedY: -(Math.random() * 0.3 + 0.1),
-                    alpha: Math.random() * 0.5 + 0.1,
-                    hue: Math.random() > 0.6 ? 35 : 25 // Golden Amber
-                });
-            }
-
-            function render() {
-                ctx.clearRect(0, 0, width, height);
-                for (let p of particles) {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-
-                    if (p.y < 0) {
-                        p.y = height;
-                        p.x = Math.random() * width;
-                    }
-                    if (p.x < 0) p.x = width;
-                    if (p.x > width) p.x = 0;
-
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.alpha})`;
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = `hsla(${p.hue}, 80%, 60%, 0.4)`;
-                    ctx.fill();
-                }
-                requestAnimationFrame(render);
-            }
-            render();
-        })();
-
-        // 2. Mode Switching Logic
-        let currentMode = 'focus';
-
-        function switchMode(mode) {
-            currentMode = mode;
-            const btnFocus = document.getElementById('tab-focus');
-            const btnCensus = document.getElementById('tab-census');
-            const ctrlFocus = document.getElementById('controls-focus');
-            const ctrlCensus = document.getElementById('controls-census');
-            const pTitle = document.getElementById('panel-title');
-            const pDesc = document.getElementById('panel-desc');
-            const pStepTag = document.getElementById('panel-step-tag');
-            const canvasTag = document.getElementById('canvas-tag');
-            const canvasRight = document.getElementById('canvas-title-right');
-
-            if (mode === 'focus') {
-                btnFocus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm";
-                btnCensus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300";
-                ctrlFocus.classList.remove('hidden');
-                ctrlCensus.classList.add('hidden');
-                pTitle.innerText = "Masa Simülatörü";
-                pDesc.innerText = "Farklı toplumsal habitus ve ahlaki koordinatlara sahip insanların canlı grup diyaloğu";
-                pStepTag.innerText = "MOD 01 // NİTELİKSEL DİYALOG";
-                canvasTag.innerText = "GÖZLEM MASASI";
-                canvasRight.innerText = "CANLI OTURUM TUTANAĞI";
-            } else {
-                btnCensus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase transition-all duration-300 bg-dune-sand text-dune-950 font-semibold shadow-sm";
-                btnFocus.className = "px-5 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase text-dune-muted hover:text-dune-parchment transition-all duration-300";
-                ctrlCensus.classList.remove('hidden');
-                ctrlFocus.classList.add('hidden');
-                pTitle.innerText = "Yurttaş Sandığı";
-                pDesc.innerText = "TÜİK ve SEGE ağırlıklı 1.000+ kişilik sentetik kamuoyu araştırması";
-                pStepTag.innerText = "MOD 02 // KANTİTATİF NÜFUS SAYIMI";
-                canvasTag.innerText = "KANTİTATİF RAPOR";
-                canvasRight.innerText = "KAMUOYU RAPORU";
-            }
-        }
-
-        function updateDistrictOptions() {
-            const city = document.getElementById('census-city').value;
-            const distSelect = document.getElementById('census-district');
-            distSelect.innerHTML = '<option value="Tümü" selected>Tüm İlçeler (Homojen Nüfus Dağılımı)</option>';
-
-            const distMap = {
-                "İstanbul": ["Kadıköy", "Beşiktaş", "Şişli", "Üsküdar", "Fatih", "Esenyurt", "Bağcılar", "Ümraniye", "Pendik", "Bakırköy", "Sarıyer", "Kartal", "Başakşehir", "Beylikdüzü"],
-                "Ankara": ["Çankaya", "Keçiören", "Yenimahalle", "Mamak", "Etimesgut", "Sincan", "Altındağ", "Gölbaşı"],
-                "İzmir": ["Konak", "Karşıyaka", "Bornova", "Buca", "Çiğli", "Bayraklı", "Alsancak", "Karabağlar"],
-                "Bursa": ["Nilüfer", "Osmangazi", "Yıldırım", "Mudanya", "İnegöl"],
-                "Antalya": ["Muratpaşa", "Kepez", "Konyaaltı", "Alanya", "Manavgat"]
-            };
-
-            if (distMap[city]) {
-                distMap[city].forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d;
-                    opt.innerText = d;
-                    distSelect.appendChild(opt);
-                });
-            }
-        }
-
-        function handleExecute() {
-            if (currentMode === 'focus') {
-                runFocusSimulation();
-            } else {
-                runCensusPoll();
-            }
-        }
-
-        async function runFocusSimulation() {
-            const target = document.getElementById('target-input').value;
-            const pitch = document.getElementById('pitch-input').value;
-            const count = parseInt(document.getElementById('count-slider').value);
-            const apiKey = document.getElementById('key-input').value.trim();
-
-            const btn = document.getElementById('run-trigger');
-            const statusLabel = document.getElementById('exec-status');
-            const deck = document.getElementById('main-content-deck');
-
-            btn.disabled = true;
-            btn.innerHTML = '<span>Simülasyon Çözümleniyor...</span>';
-            statusLabel.innerText = 'DURUM: NEDENSEL VEKTÖRLER VE MASA DİYALOĞU HESAPLANIYOR';
-            statusLabel.className = 'font-mono text-xs text-dune-sand animate-pulse';
-
-            deck.innerHTML = `
-                <div class="py-24 text-center font-sans space-y-4">
-                    <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
-                    <div class="text-lg font-serif text-dune-parchment">Düşünceler Birbirine Dokunuyor...</div>
-                    <div class="text-xs text-dune-muted font-mono max-w-sm mx-auto">TÜİK, NUTS-2 ve Bourdieu Habitus matrisi çözümleniyor</div>
-                </div>
-            `;
-
+        // 1. Load Real Turkey GeoJSON & Render with D3
+        async function loadRealTurkeyMap() {
             try {
-                const payload = {
-                    target_audience: target,
-                    pitch_or_question: pitch,
-                    count: count,
-                    monte_carlo_n: 1000
-                };
-                if (apiKey) payload.api_key = apiKey;
+                const resp = await fetch('/static/assets/tr-cities.json');
+                geoData = await resp.json();
 
-                const resp = await fetch('/api/v1/focus-group/simulate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const svg = d3.select("#turkey-svg");
+                const width = 960;
+                const height = 440;
 
-                const data = await resp.json();
-                renderFocusOutput(data);
-            } catch (e) {
-                deck.innerHTML = `<div class="p-6 bg-rose-950/30 text-rose-300 rounded-xl border border-rose-900 font-mono text-xs">Simülasyon Hatası: ${e.message}</div>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span>Simülasyonu Başlat</span><span class="font-sans">→</span>';
-                statusLabel.innerText = 'DURUM: TAMAMLANDI';
-                statusLabel.className = 'font-mono text-xs text-emerald-400';
+                // Configure Mercator Projection tailored to Turkey
+                const projection = d3.geoMercator()
+                    .center([35.5, 39.0]) // Turkey geographic centroid
+                    .scale(2300)
+                    .translate([width / 2, height / 2]);
+
+                const pathGenerator = d3.geoPath().projection(projection);
+                const tooltip = document.getElementById('map-tooltip');
+
+                svg.selectAll("path")
+                    .data(geoData.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", pathGenerator)
+                    .attr("class", "map-province")
+                    .attr("id", d => `province-${d.properties.name}`)
+                    .attr("data-name", d => d.properties.name)
+                    .on("mouseover", function(event, d) {
+                        tooltip.style.display = 'block';
+                        tooltip.innerText = `${d.properties.name} (#${d.properties.number || ''})`;
+                    })
+                    .on("mousemove", function(event) {
+                        tooltip.style.left = (event.pageX + 12) + 'px';
+                        tooltip.style.top = (event.pageY - 28) + 'px';
+                    })
+                    .on("mouseout", function() {
+                        tooltip.style.display = 'none';
+                    })
+                    .on("click", function(event, d) {
+                        selectProvinceByName(d.properties.name);
+                    });
+
+            } catch (err) {
+                console.error("GeoJSON render error:", err);
             }
         }
 
-        function renderFocusOutput(data) {
-            const deck = document.getElementById('main-content-deck');
-            deck.innerHTML = '';
+        const CITY_TOPIC_PROMPTS = {
+            'Sinop': [
+                'Yapılması planlanan nükleer santral hakkında ne düşünüyorsunuz?',
+                'Kıyı balıkçılığı ve Karadeniz eko-turizm teşvikleri artırılmalı mı?',
+                'Bölgedeki genç istihdamı ve sanayi altyapısı yeterli mi?'
+            ],
+            'Hakkari': [
+                'Sınır kapısı ticareti ve yol altyapı yatırımları hakkında ne düşünüyorsunuz?',
+                'Bölgede hayvancılık ve yayla meralarına yönelik devlet destekleri yeterli mi?',
+                'Gençler için teknoloji ve sosyal yaşam alanları açılmalı mı?'
+            ],
+            'İstanbul': [
+                'Kentsel dönüşümde kira yardımının artırılması ve zorunlu tahliye kararları hakkında ne düşünüyorsunuz?',
+                'Toplu ulaşım ve taksi düzenlemeleri kent yaşamını rahatlattı mı?',
+                'Marmara Denizi kıyı koruma ve sahil dolgu projelerine nasıl bakıyorsunuz?'
+            ],
+            'İzmir': [
+                'Körfez temizliği ve kıyı düzenleme projeleri hakkında ne düşünüyorsunuz?',
+                'Tarihi Kemeraltı ve Alsancak dokusunun korunması yeterli mi?',
+                'Yenilenebilir rüzgar enerjisi yatırımları tarım alanlarını etkiliyor mu?'
+            ],
+            'Antalya': [
+                'Turizm tesislerinin genişletilmesi ile tarım arazilerinin imara açılması hakkında ne düşünüyorsunuz?',
+                'Yaz aylarındaki su tüketimi ve kuraklık önlemleri yeterli mi?',
+                'Kira fiyatlarındaki artışa karşı yerel çalışanlara lojman desteği verilmeli mi?'
+            ],
+            'Ankara': [
+                'Kentin toplu taşıma ve metro ağının genişletilmesi planları hakkında ne düşünüyorsunuz?',
+                'Kamu istihdamı ve teknokent yatırımlarının şehre katkısı nedir?',
+                'Başkentin yeşil alan ve park politikaları yeterli mi?'
+            ],
+            'Diyarbakır': [
+                'Sur ilçesi restorasyonu ve tarihi mekanların korunması hakkında ne düşünüyorsunuz?',
+                'Güneydoğu Anadolu tarımsal sulama projeleri (GAP) çiftçiye ulaşıyor mu?',
+                'Yerel ticaret ve organize sanayi yatırımları nasıl hızlandırılmalı?'
+            ],
+            'Trabzon': [
+                'Yayla turizmi ve dağlık alan imar düzenlemeleri hakkında ne düşünüyorsunuz?',
+                'Fındık ve çay taban fiyatları üreticiyi tatmin ediyor mu?',
+                'Demiryolu ve lojistik liman projeleri kente kazandırılmalı mı?'
+            ]
+        };
 
-            const discussions = data.odak_grubu_tartismasi || [];
-            discussions.forEach((item, idx) => {
-                const card = document.createElement('div');
-                card.className = 'journey-glass journey-glass-hover p-6 lg:p-8 rounded-2xl space-y-5';
+        function selectProvinceByName(provinceName) {
+            currentSelectedProvince = provinceName;
+            document.getElementById('active-region-label').innerText = `Seçili Coğrafya: ${provinceName}`;
 
-                let badgeColor = 'text-dune-sand border-dune-sand/30 bg-dune-sand/10';
-                if (item.karar && item.karar.includes('Kabul')) {
-                    badgeColor = 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20';
-                } else if (item.karar && item.karar.includes('Red')) {
-                    badgeColor = 'text-rose-400 border-rose-500/30 bg-rose-950/20';
-                }
+            // Highlight Province
+            d3.selectAll('.map-province').classed('selected', false);
+            if (provinceName !== 'Tüm Türkiye') {
+                d3.selectAll('.map-province').filter(d => d.properties.name === provinceName).classed('selected', true);
+            }
 
-                card.innerHTML = `
-                    <div class="flex items-baseline justify-between journey-border-b pb-4">
-                        <div class="flex items-center space-x-3">
-                            <span class="font-mono text-xs text-dune-sand/60">◈ 0${idx+1}</span>
-                            <span class="font-serif text-lg font-semibold text-dune-parchment tracking-wide">${item.ad_soyad}</span>
-                            <span class="font-mono text-xs text-dune-muted">— ${item.meslek}</span>
-                        </div>
-                        <span class="px-3 py-1 font-mono text-[10px] uppercase tracking-wider rounded-full border ${badgeColor}">
-                            ${item.karar}
-                        </span>
-                    </div>
+            const qInput = document.getElementById('main-question');
+            const q = qInput.value.trim();
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
-                        <div class="space-y-2">
-                            <span class="font-mono text-[10px] text-dune-sand/70 uppercase tracking-widest block">
-                                DERİN İÇ SES & BİLİNÇALTI:
-                            </span>
-                            <p class="font-serif italic text-base text-dune-parchment/85 leading-relaxed">
-                                "${item.ic_ses_bilincalti}"
-                            </p>
-                        </div>
-                        <div class="space-y-2 md:border-l md:border-dune-border md:pl-6">
-                            <span class="font-mono text-[10px] text-dune-muted uppercase tracking-widest block">
-                                MASADAKİ SÖZLÜ İFADESİ:
-                            </span>
-                            <p class="font-sans text-sm text-dune-parchment leading-relaxed">
-                                "${item.disa_soylenen_soz}"
-                            </p>
-                        </div>
-                    </div>
-                `;
-                deck.appendChild(card);
-            });
-
-            // Update Right Sidebar
-            const rep = data.yonetici_pazar_analiz_raporu || {};
-            document.getElementById('res-rate').innerText = (rep.genel_kabul_orani_yuzde || '--') + '%';
-            document.getElementById('res-conf').innerText = rep.kutuplasma_indeksi_skoru ? `Kutuplaşma: ${rep.kutuplasma_indeksi_skoru}` : '%95 Güven Aralığı';
-
-            const barriersList = document.getElementById('res-barriers');
-            barriersList.innerHTML = '';
-            (rep.en_buyuk_3_itiraz_bariyeri || []).forEach(b => {
-                const li = document.createElement('li');
-                li.innerText = `◈ ${b}`;
-                barriersList.appendChild(li);
-            });
-
-            document.getElementById('res-strategic').innerText = rep.stratejik_urun_tavsiyesi || 'Sentez tamamlandı.';
+            if (q) {
+                simulateNationwide();
+            } else {
+                renderCityPromptDossier(provinceName);
+            }
         }
 
-        async function runCensusPoll() {
-            const city = document.getElementById('census-city').value;
-            const district = document.getElementById('census-district').value;
-            const question = document.getElementById('census-question').value;
-            const sampleSize = parseInt(document.getElementById('census-sample-size').value);
+        function renderCityPromptDossier(provinceName) {
+            const cityName = provinceName === 'Tüm Türkiye' ? 'Türkiye Geneli' : provinceName;
+            document.getElementById('gazette-header-title').innerText = `${cityName} Dosyası & Toplumsal Gündem`;
+            document.getElementById('gazette-count-info').innerText = `Soru Bekleniyor`;
+            
+            const defaultPrompts = [
+                `${cityName} genelinde ekonomik kalkınma ve yeni istihdam yatırımları hakkında ne düşünüyorsunuz?`,
+                `${cityName} kentsel altyapı, ulaşım ve çevre projeleri yeterli mi?`,
+                `${cityName} sakinlerinin hayat pahalılığı ve geçim şartları karşısındaki beklentileri nelerdir?`
+            ];
+            const prompts = CITY_TOPIC_PROMPTS[provinceName] || defaultPrompts;
 
-            const btn = document.getElementById('run-trigger');
-            const statusLabel = document.getElementById('exec-status');
-            const deck = document.getElementById('main-content-deck');
+            const stream = document.getElementById('gazette-stream');
+            stream.innerHTML = `
+                <div class="py-8 px-6 bg-white/[0.02] border border-white/10 rounded-xl space-y-6">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 text-xs font-mono text-[#d4a373]">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>${cityName.toUpperCase()} SEÇİLDİ</span>
+                        </div>
+                        <h3 class="text-xl font-serif-editorial text-[#f5f2eb]">
+                            ${cityName} halkının nabzını ölçmek için yukarıdaki kutuya bir soru yazın veya aşağıdaki sıcak konulardan birine dokunun:
+                        </h3>
+                    </div>
 
-            btn.disabled = true;
-            btn.innerHTML = '<span>Sandıklar Sayılıyor...</span>';
-            statusLabel.innerText = `DURUM: ${city.toUpperCase()} (${district}) İÇİN N=${sampleSize} NÜFUS İKİZİ SAYILIYOR`;
-            statusLabel.className = 'font-mono text-xs text-dune-sand animate-pulse';
-
-            deck.innerHTML = `
-                <div class="py-24 text-center font-sans space-y-4">
-                    <div class="text-dune-sand text-3xl font-display rune-glow animate-pulse">◈</div>
-                    <div class="text-lg font-serif text-dune-parchment">1.000 Yurttaşın Sesi Dinleniyor...</div>
-                    <div class="text-xs text-dune-muted font-mono max-w-sm mx-auto">TÜİK NUTS-2 ve SEGE Sosyoekonomik İlçe Ağırlıkları Yükleniyor</div>
+                    <div class="space-y-3 pt-2">
+                        <span class="text-[11px] font-mono tracking-wider text-[#8e889b] uppercase block">
+                            ◈ ${cityName} İçin Sıcak Gündem Başlıkları:
+                        </span>
+                        <div class="flex flex-col gap-2">
+                            ${prompts.map(p => `
+                                <button 
+                                    onclick="pickPrompt('${p.replace(/'/g, "\\'")}')" 
+                                    class="text-left py-3 px-4 rounded-lg bg-white/5 hover:bg-[#d4a373]/10 border border-white/5 hover:border-[#d4a373]/40 text-sm font-serif-editorial text-[#f5f2eb] hover:text-[#d4a373] transition-all flex items-center justify-between group cursor-pointer"
+                                >
+                                    <span>"${p}"</span>
+                                    <span class="text-xs font-mono text-[#8e889b] group-hover:text-[#d4a373] shrink-0 ml-3">Soruyu Sor →</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
+        }
+
+        function pickPrompt(promptText) {
+            document.getElementById('main-question').value = promptText;
+            simulateNationwide();
+        }
+
+        async function simulateNationwide() {
+            const qInput = document.getElementById('main-question');
+            const q = qInput.value.trim();
+            if (!q) {
+                renderCityPromptDossier(currentSelectedProvince);
+                return;
+            }
+            activeQuestion = q;
+
+            const btn = document.getElementById('ask-btn');
+            const btnText = document.getElementById('ask-btn-text');
+            const status = document.getElementById('survey-status-text');
+
+            btn.disabled = true;
+            btnText.innerText = 'Hesaplanıyor...';
+            status.innerText = 'Durum: Toplumun Sesi Çözümleniyor';
 
             try {
                 const resp = await fetch('/api/v1/census/poll', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        city: city,
-                        district: district,
-                        question: question,
-                        sample_size: sampleSize
+                        city: currentSelectedProvince === 'Tüm Türkiye' ? 'Tüm Türkiye' : currentSelectedProvince,
+                        district: 'Tümü',
+                        question: q,
+                        sample_size: 1000
                     })
                 });
 
                 const data = await resp.json();
-                window._lastCensusReport = data;
-                renderCensusOutput(data);
+                renderSimulationResults(data);
+                status.innerText = 'Durum: Tamamlandı';
             } catch (e) {
-                deck.innerHTML = `<div class="p-6 bg-rose-950/30 text-rose-300 rounded-xl border border-rose-900 font-mono text-xs">Anket Hatası: ${e.message}</div>`;
+                status.innerText = `Hata: ${e.message}`;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>Simülasyonu Başlat</span><span class="font-sans">→</span>';
-                statusLabel.innerText = 'DURUM: ANKET TAMAMLANDI';
-                statusLabel.className = 'font-mono text-xs text-emerald-400';
+                btnText.innerText = 'Soruyu Sor →';
             }
         }
 
-        function renderCensusOutput(d) {
-            const deck = document.getElementById('main-content-deck');
-            deck.innerHTML = `
-                <!-- 0. REAL-TIME WHAT-IF COUNTERFACTUAL STRESS TEST BAR -->
-                <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5 border border-dune-sand/25">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 journey-border-b pb-3">
-                        <div class="flex items-center space-x-2 font-mono text-xs text-dune-sand">
-                            <span class="text-base rune-glow">◈</span>
-                            <span class="font-semibold uppercase tracking-wider">CANLI WHAT-IF MAKROEKONOMİK STRES TESTİ</span>
-                        </div>
-                        <span class="font-mono text-[10px] text-dune-muted">1.000 Yurttaşın Kararını Anında Yeniden Hesapla</span>
+        function renderSimulationResults(data) {
+            // 1. Result Headline Bar
+            const headlineBar = document.getElementById('results-headline-bar');
+            headlineBar.classList.remove('hidden');
+
+            document.getElementById('res-question-title').innerText = `"${data.soru_veya_politika}"`;
+            document.getElementById('res-kabul-pct').innerText = `%${data.genel_kabul_yuzde.toFixed(1)}`;
+            document.getElementById('res-ret-pct').innerText = `%${data.genel_ret_yuzde.toFixed(1)}`;
+            document.getElementById('res-kararsiz-pct').innerText = `%${data.genel_kararsiz_yuzde.toFixed(1)}`;
+
+            // 2. Color Provinces
+            const isPass = data.genel_kabul_yuzde >= data.genel_ret_yuzde;
+            d3.selectAll('.map-province')
+                .classed('pass', isPass)
+                .classed('reject', !isPass);
+
+            // 3. Render Ideological HUD & Gazette Feed
+            allBallots = data.bireysel_oylar || [];
+            const cityName = data.sehir || data.hedef_bolge || currentSelectedProvince || 'Türkiye';
+            document.getElementById('gazette-count-info').innerText = `${allBallots.length} Bireysel Tutanak (${cityName})`;
+            document.getElementById('gazette-header-title').innerText = `${cityName} Sakinlerinin Ses Kayıtları`;
+
+            const ideologicalHtml = (data.siyasi_taban_kirilimi && data.siyasi_taban_kirilimi.length > 0) ? `
+                <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3 font-mono text-xs mb-6">
+                    <div class="flex items-center justify-between text-[#d4a373] text-[11px] uppercase tracking-wider font-semibold border-b border-white/5 pb-2">
+                        <span>🏛️ Siyasi ve İdeolojik Taban Kırılımı (Simülasyon Çıktısı)</span>
+                        <span class="text-neutral-400">N=${allBallots.length}</span>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
-                            <div class="flex justify-between text-[11px] text-dune-muted">
-                                <span>ASGARİ ÜCRET ŞOKU:</span>
-                                <span id="val-wage" class="text-dune-sand font-bold">%0</span>
-                            </div>
-                            <input id="slider-wage" type="range" min="-20" max="50" step="5" value="0" oninput="document.getElementById('val-wage').innerText = (this.value >= 0 ? '+%' : '%') + this.value" class="w-full">
-                        </div>
-
-                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
-                            <div class="flex justify-between text-[11px] text-dune-muted">
-                                <span>ENFLASYON ŞOKU:</span>
-                                <span id="val-inf" class="text-rose-400 font-bold">%0</span>
-                            </div>
-                            <input id="slider-inf" type="range" min="0" max="60" step="5" value="0" oninput="document.getElementById('val-inf').innerText = '+%' + this.value" class="w-full">
-                        </div>
-
-                        <div class="space-y-2 bg-dune-950/70 p-4 rounded-xl border border-dune-border">
-                            <div class="flex justify-between text-[11px] text-dune-muted">
-                                <span>KİRA ARTIŞ ŞOKU:</span>
-                                <span id="val-rent" class="text-dune-amber font-bold">%0</span>
-                            </div>
-                            <input id="slider-rent" type="range" min="0" max="80" step="10" value="0" oninput="document.getElementById('val-rent').innerText = '+%' + this.value" class="w-full">
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                        <span id="shock-status" class="font-sans text-xs text-dune-muted">Slider değerlerini değiştirip ekonomik dalgalanmayı test edin.</span>
-                        <button onclick="applyCounterfactualShock()" class="px-5 py-2.5 rounded-lg bg-dune-sand hover:bg-dune-amber text-dune-950 font-display font-semibold text-xs uppercase tracking-wider transition-all shadow-md">
-                            Şoku Uygula →
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Grand Metric Showcase -->
-                <div class="journey-glass p-8 rounded-2xl space-y-6">
-                    <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 journey-border-b pb-5">
-                        <div class="space-y-1">
-                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">SANDIK BİLANÇOSU // ${d.hedef_bolge}</span>
-                            <h2 class="text-2xl lg:text-3xl font-serif text-dune-parchment leading-tight">"${d.soru_veya_politika}"</h2>
-                        </div>
-                        <div class="text-right font-mono flex items-center space-x-3 shrink-0">
-                            <div>
-                                <span class="text-xs text-dune-muted">ÖRNEKLEM: N = ${d.orneklem_buyuklugu}</span>
-                                <div class="text-[10px] text-emerald-400 font-bold">${d.hata_payi_yuzde} Hata Payı (${d.guven_araligi_yuzde_95})</div>
-                            </div>
-                            <button onclick="exportExecutiveReport()" class="px-3.5 py-2 rounded-lg bg-dune-900/90 hover:bg-dune-850 text-dune-parchment font-mono text-[11px] uppercase tracking-wider border border-dune-border transition-all">
-                                📄 Resmi Brif [PDF]
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 3-Way Vote Split -->
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/20">
-                            <span class="font-mono text-[10px] text-emerald-400 uppercase tracking-widest block mb-1">KABUL</span>
-                            <span id="metric-kabul" class="text-3xl lg:text-4xl font-serif font-bold text-emerald-300">%${d.genel_kabul_yuzde}</span>
-                        </div>
-                        <div class="p-5 rounded-xl bg-rose-950/20 border border-rose-500/20">
-                            <span class="font-mono text-[10px] text-rose-400 uppercase tracking-widest block mb-1">RET</span>
-                            <span id="metric-ret" class="text-3xl lg:text-4xl font-serif font-bold text-rose-300">%${d.genel_ret_yuzde}</span>
-                        </div>
-                        <div class="p-5 rounded-xl bg-dune-sand/10 border border-dune-sand/20">
-                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-widest block mb-1">KARARSIZ</span>
-                            <span id="metric-kararsiz" class="text-3xl lg:text-4xl font-serif font-bold text-dune-sand">%${d.genel_kararsiz_yuzde}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cross-Tabs: District & Demographics -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- District Breakdown -->
-                    <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-4">
-                        <span class="font-mono text-[11px] text-dune-sand uppercase tracking-wider block journey-border-b pb-3">
-                            BÖLGESEL KABUL DAĞILIMI
-                        </span>
-                        <div class="space-y-3 font-mono text-xs max-h-64 overflow-y-auto pr-2">
-                            ${d.ilce_kirilimi.map(x => `
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-dune-parchment/90 text-[11px]">
-                                        <span>${x.segment} <span class="text-dune-muted">(N=${x.orneklem_sayisi})</span></span>
-                                        <span class="font-bold text-dune-sand">%${x.kabul_yuzde} Kabul</span>
-                                    </div>
-                                    <div class="w-full h-1.5 bg-dune-950 rounded-full flex overflow-hidden">
-                                        <div style="width: ${x.kabul_yuzde}%" class="bg-emerald-400"></div>
-                                        <div style="width: ${x.ret_yuzde}%" class="bg-rose-500"></div>
-                                        <div style="width: ${x.kararsiz_yuzde}%" class="bg-dune-sand"></div>
-                                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        ${data.siyasi_taban_kirilimi.map(tab => `
+                            <div class="p-2.5 rounded bg-black/40 border border-white/5 flex flex-col space-y-1">
+                                <div class="flex items-center justify-between text-neutral-300 font-medium">
+                                    <span class="truncate max-w-[240px] text-xs">${tab.segment}</span>
+                                    <span class="text-neutral-500 text-[10px]">(N=${tab.orneklem_sayisi})</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Age & Housing Breakdown -->
-                    <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5">
-                        <span class="font-mono text-[11px] text-dune-sand uppercase tracking-wider block journey-border-b pb-3">
-                            SOSYO-DEMOGRAFİK KIRILIMLAR
-                        </span>
-                        
-                        <div class="space-y-4 font-mono text-xs">
-                            <div>
-                                <span class="text-[10px] text-dune-muted uppercase block mb-2">MÜLKİYET DURUMU</span>
-                                <div class="space-y-2">
-                                    ${d.barinma_durumu_kirilimi.map(x => `
-                                        <div class="flex items-center justify-between text-[11px] bg-dune-950/70 p-2.5 rounded-lg border border-dune-border">
-                                            <span class="text-dune-parchment font-medium">${x.segment}</span>
-                                            <span class="text-emerald-400">%${x.kabul_yuzde} Kabul</span>
-                                            <span class="text-rose-400">%${x.ret_yuzde} Ret</span>
-                                        </div>
-                                    `).join('')}
+                                <div class="flex items-center justify-between text-[11px] pt-0.5">
+                                    <span class="text-[#52b788]">Kabul: %${tab.kabul_yuzde}</span>
+                                    <span class="text-[#d97746]">Ret: %${tab.ret_yuzde}</span>
+                                    <span class="text-[#d4a373]">Kararsız: %${tab.kararsiz_yuzde}</span>
                                 </div>
                             </div>
-
-                            <div>
-                                <span class="text-[10px] text-dune-muted uppercase block mb-2">YAŞ GRUPLARI</span>
-                                <div class="space-y-2">
-                                    ${d.yas_grubu_kirilimi.map(x => `
-                                        <div class="flex items-center justify-between text-[11px] bg-dune-950/70 p-2.5 rounded-lg border border-dune-border">
-                                            <span class="text-dune-parchment">${x.segment}</span>
-                                            <span class="text-emerald-400">%${x.kabul_yuzde} Evet</span>
-                                            <span class="text-rose-400">%${x.ret_yuzde} Hayır</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- 3. INDIVIDUAL CITIZEN BALLOTS -->
-                <div class="journey-glass p-6 lg:p-8 rounded-2xl space-y-5">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 journey-border-b pb-4">
-                        <div>
-                            <span class="font-mono text-[10px] text-dune-sand uppercase tracking-[0.2em]">BİREYSEL SANDIK KAYITLARI // N=${d.orneklem_buyuklugu}</span>
-                            <h3 class="text-xl font-serif text-dune-parchment mt-0.5">Yurttaş Sandık ve Düşünce Kayıtları</h3>
-                        </div>
-                        
-                        <!-- Search & Filter Controls -->
-                        <div class="flex items-center space-x-2 font-mono text-xs">
-                            <input id="ballot-search" type="text" oninput="filterBallots()" placeholder="İsim, meslek, ilçe ara..." class="bg-dune-950/80 text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none focus:border-dune-sand/60 text-xs w-48 placeholder:text-dune-muted/40">
-                            <select id="ballot-filter" onchange="filterBallots()" class="bg-dune-950/80 text-dune-parchment p-2.5 rounded-lg border border-dune-border focus:outline-none text-xs">
-                                <option value="ALL" selected>Tümü (${d.orneklem_buyuklugu})</option>
-                                <option value="KABUL">Sadece Kabul Edenler</option>
-                                <option value="RET">Sadece Reddedenler</option>
-                                <option value="KARARSIZ">Sadece Kararsızlar</option>
-                                <option value="Kiracı">Kiracılar</option>
-                                <option value="Ev Sahibi">Ev Sahipleri</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Scrollable Ballots List -->
-                    <div id="ballots-container" class="space-y-3.5 max-h-[520px] overflow-y-auto pr-2">
-                        <!-- Filled by JS -->
+                        `).join('')}
                     </div>
                 </div>
-            `;
+            ` : '';
 
-            // Store ballots globally for instant filtering
-            window._currentCensusBallots = d.bireysel_oylar || [];
-            renderBallotsList(window._currentCensusBallots);
-
-            // Update Right Sidebar for Census
-            document.getElementById('res-rate').innerText = `%${d.genel_kabul_yuzde}`;
-            document.getElementById('res-conf').innerText = `${d.hata_payi_yuzde} Hata Payı`;
-
-            const barriersList = document.getElementById('res-barriers');
-            barriersList.innerHTML = '';
-            (d.en_buyuk_toplumsal_direnc_noktalari || []).forEach(b => {
-                const li = document.createElement('li');
-                li.innerText = `◈ ${b}`;
-                barriersList.appendChild(li);
-            });
-
-            document.getElementById('res-strategic').innerText = d.belediye_stratejik_aksiyon_plani || 'Belediye analizi tamamlandı.';
-        }
-
-        function filterBallots() {
-            const query = (document.getElementById('ballot-search').value || '').toLowerCase();
-            const filterType = document.getElementById('ballot-filter').value;
-            const ballots = window._currentCensusBallots || [];
-
-            const filtered = ballots.filter(b => {
-                const matchQuery = !query || 
-                    b.ad_soyad.toLowerCase().includes(query) || 
-                    b.meslek.toLowerCase().includes(query) || 
-                    b.sehir_ilce.toLowerCase().includes(query) ||
-                    b.bireysel_dusuncesi_ve_gerekcesi.toLowerCase().includes(query);
-
-                let matchFilter = true;
-                if (filterType === 'KABUL') matchFilter = b.karar.includes('Kabul');
-                else if (filterType === 'RET') matchFilter = b.karar.includes('Red');
-                else if (filterType === 'KARARSIZ') matchFilter = b.karar.includes('Kararsız');
-                else if (filterType === 'Kiracı') matchFilter = b.barinma_durumu === 'Kiracı';
-                else if (filterType === 'Ev Sahibi') matchFilter = b.barinma_durumu === 'Ev Sahibi';
-
-                return matchQuery && matchFilter;
-            });
-
-            renderBallotsList(filtered);
-        }
-
-        function renderBallotsList(list) {
-            const container = document.getElementById('ballots-container');
-            if (!container) return;
-
-            if (list.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center font-mono text-xs text-dune-muted">Aramanıza uygun kayıt bulunamadı.</div>';
-                return;
-            }
-
-            container.innerHTML = list.slice(0, 100).map((b, idx) => {
-                let badgeClass = 'text-dune-sand border-dune-sand/30 bg-dune-sand/10';
-                if (b.karar.includes('Kabul')) {
-                    badgeClass = 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20';
-                } else if (b.karar.includes('Red')) {
-                    badgeClass = 'text-rose-400 border-rose-500/30 bg-rose-950/20';
-                }
+            const stream = document.getElementById('gazette-stream');
+            const ballotsHtml = allBallots.slice(0, 20).map((b, idx) => {
+                let badgeColor = 'text-[#d4a373]';
+                if (b.karar.includes('Kabul')) badgeColor = 'text-[#52b788]';
+                else if (b.karar.includes('Red')) badgeColor = 'text-[#d97746]';
 
                 return `
-                    <div class="journey-glass journey-glass-hover p-5 rounded-xl space-y-3">
-                        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 journey-border-b pb-2.5">
-                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs">
-                                <span class="text-dune-sand/60">◈ #${b.citizen_id || idx+1}</span>
-                                <span class="font-serif text-base font-semibold text-dune-parchment">${b.ad_soyad}</span>
-                                <span class="text-dune-muted">— ${b.yas} Yaş, ${b.meslek}</span>
-                                <span class="text-dune-muted/80">(${b.sehir_ilce} · ${b.barinma_durumu})</span>
+                    <div class="py-6 space-y-3">
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                <span class="text-xl sm:text-2xl font-normal text-[#f5f2eb]">${b.ad_soyad}</span>
+                                <span class="text-xs font-mono text-[#8e889b]">— ${b.yas} Yaş, ${b.meslek} (${b.sehir_ilce})</span>
                             </div>
-                            <div class="flex items-center space-x-2 shrink-0">
-                                <button onclick="openInterrogationModal(${b.citizen_id || idx+1})" class="px-2.5 py-1 rounded-md bg-dune-900/90 hover:bg-dune-850 text-dune-sand font-mono text-[10px] uppercase border border-dune-border transition-all">
-                                    Birebir Mülakat
-                                </button>
-                                <span class="px-2.5 py-0.5 font-mono text-[10px] uppercase rounded-full border ${badgeClass}">
-                                    ${b.karar}
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-300 font-mono">
+                                    ${b.siyasi_taban || 'Yurttaş'}
+                                </span>
+                                <span class="text-xs font-mono uppercase tracking-wider ${badgeColor} font-semibold">
+                                    [${b.karar}]
                                 </span>
                             </div>
                         </div>
-                        <p class="font-serif italic text-sm text-dune-parchment/90 leading-relaxed pt-0.5">
+
+                        <p class="text-base sm:text-lg text-[#f5f2eb]/90 italic leading-relaxed pt-1 font-serif-editorial">
                             "${b.bireysel_dusuncesi_ve_gerekcesi}"
                         </p>
+
+                        <div class="pt-2 flex items-center justify-between text-xs font-mono">
+                            <span class="text-[#8e889b]">Gelir: ₺${(b.aylik_net_gelir_tl || 35000).toLocaleString('tr-TR')} · ${b.barinma_durumu || 'Kiracı'}</span>
+                            <button onclick="openInterview(${idx})" class="text-[#d4a373] hover:text-white underline underline-offset-4 cursor-pointer">
+                                💬 Birebir Mülakat Yap →
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
 
-            if (list.length > 100) {
-                container.innerHTML += `<div class="p-4 text-center font-mono text-xs text-dune-muted journey-border-t">... ve ${list.length - 100} bireysel oy kaydı daha mevcut. Arama yaparak filtreleyebilirsiniz.</div>`;
-            }
+            stream.innerHTML = ideologicalHtml + ballotsHtml;
+
+            // Scroll down to gazette
+            document.getElementById('gazette-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function applyCounterfactualShock() {
-            const wage = parseFloat(document.getElementById('slider-wage').value || 0);
-            const inf = parseFloat(document.getElementById('slider-inf').value || 0);
-            const rent = parseFloat(document.getElementById('slider-rent').value || 0);
-            const status = document.getElementById('shock-status');
+        function openInterview(idx) {
+            const p = allBallots[idx];
+            if (!p) return;
 
-            status.innerText = "Şok uygulanıyor, 1.000 kişilik bütçe ve kararlar güncelleniyor...";
-            status.className = "font-mono text-[11px] text-dune-sand animate-pulse";
+            activeCitizen = p;
+            interviewHistory = [];
 
-            try {
-                const resp = await fetch('/api/v1/counterfactual/simulate-shock', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        current_ballots: window._currentCensusBallots || [],
-                        delta_asgari_ucret_pct: wage,
-                        delta_enflasyon_pct: inf,
-                        delta_kira_pct: rent
-                    })
-                });
+            document.getElementById('modal-name').innerText = p.ad_soyad;
+            document.getElementById('modal-meta').innerText = `${p.yas} Yaş, ${p.meslek} · ${p.sehir_ilce} (${p.barinma_durumu})`;
+            document.getElementById('modal-thought').innerText = `"${p.bireysel_dusuncesi_ve_gerekcesi}"`;
+            document.getElementById('modal-chat-stream').innerHTML = '';
+            document.getElementById('modal-chat-input').value = '';
 
-                const res = await resp.json();
-
-                // Animate Vote Metrics
-                document.getElementById('metric-kabul').innerText = `%${res.yeni_kabul_orani_yuzde}`;
-                document.getElementById('metric-ret').innerText = `%${res.yeni_ret_orani_yuzde}`;
-                document.getElementById('metric-kararsiz').innerText = `%${res.yeni_kararsiz_orani_yuzde}`;
-
-                // Update Sidebar
-                document.getElementById('res-rate').innerText = `%${res.yeni_kabul_orani_yuzde}`;
-                document.getElementById('res-strategic').innerText = res.yonetici_stres_ozeti;
-
-                status.innerText = `✓ Şok Uygulandı: ${res.en_cok_etkilenen_demografik_kesim} etkilendi (Kabul: %${res.onceki_kabul_orani_yuzde} → %${res.yeni_kabul_orani_yuzde})`;
-                status.className = "font-mono text-[11px] text-emerald-400";
-            } catch (e) {
-                status.innerText = `Hata: ${e.message}`;
-                status.className = "font-mono text-[11px] text-rose-400";
-            }
+            document.getElementById('interview-modal').classList.remove('hidden');
         }
 
-        // ==========================================
-        // 1-ON-1 DEEP SOCRATIC INTERROGATION MODAL
-        // ==========================================
-        window._activeInterrogationPersona = null;
-        window._interrogationHistory = [];
-
-        function openInterrogationModal(citizenId) {
-            const ballots = window._currentCensusBallots || [];
-            const persona = ballots.find(b => (b.citizen_id || b.id) === citizenId) || ballots[0];
-            if (!persona) return;
-
-            window._activeInterrogationPersona = persona;
-            window._interrogationHistory = [];
-
-            document.getElementById('modal-persona-name').innerText = persona.ad_soyad;
-            document.getElementById('modal-persona-bio').innerText = `${persona.yas} Yaş, ${persona.meslek} // ${persona.sehir_ilce} (${persona.barinma_durumu})`;
-            document.getElementById('modal-persona-initial').innerText = `"${persona.bireysel_dusuncesi_ve_gerekcesi}"`;
-            document.getElementById('modal-chat-history').innerHTML = '';
-            document.getElementById('modal-question-input').value = '';
-
-            const modal = document.getElementById('interrogation-modal');
-            modal.classList.remove('hidden');
+        function closeInterviewModal() {
+            document.getElementById('interview-modal').classList.add('hidden');
         }
 
-        function closeInterrogationModal() {
-            document.getElementById('interrogation-modal').classList.add('hidden');
-        }
-
-        async function sendInterrogationQuestion() {
-            const input = document.getElementById('modal-question-input');
+        async function sendInterviewQuestion() {
+            const input = document.getElementById('modal-chat-input');
             const q = input.value.trim();
-            if (!q || !window._activeInterrogationPersona) return;
+            if (!q || !activeCitizen) return;
 
-            const chat = document.getElementById('modal-chat-history');
+            const stream = document.getElementById('modal-chat-stream');
             const btn = document.getElementById('modal-send-btn');
 
-            // Append User Question
-            chat.innerHTML += `
-                <div class="p-3.5 bg-dune-900/90 rounded-xl border border-dune-border text-right space-y-1 font-mono text-xs">
-                    <span class="text-[10px] text-dune-sand uppercase tracking-widest font-semibold">SİZ (ARAŞTIRMACI):</span>
-                    <p class="text-dune-parchment text-sm font-sans">${q}</p>
+            stream.innerHTML += `
+                <div class="text-right space-y-1">
+                    <span class="text-[10px] font-mono text-[#8e889b] uppercase">SİZ:</span>
+                    <p class="text-base font-serif-editorial italic text-white">${q}</p>
                 </div>
             `;
-            chat.scrollTop = chat.scrollHeight;
+            stream.scrollTop = stream.scrollHeight;
             input.value = '';
             btn.disabled = true;
             btn.innerText = 'Düşünüyor...';
 
-            window._interrogationHistory.push({ role: 'user', content: q });
+            interviewHistory.push({ role: 'user', content: q });
 
             try {
-                const questionCtx = document.getElementById('census-question')?.value || '';
+                const p = activeCitizen;
                 const resp = await fetch('/api/v1/society/interrogate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         persona_dict: {
-                            id: window._activeInterrogationPersona.citizen_id || 1,
-                            first_name: window._activeInterrogationPersona.ad_soyad.split(' ')[0],
-                            last_name: window._activeInterrogationPersona.ad_soyad.split(' ').slice(1).join(' '),
-                            age: window._activeInterrogationPersona.yas,
-                            occupation: window._activeInterrogationPersona.meslek,
-                            city: window._activeInterrogationPersona.sehir_ilce.split('/')[0].trim(),
-                            district: window._activeInterrogationPersona.sehir_ilce.split('/')[1]?.trim() || 'Merkez',
-                            monthly_income: window._activeInterrogationPersona.aylik_net_gelir_tl || 35000.0,
-                            housing_status: window._activeInterrogationPersona.barinma_durumu,
-                            karar: window._activeInterrogationPersona.karar,
-                            bireysel_dusuncesi_ve_gerekcesi: window._activeInterrogationPersona.bireysel_dusuncesi_ve_gerekcesi
+                            id: p.citizen_id || 1,
+                            first_name: p.ad_soyad.split(' ')[0],
+                            last_name: p.ad_soyad.split(' ').slice(1).join(' '),
+                            age: p.yas,
+                            occupation: p.meslek,
+                            city: p.sehir_ilce.split('/')[0].trim(),
+                            district: p.sehir_ilce.split('/')[1]?.trim() || 'Merkez',
+                            monthly_income: p.aylik_net_gelir_tl || 35000.0,
+                            housing_status: p.barinma_durumu,
+                            karar: p.karar,
+                            bireysel_dusuncesi_ve_gerekcesi: p.bireysel_dusuncesi_ve_gerekcesi
                         },
                         user_question: q,
-                        conversation_history: window._interrogationHistory,
-                        survey_context: questionCtx
+                        conversation_history: interviewHistory,
+                        survey_context: activeQuestion
                     })
                 });
 
                 const data = await resp.json();
-                window._interrogationHistory.push({ role: 'persona', content: data.cevap_metni });
+                interviewHistory.push({ role: 'persona', content: data.cevap_metni });
 
-                // Append Persona Answer + Subconscious Voice
-                chat.innerHTML += `
-                    <div class="p-4 bg-dune-950/90 rounded-xl border border-dune-border space-y-3 font-mono text-xs">
-                        <div class="flex items-center justify-between journey-border-b pb-2">
-                            <span class="text-[11px] text-emerald-400 font-semibold uppercase">${data.persona_ad_soyad} (${data.persona_meslek}):</span>
-                            <span class="text-[9px] text-dune-muted uppercase border border-dune-border px-2 py-0.5 rounded">${data.kullanilan_arguman_tipi}</span>
+                const bayesianBadge = data.bayesian_inanc_kaymasi_yuzde 
+                    ? `<span class="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-700/60 text-amber-300 text-[10px] font-mono">Bayes İnanç Kayması: ${data.bayesian_inanc_kaymasi_yuzde > 0 ? '+' : ''}%${data.bayesian_inanc_kaymasi_yuzde}</span>` 
+                    : '';
+
+                stream.innerHTML += `
+                    <div class="space-y-2 pt-2 border-b border-white/5 pb-3">
+                        <div class="flex flex-wrap items-center justify-between text-xs font-mono text-[#8e889b] gap-2">
+                            <span class="text-[#d4a373] font-semibold">${data.persona_ad_soyad} (${data.persona_meslek}):</span>
+                            <div class="flex items-center gap-2">
+                                ${bayesianBadge}
+                                <span class="uppercase text-[10px] text-neutral-400">${data.kullanilan_arguman_tipi}</span>
+                            </div>
                         </div>
-                        <div class="p-3 bg-dune-sand/10 rounded-lg border-l-2 border-dune-sand font-serif text-xs text-dune-parchment/90 italic">
-                            ◈ BİLİNÇALTI İÇ SES: "${data.bilincalti_refleksi}"
+                        <div class="text-xs font-serif-editorial italic text-[#d4a373] pl-2 border-l-2 border-[#d4a373]/60">
+                            ◈ İÇ SES: "${data.bilincalti_refleksi}"
                         </div>
-                        <p class="font-sans text-sm text-dune-parchment leading-relaxed pt-1">
+                        <p class="text-base font-serif-editorial text-[#f5f2eb] leading-relaxed pt-1">
                             "${data.cevap_metni}"
                         </p>
+                        <div class="text-[10px] font-mono text-neutral-500 pt-0.5">
+                            Ahlaki Odak: ${data.baskin_ahlaki_temel || 'Rasyonel Çıkar'}
+                        </div>
                     </div>
                 `;
-                chat.scrollTop = chat.scrollHeight;
+                stream.scrollTop = stream.scrollHeight;
             } catch (e) {
-                chat.innerHTML += `<div class="p-3 bg-rose-950/40 text-rose-300 text-xs font-mono rounded-lg">Hata: ${e.message}</div>`;
+                stream.innerHTML += `<div class="text-rose-400 text-xs font-mono">Hata: ${e.message}</div>`;
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'Sor →';
+                btn.innerText = 'Konuş →';
             }
         }
 
-        async function exportExecutiveReport() {
-            if (!window._lastCensusReport) return;
-            const res = await fetch('/api/v1/society/export-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ report_data: window._lastCensusReport })
-            });
-            const html = await res.text();
-            const win = window.open('', '_blank');
-            win.document.write(html);
-            win.document.close();
+        // Live Societal Pulse Fetcher
+        async function fetchLivePulse() {
+            try {
+                const res = await fetch('/api/v1/society/live-pulse');
+                const data = await res.json();
+                if (data.macro) {
+                    document.getElementById('live-usd-val').innerText = `${data.macro.usd_try_rate.toFixed(2)} ₺`;
+                    document.getElementById('live-tufe-val').innerText = `%${data.macro.tufe_annual_inflation_pct.toFixed(1)}`;
+                }
+                if (data.social) {
+                    document.getElementById('live-headline-val').innerText = data.social.active_top_headline;
+                    document.getElementById('live-headline-val').title = data.social.active_top_headline;
+                }
+                if (data.composite_agitation_score !== undefined) {
+                    document.getElementById('live-agitation-val').innerText = `${data.composite_agitation_score.toFixed(1)}/100`;
+                }
+            } catch (err) {
+                console.warn("Live pulse fetch fallback:", err);
+            }
         }
+
+        // Initialize Map & Live Pulse
+        loadRealTurkeyMap();
+        fetchLivePulse();
     </script>
 </body>
 </html>

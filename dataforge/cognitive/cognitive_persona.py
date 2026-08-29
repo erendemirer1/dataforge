@@ -16,6 +16,16 @@ from .deep_causal_framework import DeepCausalFramework, BourdieuCapitalVector, N
 
 
 @dataclass
+class DualProcessCognitiveState:
+    system_1_gut_reflex: str        # Filtresiz iç ses, ham duygu & ilk çıkar refleksi
+    system_2_social_mask: str       # Dışa söylenen rasyonel / sosyal kabul edilebilir savunma
+    social_desirability_gap: float  # İç ses ile dış söz arasındaki gerilim derecesi (0.0 - 1.0)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class DeepCognitivePersona:
     # 1. Kimlik ve Coğrafya
     id: int
@@ -53,7 +63,10 @@ class DeepCognitivePersona:
     neuro_psych: Optional[NeuroPsychologicalState] = None
     haidt_morals: Optional[HaidtMoralProfile] = None
 
-    # 9. Psikolojik Derinlik & Günlük Hayat
+    # 9. Dual-Process Bilişsel Gerilim (Sistem 1 vs Sistem 2)
+    dual_process: Optional[DualProcessCognitiveState] = None
+
+    # 10. Psikolojik Derinlik & Günlük Hayat
     en_buyuk_gunluk_derdi: str = ""
     gizli_korkusu: str = ""
     sosyal_statu_kaygisi: str = ""

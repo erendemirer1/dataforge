@@ -14,6 +14,7 @@ from ...cognitive.social_contagion import SocialContagionEngine
 from ...cognitive.gis_engine import GISEngine
 from ...cognitive.report_exporter import ReportExporter
 from ...cognitive.macro_pipeline import MacroeconomicPipeline
+from ...cognitive.living_stream_engine import LivingStreamEngine
 
 router = APIRouter(prefix="/society", tags=["Synthetic Society OS"])
 
@@ -57,7 +58,9 @@ async def interrogate_persona(req: InterrogationApiRequest):
             "persona_sehir_ilce": resp.persona_sehir_ilce,
             "cevap_metni": resp.cevap_metni,
             "bilincalti_refleksi": resp.bilincalti_refleksi,
-            "kullanilan_arguman_tipi": resp.kullanilan_arguman_tipi
+            "kullanilan_arguman_tipi": resp.kullanilan_arguman_tipi,
+            "bayesian_inanc_kaymasi_yuzde": resp.bayesian_inanc_kaymasi_yuzde,
+            "baskin_ahlaki_temel": resp.baskin_ahlaki_temel
         }
     except Exception as e:
         raise HTTPException(
@@ -137,3 +140,16 @@ async def export_executive_report(req: ExportReportApiRequest):
 async def get_macro_indicators():
     pipeline = MacroeconomicPipeline.get_instance()
     return pipeline.get_current_macro_indicators()
+
+
+@router.get(
+    "/live-pulse",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+    summary="Canlı Piyasa ve Sosyal Gündem Nabzı",
+    description="Canlı API'lerden çekilen gerçek USD/TRY kuru, güncel haber başlığı ve toplumsal ajitasyon endeksini döner."
+)
+async def get_live_pulse():
+    stream = LivingStreamEngine.get_instance()
+    pulse = stream.get_current_pulse()
+    return pulse.to_dict()
