@@ -57,3 +57,5 @@ users_*.json
 debug_*.py
 test_*.py
 !tests/test_*.py
+list_models*.py
+*secret*

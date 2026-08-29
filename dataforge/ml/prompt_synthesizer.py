@@ -50,7 +50,7 @@ class DynamicPromptEngine:
                                 return val
         except Exception:
             pass
-        return "AQ.Ab8RN6JYPwJZf7hqA8gswjWAe2a2DpeI-iHlM6VScQyYz_f4WA"
+        return None
 
     def synthesize(self, prompt: str, count: int = 10) -> list[dict[str, Any]]:
         """
